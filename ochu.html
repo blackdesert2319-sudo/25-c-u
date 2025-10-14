@@ -48,7 +48,6 @@
             left: 0;
             opacity: 0;
             transition: opacity 0.5s;
-            /* Bức tranh chân dung Gauss */
             background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Carl_Friedrich_Gauss_1840.jpg/450px-Carl_Friedrich_Gauss_1840.jpg'); 
             background-size: 450px 450px;
         }
@@ -92,7 +91,7 @@
             width: 400px; 
             color: #333;
             margin-top: 50px;
-            display: none; /* Vẫn ẩn ban đầu */
+            display: none;
         }
         .q-title { font-size: 1.1em; color: #2A52BE; margin-bottom: 5px; }
         .q-text { font-size: 1.6em; margin-bottom: 25px; font-weight: 500; text-align: center; } 
@@ -138,13 +137,12 @@
 
     <div id="start-area">
         <h1>Mở Mảnh Ghép Bí Mật: Nhà Toán Học</h1>
-        <button id="startButton" class="button-start">BẮT ĐẦU TRÒ CHƠI!!</button>
+        <button id="startButton" class="button-start">BẮT ĐẦU TRÒ CHƠI!</button>
     </div>
 
     <div id="game-wrapper" style="display: none;">
         
-        <div class="puzzle-container" id="puzzle-container">
-            </div>
+        <div class="puzzle-container" id="puzzle-container"></div>
 
         <div>
             <div id="score-board-container">
@@ -178,7 +176,6 @@
     
     <script>
         const questions = [
-            // 9 CÂU HỎI VỀ CSC VÀ CSN (Mức độ Vận dụng Cơ bản)
             { q: 'Cho CSC ($u_n$) có $u_1 = 3$ và tổng $S_{10} = 165$. Số hạng thứ mười $u_{10}$ là:', options: ['27', '30', '33', '35'], correct: 'B' },
             { q: 'Cho CSC ($u_n$) biết $u_6 = 17$ và $u_{12} = 35$. Số hạng đầu $u_1$ là:', options: ['2', '3', '5', '7'], correct: 'B' },
             { q: 'Cho CSN ($u_n$) có các số hạng dương, biết $u_3 = 12$ và $u_5 = 48$. Công bội $q$ là:', options: ['2', '3', '4', '6'], correct: 'A' },
@@ -196,12 +193,10 @@
             "**CÂU HỎI CUỐI CÙNG (Mở 9 mảnh):** Đây là ai? Mời đội đoán nhân vật để nhận thêm điểm thưởng!" 
         ];
 
-        // Khởi tạo các biến
         let currentPieceIndex = -1; 
         let piecesOpened = 0;
         let piecesState = new Array(9).fill(false); 
         
-        // DOM Elements
         const startButton = document.getElementById('startButton');
         const gameWrapper = document.getElementById('game-wrapper');
         const startArea = document.getElementById('start-area');
@@ -216,7 +211,6 @@
         const hintMessage = document.getElementById('hint-message');
         const showOptionsButton = document.getElementById('showOptionsButton');
 
-        // Dữ liệu Đội
         const teams = [
             { id: 'red', name: 'Đội Đỏ', colorClass: 'team-red', score: 0 },
             { id: 'blue', name: 'Đội Xanh', colorClass: 'team-blue', score: 0 },
@@ -225,10 +219,6 @@
             { id: 'purple', name: 'Đội Tím', colorClass: 'team-purple', score: 0 },
         ];
         
-        // ---------------------------------------------------
-        // CHỨC NĂNG BẢNG ĐIỂM ĐỘI
-        // ---------------------------------------------------
-
         function updateTeamScore(teamId, delta) {
             const team = teams.find(t => t.id === teamId);
             if (team) {
@@ -259,10 +249,6 @@
         }
         window.updateTeamScore = updateTeamScore; 
 
-        // ---------------------------------------------------
-        // CHỨC NĂNG TRÒ CHƠI
-        // ---------------------------------------------------
-
         function createPieces() {
             puzzleContainer.innerHTML = '';
             for (let i = 0; i < 9; i++) {
@@ -278,143 +264,93 @@
             }
         }
         
-        // Mở khung câu hỏi
+        // 🔧 ĐÃ SỬA LỖI Ở ĐÂY
         function openQuestion(index) {
             if (piecesState[index]) return; 
+            if (getComputedStyle(questionBox).display !== 'none') return; // ✅ dùng getComputedStyle thay vì style.display
             
-            // XÓA DÒNG GÂY LỖI: if (questionBox.style.display !== 'none') return;
-            // Thay vào đó, chúng ta ĐẢM BẢO đóng khung cũ trước khi mở khung mới.
-            // questionBox.style.display = 'none'; // Không cần đóng vì ta sẽ mở lại ngay
-
-
             currentPieceIndex = index;
             const currentQ = questions[index];
 
-            // 1. HIỂN THỊ KHUNG CÂU HỎI NGAY LẬP TỨC
             questionBox.style.display = 'block'; 
 
-            // 2. RESET TRẠNG THÁI KHUNG CÂU HỎI
             resultMessage.textContent = '';
             closeQuestionButton.style.display = 'none';
             hintMessage.style.display = 'none';
-            
-            // 3. Ẩn đáp án và hiển thị nút "HIỆN ĐÁP ÁN"
             showOptionsButton.style.display = 'block'; 
             
-            // Đảm bảo ẩn các lựa chọn đáp án và reset trạng thái click
             optionElements.forEach(el => {
-                el.style.display = 'none'; // ẨN ĐÁP ÁN
+                el.style.display = 'none'; 
                 el.classList.remove('correct', 'incorrect', 'disabled');
                 el.onclick = null; 
             });
 
-
-            // 4. HIỂN THỊ CÂU HỎI
             qIndexDisplay.textContent = index + 1;
             questionText.innerHTML = currentQ.q;
             
-            // Đặt nội dung cho đáp án (nhưng vẫn ẩn)
             optionElements.forEach((el, idx) => {
                 el.querySelector('span').innerHTML = currentQ.options[idx];
             });
 
-
-            // 5. Yêu cầu xử lý MathJax cho câu hỏi 
             if (window.MathJax) {
                 MathJax.typesetPromise([questionText]);
             }
         }
 
-        // XỬ LÝ KHI GIÁO VIÊN BẤM "HIỆN ĐÁP ÁN"
         showOptionsButton.addEventListener('click', () => {
             showOptionsButton.style.display = 'none';
             const currentQ = questions[currentPieceIndex];
             
-            // Hiển thị các lựa chọn và bật lại sự kiện click
             optionElements.forEach(el => {
-                el.style.display = 'block'; // HIỆN ĐÁP ÁN
-                el.onclick = () => checkAnswer(el, currentQ.correct);
+                el.style.display = 'block';
+                el.onclick = () => handleAnswer(el, currentQ.correct);
             });
-            
-             // Yêu cầu MathJax xử lý lại các đáp án vừa hiện ra
-            if (window.MathJax) {
-                MathJax.typesetPromise([optionsContainer]);
-            }
         });
 
-
-        // Kiểm tra đáp án
-        function checkAnswer(selectedElement, correctAnswer) {
-            const selectedAnswer = selectedElement.getAttribute('data-answer');
-            
-            if (selectedAnswer === correctAnswer) {
-                // ĐÚNG: Mở mảnh ghép
-                selectedElement.classList.add('correct');
-                resultMessage.innerHTML = 'CHÍNH XÁC! Mảnh ghép được mở. Mời giáo viên **cộng điểm (+10)** cho đội.';
-                
-                // Đánh dấu và vô hiệu hóa tất cả các nút
-                highlightAndDisableAll(correctAnswer);
-                
-                // Mở mảnh ghép
-                const pieceElement = document.querySelector(`.puzzle-piece[data-index='${currentPieceIndex}']`);
-                pieceElement.classList.add('piece-open');
+        function handleAnswer(selectedOption, correct) {
+            optionElements.forEach(opt => {
+                opt.classList.add('disabled');
+                if (opt.dataset.answer === correct) opt.classList.add('correct');
+            });
+            if (selectedOption.dataset.answer === correct) {
+                selectedOption.classList.add('correct');
+                resultMessage.textContent = "✅ Chính xác! Mảnh ghép được mở!";
                 piecesState[currentPieceIndex] = true;
                 piecesOpened++;
-                
-                // LOGIC GỢI Ý
-                if (piecesOpened === 3) {
-                    hintMessage.innerHTML = hints[0];
-                    hintMessage.style.display = 'block';
-                } else if (piecesOpened === 6) {
-                    hintMessage.innerHTML = hints[1];
-                    hintMessage.style.display = 'block';
-                } else if (piecesOpened === 9) {
-                    hintMessage.innerHTML = hints[2];
-                    hintMessage.style.display = 'block';
-                }
-
-                if (piecesOpened === 9) {
-                    closeQuestionButton.textContent = "Đoán Nhân Vật (Kết Thúc)";
-                } else {
-                    closeQuestionButton.textContent = "Đóng & Tiếp tục";
-                }
-                closeQuestionButton.style.display = 'block';
-
+                openPiece(currentPieceIndex);
+                setTimeout(() => checkHint(), 500);
             } else {
-                // SAI
-                selectedElement.classList.add('incorrect');
-                selectedElement.classList.add('disabled'); 
-                selectedElement.onclick = null; 
-                resultMessage.textContent = 'Chưa chính xác. Thử lại!';
+                selectedOption.classList.add('incorrect');
+                resultMessage.textContent = "❌ Sai rồi! Hãy thử lại lượt khác!";
             }
+            closeQuestionButton.style.display = 'block';
         }
 
-        function highlightAndDisableAll(correctAnswer) {
-             optionElements.forEach(el => {
-                el.classList.add('disabled'); 
-                el.onclick = null;
-                if (el.getAttribute('data-answer') === correctAnswer) {
-                    el.classList.add('correct'); 
-                }
-            });
+        function openPiece(index) {
+            const piece = puzzleContainer.children[index];
+            piece.classList.add('piece-open');
         }
-        
-        // Đóng khung câu hỏi và tiếp tục trò chơi
+
+        function checkHint() {
+            if (piecesOpened === 3) showHint(0);
+            if (piecesOpened === 6) showHint(1);
+            if (piecesOpened === 9) showHint(2);
+        }
+
+        function showHint(level) {
+            hintMessage.style.display = 'block';
+            hintMessage.innerHTML = hints[level];
+        }
+
         closeQuestionButton.addEventListener('click', () => {
             questionBox.style.display = 'none';
-            hintMessage.style.display = 'none';
-            currentPieceIndex = -1;
-            if (piecesOpened === 9) {
-                alert("CHÚC MỪNG! Bức tranh đã hoàn thành. Người được tìm kiếm là CARL FRIEDRICH GAUSS.");
-            }
         });
 
-        // Hàm bắt đầu game
         startButton.addEventListener('click', () => {
             startArea.style.display = 'none';
             gameWrapper.style.display = 'flex';
             createPieces();
-            renderScoreBoard(); 
+            renderScoreBoard();
         });
     </script>
 
