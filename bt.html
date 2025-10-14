@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trò chơi Trắc nghiệm Cấp số Cộng & Cấp số Nhân</title>
+    <title>Trò chơi Trắc nghiệm Cấp số Cộng & Cấp số Nhân (Không Đếm Ngược)</title>
     
     <script>
         // Cấu hình MathJax trước khi tải thư viện
@@ -13,7 +13,6 @@
             },
             startup: {
                 // Đảm bảo MathJax không tự động chạy typeset (xử lý công thức) khi tải trang
-                // Mà chỉ chạy khi hàm typesetPromise() được gọi trong JavaScript
                 typeset: false 
             }
         };
@@ -22,10 +21,9 @@
     <style>
         body { font-family: 'Arial', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background-color: #f4f7f6; }
         .game-container { background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); width: 90%; max-width: 700px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 15px; }
-        .timer, .score { font-size: 1.5em; font-weight: bold; }
-        .timer { color: #d9534f; }
-        .score { color: #5cb85c; }
+        .header { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 15px; }
+        .score { font-size: 1.5em; font-weight: bold; color: #5cb85c; }
+        /* Đã bỏ .timer và các style liên quan */
         .question-box { margin-bottom: 25px; }
         .question-number { font-size: 1.1em; color: #2A52BE; margin-bottom: 5px; }
         .question-text { font-size: 1.3em; margin-bottom: 20px; font-weight: 500; }
@@ -33,8 +31,8 @@
         .option { padding: 12px; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; transition: background-color 0.2s, border-color 0.2s; font-size: 1.1em; }
         .option:hover { background-color: #e9e9e9; border-color: #aaa; }
         .option.correct { background-color: #d4edda; border-color: #c3e6cb; }
-        .option.incorrect { background-color: #f8d7da; border-color: #f5c6cb; }
-        .option.disabled { cursor: default; }
+        .option.incorrect { background-color: #f8d7da; border-color: #f5c6fb; }
+        .option.disabled { cursor: default; opacity: 0.6; } /* Giảm opacity cho đáp án đã chọn sai */
         .button-start { padding: 15px 30px; font-size: 1.2em; cursor: pointer; background-color: #5cb85c; color: white; border: none; border-radius: 8px; transition: background-color 0.2s; }
         .button-start:hover { background-color: #4cae4c; }
         .result-message { margin-top: 15px; font-size: 1.2em; font-weight: bold; }
@@ -50,7 +48,6 @@
         
         <div id="game-content">
             <div class="header">
-                <div class="timer">Thời gian: <span id="time-left">10</span>s</div>
                 <div class="score">Điểm: <span id="current-score">0</span></div>
             </div>
 
@@ -110,43 +107,34 @@
 
         let currentQuestionIndex = 0;
         let score = 0;
-        let timeLeft = 10;
-        let timerInterval;
 
         const startButton = document.getElementById('startButton');
         const gameContent = document.getElementById('game-content');
         const questionText = document.getElementById('question-text');
         const qNumber = document.getElementById('current-q-number');
         const scoreDisplay = document.getElementById('current-score');
-        const timeLeftDisplay = document.getElementById('time-left');
         const optionsContainer = document.getElementById('options-container');
         const resultMessage = document.getElementById('result-message');
         const finalResults = document.getElementById('final-results');
         const finalScoreDisplay = document.getElementById('final-score');
         const optionElements = optionsContainer.querySelectorAll('.option');
 
+
         // Hàm xử lý việc hiển thị công thức toán học
         function renderMath() {
-            // Tải lại các phần tử DOM sau khi MathJax Typeset xong
             const currentQ = questions[currentQuestionIndex];
             
             // Đặt nội dung (đã có LaTeX) vào các phần tử
             questionText.innerHTML = currentQ.q;
-            const optionLabels = ['A', 'B', 'C', 'D'];
+            
             optionElements.forEach((el, index) => {
                 el.querySelector('span').innerHTML = currentQ.options[index];
             });
 
             // Yêu cầu MathJax xử lý các công thức LaTeX vừa được đưa vào DOM
             if (window.MathJax) {
-                // Sử dụng typesetPromise để đảm bảo việc xử lý là bất đồng bộ và an toàn
-                MathJax.typesetPromise([questionText, optionsContainer]).then(() => {
-                    // Sau khi xử lý xong, mới bắt đầu đếm ngược
-                    startTimer(); 
-                });
-            } else {
-                 // Nếu MathJax không tải được, vẫn bắt đầu game (nhưng công thức sẽ lỗi)
-                startTimer(); 
+                // Xử lý các phần tử liên quan đến câu hỏi hiện tại
+                MathJax.typesetPromise([questionText, optionsContainer]);
             }
         }
 
@@ -160,10 +148,7 @@
             const currentQ = questions[currentQuestionIndex];
             
             // Reset trạng thái
-            clearInterval(timerInterval);
             resultMessage.textContent = '';
-            timeLeft = 10;
-            timeLeftDisplay.textContent = timeLeft;
 
             // Hiển thị số câu hỏi
             qNumber.textContent = currentQuestionIndex + 1;
@@ -174,7 +159,7 @@
                 el.onclick = () => checkAnswer(el, currentQ.correct);
             });
             
-            // Yêu cầu xử lý và hiển thị công thức toán (renderMath sẽ tự gọi startTimer sau)
+            // Yêu cầu xử lý và hiển thị công thức toán
             renderMath();
         }
 
@@ -185,62 +170,46 @@
             gameContent.style.display = 'block';
             loadQuestion();
         });
-
-        // Hàm đếm ngược thời gian (Được gọi sau khi renderMath thành công)
-        function startTimer() {
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                timeLeftDisplay.textContent = timeLeft;
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    handleTimeOut();
+        
+        // Hàm vô hiệu hóa tất cả các lựa chọn và đánh dấu đáp án đúng
+        function highlightAndDisableAll(correctAnswer) {
+             optionElements.forEach(el => {
+                el.classList.add('disabled'); // Vô hiệu hóa tất cả
+                el.onclick = null;
+                if (el.getAttribute('data-answer') === correctAnswer) {
+                    el.classList.add('correct'); // Đánh dấu đáp án đúng
                 }
-            }, 1000);
-        }
-
-        // Xử lý hết giờ
-        function handleTimeOut() {
-            resultMessage.textContent = 'Hết giờ! Câu trả lời đúng là ' + questions[currentQuestionIndex].correct + '.';
-            disableOptions(questions[currentQuestionIndex].correct);
-            setTimeout(() => {
-                currentQuestionIndex++;
-                loadQuestion();
-            }, 2000);
+            });
         }
 
         // Hàm kiểm tra đáp án
         function checkAnswer(selectedElement, correctAnswer) {
-            clearInterval(timerInterval);
-            disableOptions(correctAnswer);
-
+            
             const selectedAnswer = selectedElement.getAttribute('data-answer');
             
             if (selectedAnswer === correctAnswer) {
+                // TRẢ LỜI ĐÚNG
                 selectedElement.classList.add('correct');
                 resultMessage.textContent = 'Chính xác! (+10 điểm)';
                 score += 10;
                 scoreDisplay.textContent = score;
+
+                // Vô hiệu hóa và đánh dấu đáp án đúng
+                highlightAndDisableAll(correctAnswer);
+
+                // Chuyển sang câu hỏi tiếp theo sau 2 giây
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    loadQuestion();
+                }, 2000);
             } else {
+                // TRẢ LỜI SAI
                 selectedElement.classList.add('incorrect');
-                resultMessage.textContent = 'Chưa chính xác. Đáp án đúng là ' + correctAnswer + '.';
+                selectedElement.classList.add('disabled'); // Vô hiệu hóa đáp án vừa chọn sai
+                selectedElement.onclick = null; // Ngăn người dùng chọn lại đáp án này
+
+                resultMessage.textContent = 'Chưa chính xác. Thử lại!';
             }
-
-            // Chuyển sang câu hỏi tiếp theo sau 2 giây
-            setTimeout(() => {
-                currentQuestionIndex++;
-                loadQuestion();
-            }, 2000);
-        }
-
-        // Hàm vô hiệu hóa các lựa chọn
-        function disableOptions(correctAnswer) {
-            optionElements.forEach(el => {
-                el.classList.add('disabled');
-                el.onclick = null;
-                if (el.getAttribute('data-answer') === correctAnswer) {
-                    el.classList.add('correct');
-                }
-            });
         }
 
         // Hàm kết thúc trò chơi
