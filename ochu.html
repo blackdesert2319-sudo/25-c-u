@@ -138,7 +138,7 @@
 
     <div id="start-area">
         <h1>Mở Mảnh Ghép Bí Mật: Nhà Toán Học</h1>
-        <button id="startButton" class="button-start">BẮT ĐẦU TRÒ CHƠI!</button>
+        <button id="startButton" class="button-start">BẮT ĐẦU TRÒ CHƠI!!</button>
     </div>
 
     <div id="game-wrapper" style="display: none;">
@@ -281,7 +281,11 @@
         // Mở khung câu hỏi
         function openQuestion(index) {
             if (piecesState[index]) return; 
-            if (questionBox.style.display !== 'none') return;
+            
+            // XÓA DÒNG GÂY LỖI: if (questionBox.style.display !== 'none') return;
+            // Thay vào đó, chúng ta ĐẢM BẢO đóng khung cũ trước khi mở khung mới.
+            // questionBox.style.display = 'none'; // Không cần đóng vì ta sẽ mở lại ngay
+
 
             currentPieceIndex = index;
             const currentQ = questions[index];
