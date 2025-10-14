@@ -1,9 +1,9 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trò chơi Mở Mảnh Ghép: Carl Friedrich Gauss (Xem Trước Câu Hỏi)</title>
+    <title>Trò chơi Mở Mảnh Ghép: Carl Friedrich Gauss</title>
     
     <script>
         window.MathJax = {
@@ -138,7 +138,7 @@
 
     <div id="start-area">
         <h1>Mở Mảnh Ghép Bí Mật: Nhà Toán Học</h1>
-        <button id="startButton" class="button-start">BẮT ĐẦU TRÒ CHƠI$!</button>
+        <button id="startButton" class="button-start">BẮT ĐẦU TRÒ CHƠI!</button>
     </div>
 
     <div id="game-wrapper" style="display: none;">
@@ -299,7 +299,7 @@
             
             // Đảm bảo ẩn các lựa chọn đáp án và reset trạng thái click
             optionElements.forEach(el => {
-                el.style.display = 'none'; 
+                el.style.display = 'none'; // ẨN ĐÁP ÁN
                 el.classList.remove('correct', 'incorrect', 'disabled');
                 el.onclick = null; 
             });
@@ -315,7 +315,7 @@
             });
 
 
-            // 5. Yêu cầu xử lý MathJax cho câu hỏi (vì nó đã hiển thị)
+            // 5. Yêu cầu xử lý MathJax cho câu hỏi 
             if (window.MathJax) {
                 MathJax.typesetPromise([questionText]);
             }
@@ -328,7 +328,7 @@
             
             // Hiển thị các lựa chọn và bật lại sự kiện click
             optionElements.forEach(el => {
-                el.style.display = 'block'; 
+                el.style.display = 'block'; // HIỆN ĐÁP ÁN
                 el.onclick = () => checkAnswer(el, currentQ.correct);
             });
             
@@ -416,4 +416,3 @@
 
 </body>
 </html>
-
