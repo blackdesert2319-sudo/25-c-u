@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -92,7 +92,7 @@
             width: 400px; 
             color: #333;
             margin-top: 50px;
-            display: none;
+            display: none; /* Vẫn ẩn ban đầu */
         }
         .q-title { font-size: 1.1em; color: #2A52BE; margin-bottom: 5px; }
         .q-text { font-size: 1.6em; margin-bottom: 25px; font-weight: 500; text-align: center; } 
@@ -159,10 +159,10 @@
                 <button id="showOptionsButton" class="button-start">HIỆN ĐÁP ÁN</button>
 
                 <div class="options-container" id="options-container">
-                    <div class="option" data-answer="A" style="display: none;">A. <span id="option-a"></span></div>
-                    <div class="option" data-answer="B" style="display: none;">B. <span id="option-b"></span></div>
-                    <div class="option" data-answer="C" style="display: none;">C. <span id="option-c"></span></div>
-                    <div class="option" data-answer="D" style="display: none;">D. <span id="option-d"></span></div>
+                    <div class="option" data-answer="A">A. <span id="option-a"></span></div>
+                    <div class="option" data-answer="B">B. <span id="option-b"></span></div>
+                    <div class="option" data-answer="C">C. <span id="option-c"></span></div>
+                    <div class="option" data-answer="D">D. <span id="option-d"></span></div>
                 </div>
                 
                 <div class="result-message" id="result-message"></div>
@@ -286,12 +286,15 @@
             currentPieceIndex = index;
             const currentQ = questions[index];
 
-            // RESET TRẠNG THÁI KHUNG CÂU HỎI
+            // 1. HIỂN THỊ KHUNG CÂU HỎI NGAY LẬP TỨC
+            questionBox.style.display = 'block'; 
+
+            // 2. RESET TRẠNG THÁI KHUNG CÂU HỎI
             resultMessage.textContent = '';
             closeQuestionButton.style.display = 'none';
             hintMessage.style.display = 'none';
             
-            // Ẩn đáp án và hiển thị nút "HIỆN ĐÁP ÁN"
+            // 3. Ẩn đáp án và hiển thị nút "HIỆN ĐÁP ÁN"
             showOptionsButton.style.display = 'block'; 
             
             // Đảm bảo ẩn các lựa chọn đáp án và reset trạng thái click
@@ -302,7 +305,7 @@
             });
 
 
-            // HIỂN THỊ CÂU HỎI
+            // 4. HIỂN THỊ CÂU HỎI
             qIndexDisplay.textContent = index + 1;
             questionText.innerHTML = currentQ.q;
             
@@ -312,13 +315,9 @@
             });
 
 
-            // Yêu cầu xử lý MathJax, sau đó hiển thị khung
+            // 5. Yêu cầu xử lý MathJax cho câu hỏi (vì nó đã hiển thị)
             if (window.MathJax) {
-                MathJax.typesetPromise([questionText, optionsContainer]).then(() => {
-                    questionBox.style.display = 'block'; 
-                });
-            } else {
-                questionBox.style.display = 'block';
+                MathJax.typesetPromise([questionText]);
             }
         }
 
