@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trò chơi Mở Mảnh Ghép: Carl Friedrich Gauss (Xem Trước Câu Hỏi)</title>
+    
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            startup: { typeset: false }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body { font-family: 'Arial', sans-serif; display: flex; align-items: flex-start; justify-content: center; min-height: 100vh; background-color: #282c34; padding: 20px; color: #fff; }
+        
+        /* KHUNG CHÍNH (CONTAINER) */
+        #game-wrapper { display: flex; align-items: flex-start; }
+        
+        /* KHUNG ẢNH VÀ CÂU HỎI */
+        .puzzle-container {
+            width: 450px; 
+            height: 450px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+            border: 5px solid #f1c40f;
+            position: relative;
+            margin-right: 30px;
+        }
+
+        .puzzle-piece {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid #f1c40f;
+        }
+        
+        .puzzle-image {
+            width: 450px;
+            height: 450px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 0.5s;
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Carl_Friedrich_Gauss_1840.jpg/450px-Carl_Friedrich_Gauss_1840.jpg'); 
+            background-size: 450px 450px;
+        }
+        
+        .piece-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #34495e; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2em;
+            font-weight: bold;
+            transition: opacity 0.5s;
+        }
+
+        .piece-open .piece-overlay { opacity: 0; pointer-events: none; }
+        .piece-open .puzzle-image { opacity: 1; }
+
+        .piece-0 .puzzle-image { background-position: 0 0; }
+        .piece-1 .puzzle-image { background-position: -150px 0; }
+        .piece-2 .puzzle-image { background-position: -300px 0; }
+        .piece-3 .puzzle-image { background-position: 0 -150px; }
+        .piece-4 .puzzle-image { background-position: -150px -150px; }
+        .piece-5 .puzzle-image { background-position: -300px -150px; }
+        .piece-6 .puzzle-image { background-position: 0 -300px; }
+        .piece-7 .puzzle-image { background-position: -150px -300px; }
+        .piece-8 .puzzle-image { background-position: -300px -300px; }
+        
+        /* KHUNG CÂU HỎI VÀ ĐÁP ÁN */
+        .question-box {
+            background-color: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); 
+            width: 400px; 
+            color: #333;
+            margin-top: 50px;
+            display: none;
+        }
+        .q-title { font-size: 1.1em; color: #2A52BE; margin-bottom: 5px; }
+        .q-text { font-size: 1.6em; margin-bottom: 25px; font-weight: 500; text-align: center; } /* Căn giữa câu hỏi */
+        .options-container { margin-top: 15px; } /* Thêm khoảng cách sau nút Hiện Đáp án */
+        .option { padding: 12px; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; margin-bottom: 8px; transition: background-color 0.2s; font-size: 1.1em; }
+        .option:hover:not(.disabled) { background-color: #e9e9e9; }
+        .option.correct { background-color: #d4edda; border: 2px solid #5cb85c; }
+        .option.incorrect { background-color: #f8d7da; border: 2px solid #d9534f; }
+        .option.disabled { cursor: default; opacity: 0.7; }
+        .result-message { margin-top: 15px; font-size: 1.2em; font-weight: bold; }
+        .hint-message { margin-top: 20px; padding: 10px; background-color: #f1c40f; color: #333; border-radius: 5px; font-weight: bold; text-align: center; }
+        
+        /* Nút Bảng điểm và điều khiển điểm */
+        #score-board-container { width: 250px; padding: 20px; border-radius: 10px; background-color: #3c414d; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); margin-top: 0; }
+        .team-score-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding: 10px; border-radius: 8px; font-weight: bold; color: white; transition: transform 0.2s; }
+        .team-score-item:hover { transform: scale(1.03); }
+        .team-name { font-size: 1.1em; }
+        .team-score { font-size: 1.8em; }
+        .score-control button { background: rgba(255, 255, 255, 0.2); border: none; color: white; padding: 5px 10px; margin-left: 5px; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: 900; transition: background 0.2s; line-height: 1; }
+        .score-control button:hover { background: rgba(255, 255, 255, 0.4); }
+        .team-red { background-color: #e74c3c; }
+        .team-blue { background-color: #3498db; }
+        .team-green { background-color: #2ecc71; }
+        .team-yellow { background-color: #f1c40f; color: #333; }
+        .team-purple { background-color: #9b59b6; }
+        
+        /* NÚT BẮT ĐẦU VÀ KẾT THÚC */
+        #start-area { text-align: center; width: 100%; }
+        .button-start { padding: 15px 30px; font-size: 1.2em; cursor: pointer; background-color: #5cb85c; color: white; border: none; border-radius: 8px; transition: background-color 0.2s; margin-top: 20px;}
+        .button-start:hover { background-color: #4cae4c; }
+        
+        /* CSS cho nút hiện đáp án */
+        #showOptionsButton { 
+            background-color: #e67e22; 
+            margin-top: 15px;
+        }
+        #showOptionsButton:hover {
+            background-color: #d35400;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-area">
+        <h1>Mở Mảnh Ghép Bí Mật: Nhà Toán Học</h1>
+        <button id="startButton" class="button-start">BẮT ĐẦU TRÒ CHƠI!</button>
+    </div>
+
+    <div id="game-wrapper" style="display: none;">
+        
+        <div class="puzzle-container" id="puzzle-container">
+            </div>
+
+        <div>
+            <div id="score-board-container">
+                <h2 style="text-align: center; color: #f1c40f;">Bảng Điểm Đội</h2>
+                <div id="score-board"></div>
+            </div>
+
+            <div class="question-box" id="question-box">
+                <div class="q-title">Câu hỏi Mảnh <span id="current-piece-index"></span></div>
+                <div class="q-text" id="question-text"></div>
+                
+                <button id="showOptionsButton" class="button-start">HIỆN ĐÁP ÁN</button>
+
+                <div class="options-container" id="options-container">
+                    <div class="option" data-answer="A" style="display: none;">A. <span id="option-a"></span></div>
+                    <div class="option" data-answer="B" style="display: none;">B. <span id="option-b"></span></div>
+                    <div class="option" data-answer="C" style="display: none;">C. <span id="option-c"></span></div>
+                    <div class="option" data-answer="D" style="display: none;">D. <span id="option-d"></span></div>
+                </div>
+                
+                <div class="result-message" id="result-message"></div>
+                <div class="hint-message" id="hint-message" style="display:none;"></div>
+
+                <button id="closeQuestionButton" class="button-start" style="display: none;">Đóng & Tiếp tục / Đoán Nhân Vật</button>
+            </div>
+            
+        </div>
+        
+    </div>
+
+    
+    <script>
+        const questions = [
+            // CÂU HỎI MỚI (Mức độ Vận dụng Cơ bản)
+            { q: 'Cho CSC ($u_n$) có $u_1 = 3$ và tổng $S_{10} = 165$. Số hạng thứ mười $u_{10}$ là:', options: ['27', '30', '33', '35'], correct: 'B' },
+            { q: 'Cho CSC ($u_n$) biết $u_6 = 17$ và $u_{12} = 35$. Số hạng đầu $u_1$ là:', options: ['2', '3', '5', '7'], correct: 'B' },
+            { q: 'Cho CSN ($u_n$) có các số hạng dương, biết $u_3 = 12$ và $u_5 = 48$. Công bội $q$ là:', options: ['2', '3', '4', '6'], correct: 'A' },
+            { q: 'Cho CSC ($u_n$) có $u_1 = -5$ và công sai $d = 3$. Tổng $20$ số hạng đầu $S_{20}$ là:', options: ['470', '520', '485', '505'], correct: 'D' },
+            { q: 'Cho CSN ($u_n$) có $u_1 = 2$ và công bội $q = -3$. Tổng $S_4$ là:', options: ['-40', '40', '-60', '80'], correct: 'A' },
+            { q: 'Giá trị của $x$ để ba số $2x+1$, $x+2$, và $2x-5$ theo thứ tự lập thành CSC là:', options: ['$x = 4$', '$x = 5$', '$x = 6$', '$x = 7$'], correct: 'B' },
+            { q: 'Trong CSN ($u_n$) có $u_1 = 3$ và $u_n = 192$. Nếu công bội $q = 2$, thì $n$ bằng:', options: ['6', '7', '8', '9'], correct: 'B' },
+            { q: 'Trong CSC ($u_n$) có $u_1 = 1$ và $d = 4$. Hỏi số $41$ là số hạng thứ mấy?', options: ['9', '10', '11', '12'], correct: 'C' },
+            { q: 'Giá trị dương của $x$ để ba số $x-1$, $x+1$, và $x+4$ theo thứ tự lập thành CSN là:', options: ['$x = 3$', '$x = 4$', '$x = 5$', '$x = 6$'], correct: 'C' }
+        ];
+
+        const hints = [
+            "**GỢI Ý 1 (Mở 3 mảnh):** Ông là nhà toán học người Đức và được mệnh danh là 'Hoàng tử Toán học' (Princeps mathematicorum).", 
+            "**GỢI Ý 2 (Mở 6 mảnh):** Ông nổi tiếng với câu chuyện giải bài toán tính tổng Cấp số Cộng từ 1 đến 100 từ khi còn nhỏ.", 
+            "**CÂU HỎI CUỐI CÙNG (Mở 9 mảnh):** Đây là ai? Mời đội đoán nhân vật để nhận thêm điểm thưởng!" 
+        ];
+
+        // Khởi tạo các biến
+        let currentPieceIndex = -1; 
+        let piecesOpened = 0;
+        let piecesState = new Array(9).fill(false); 
+        
+        // DOM Elements
+        const startButton = document.getElementById('startButton');
+        const gameWrapper = document.getElementById('game-wrapper');
+        const startArea = document.getElementById('start-area');
+        const puzzleContainer = document.getElementById('puzzle-container');
+        const questionBox = document.getElementById('question-box');
+        const qIndexDisplay = document.getElementById('current-piece-index');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const optionElements = optionsContainer.querySelectorAll('.option');
+        const resultMessage = document.getElementById('result-message');
+        const closeQuestionButton = document.getElementById('closeQuestionButton');
+        const hintMessage = document.getElementById('hint-message');
+        const showOptionsButton = document.getElementById('showOptionsButton');
+
+        // Dữ liệu Đội
+        const teams = [
+            { id: 'red', name: 'Đội Đỏ', colorClass: 'team-red', score: 0 },
+            { id: 'blue', name: 'Đội Xanh', colorClass: 'team-blue', score: 0 },
+            { id: 'green', name: 'Đội Lá', colorClass: 'team-green', score: 0 },
+            { id: 'yellow', name: 'Đội Vàng', colorClass: 'team-yellow', score: 0 },
+            { id: 'purple', name: 'Đội Tím', colorClass: 'team-purple', score: 0 },
+        ];
+        
+        // ---------------------------------------------------
+        // CHỨC NĂNG BẢNG ĐIỂM ĐỘI
+        // ---------------------------------------------------
+
+        function updateTeamScore(teamId, delta) {
+            const team = teams.find(t => t.id === teamId);
+            if (team) {
+                team.score += delta;
+                document.getElementById(`score-${teamId}`).textContent = team.score;
+            }
+        }
+
+        function renderScoreBoard() {
+            const board = document.getElementById('score-board');
+            board.innerHTML = '';
+            
+            teams.forEach(team => {
+                const item = document.createElement('div');
+                item.className = 'team-score-item ' + team.colorClass;
+                item.innerHTML = `
+                    <div class="team-info">
+                        <div class="team-name">${team.name}</div>
+                        <div class="team-score" id="score-${team.id}">${team.score}</div>
+                    </div>
+                    <div class="score-control">
+                        <button onclick="updateTeamScore('${team.id}', 10)">+</button>
+                        <button onclick="updateTeamScore('${team.id}', -5)">-</button>
+                    </div>
+                `;
+                board.appendChild(item);
+            });
+        }
+        window.updateTeamScore = updateTeamScore; 
+
+        // ---------------------------------------------------
+        // CHỨC NĂNG TRÒ CHƠI
+        // ---------------------------------------------------
+
+        function createPieces() {
+            puzzleContainer.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const piece = document.createElement('div');
+                piece.className = `puzzle-piece piece-${i}`;
+                piece.dataset.index = i;
+                piece.innerHTML = `
+                    <div class="puzzle-image"></div>
+                    <div class="piece-overlay">${i + 1}</div>
+                `;
+                piece.addEventListener('click', () => openQuestion(i));
+                puzzleContainer.appendChild(piece);
+            }
+        }
+        
+        // Mở khung câu hỏi
+        function openQuestion(index) {
+            if (piecesState[index]) return; 
+            if (questionBox.style.display !== 'none') return;
+
+            currentPieceIndex = index;
+            const currentQ = questions[index];
+
+            // RESET TRẠNG THÁI KHUNG CÂU HỎI
+            resultMessage.textContent = '';
+            closeQuestionButton.style.display = 'none';
+            hintMessage.style.display = 'none';
+            
+            // Ẩn đáp án và hiển thị nút "HIỆN ĐÁP ÁN"
+            showOptionsButton.style.display = 'block'; 
+            optionElements.forEach(el => {
+                el.style.display = 'none'; // Ẩn các lựa chọn
+                el.classList.remove('correct', 'incorrect', 'disabled');
+                el.onclick = null; // Tắt sự kiện click
+            });
+
+
+            // HIỂN THỊ CÂU HỎI
+            qIndexDisplay.textContent = index + 1;
+            questionText.innerHTML = currentQ.q;
+            
+            // Đặt nội dung cho đáp án (nhưng vẫn ẩn)
+            optionElements.forEach((el, idx) => {
+                el.querySelector('span').innerHTML = currentQ.options[idx];
+            });
+
+
+            // Yêu cầu xử lý MathJax 
+            if (window.MathJax) {
+                MathJax.typesetPromise([questionText, optionsContainer]).then(() => {
+                    questionBox.style.display = 'block'; 
+                });
+            } else {
+                questionBox.style.display = 'block';
+            }
+        }
+
+        // XỬ LÝ KHI GIÁO VIÊN BẤM "HIỆN ĐÁP ÁN"
+        showOptionsButton.addEventListener('click', () => {
+            showOptionsButton.style.display = 'none';
+            const currentQ = questions[currentPieceIndex];
+            
+            // Hiển thị các lựa chọn và bật lại sự kiện click
+            optionElements.forEach(el => {
+                el.style.display = 'block'; 
+                el.onclick = () => checkAnswer(el, currentQ.correct);
+            });
+            
+             // Yêu cầu MathJax xử lý lại các đáp án vừa hiện ra
+            if (window.MathJax) {
+                MathJax.typesetPromise([optionsContainer]);
+            }
+        });
+
+
+        // Kiểm tra đáp án
+        function checkAnswer(selectedElement, correctAnswer) {
+            const selectedAnswer = selectedElement.getAttribute('data-answer');
+            
+            if (selectedAnswer === correctAnswer) {
+                // ĐÚNG: Mở mảnh ghép
+                selectedElement.classList.add('correct');
+                resultMessage.innerHTML = 'CHÍNH XÁC! Mảnh ghép được mở. Mời giáo viên **cộng điểm (+10)** cho đội.';
+                
+                // Đánh dấu và vô hiệu hóa tất cả các nút
+                highlightAndDisableAll(correctAnswer);
+                
+                // Mở mảnh ghép
+                const pieceElement = document.querySelector(`.puzzle-piece[data-index='${currentPieceIndex}']`);
+                pieceElement.classList.add('piece-open');
+                piecesState[currentPieceIndex] = true;
+                piecesOpened++;
+                
+                // LOGIC GỢI Ý
+                if (piecesOpened === 3) {
+                    hintMessage.innerHTML = hints[0];
+                    hintMessage.style.display = 'block';
+                } else if (piecesOpened === 6) {
+                    hintMessage.innerHTML = hints[1];
+                    hintMessage.style.display = 'block';
+                } else if (piecesOpened === 9) {
+                    hintMessage.innerHTML = hints[2];
+                    hintMessage.style.display = 'block';
+                }
+
+                if (piecesOpened === 9) {
+                    closeQuestionButton.textContent = "Đoán Nhân Vật (Kết Thúc)";
+                } else {
+                    closeQuestionButton.textContent = "Đóng & Tiếp tục";
+                }
+                closeQuestionButton.style.display = 'block';
+
+            } else {
+                // SAI
+                selectedElement.classList.add('incorrect');
+                selectedElement.classList.add('disabled'); 
+                selectedElement.onclick = null; 
+                resultMessage.textContent = 'Chưa chính xác. Thử lại!';
+            }
+        }
+
+        function highlightAndDisableAll(correctAnswer) {
+             optionElements.forEach(el => {
+                el.classList.add('disabled'); 
+                el.onclick = null;
+                if (el.getAttribute('data-answer') === correctAnswer) {
+                    el.classList.add('correct'); 
+                }
+            });
+        }
+        
+        // Đóng khung câu hỏi và tiếp tục trò chơi
+        closeQuestionButton.addEventListener('click', () => {
+            questionBox.style.display = 'none';
+            hintMessage.style.display = 'none';
+            currentPieceIndex = -1;
+            if (piecesOpened === 9) {
+                alert("CHÚC MỪNG! Bức tranh đã hoàn thành. Người được tìm kiếm là CARL FRIEDRICH GAUSS.");
+                // Có thể thêm logic kết thúc game đẹp hơn ở đây
+            }
+        });
+
+        // Hàm bắt đầu game
+        startButton.addEventListener('click', () => {
+            startArea.style.display = 'none';
+            gameWrapper.style.display = 'flex';
+            createPieces();
+            renderScoreBoard(); 
+        });
+    </script>
+
+</body>
+</html>
