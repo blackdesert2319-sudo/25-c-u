@@ -107,17 +107,44 @@
             color: #333;
             max-height: 90vh;
             overflow-y: auto;
+            text-align: center;
         }
 
         .q-title { font-size: 1.2em; color: #2A52BE; margin-bottom: 5px; text-align: center; }
         .q-text { font-size: 2em; margin-bottom: 30px; font-weight: 700; text-align: center; line-height: 1.4; } 
-        .options-container { margin-top: 20px; } 
-        .option { padding: 15px; border: 2px solid #ccc; border-radius: 10px; cursor: pointer; margin-bottom: 12px; transition: background-color 0.2s; font-size: 1.2em; }
-        .option:hover:not(.disabled) { background-color: #e9e9e9; border-color: #5cb85c; }
-        .option.correct { background-color: #d4edda; border: 3px solid #5cb85c; font-weight: bold; }
-        .option.incorrect { background-color: #f8d7da; border: 3px solid #d9534f; }
-        .option.disabled { cursor: default; opacity: 0.8; }
+        
+        /* INPUT VÀ NÚT */
+        #answer-input {
+            padding: 15px;
+            width: 80%;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            font-size: 1.8em;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .input-area button {
+            background-color: #3498db;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        .input-area button:hover {
+            background-color: #2980b9;
+        }
+        
         .result-message { margin-top: 20px; font-size: 1.5em; font-weight: bold; text-align: center; }
+        .correct-answer { color: #5cb85c; }
+        .incorrect-answer { color: #d9534f; }
+        
         .hint-message { margin-top: 30px; padding: 15px; background-color: #f1c40f; color: #333; border-radius: 10px; font-weight: bold; text-align: center; font-size: 1.1em; }
         
         /* Nút Bảng điểm và điều khiển điểm */
@@ -139,13 +166,13 @@
         .button-start { padding: 15px 30px; font-size: 1.2em; cursor: pointer; background-color: #5cb85c; color: white; border: none; border-radius: 8px; transition: background-color 0.2s; margin-top: 20px;}
         .button-start:hover { background-color: #4cae4c; }
         
-        /* CSS cho nút hiện đáp án */
-        #showOptionsButton { 
-            background-color: #e67e22; 
-            margin-top: 20px;
+        /* Nút Đóng & Tiếp tục */
+        #closeQuestionButton { 
+            background-color: #5cb85c;
+            margin-top: 25px;
         }
-        #showOptionsButton:hover {
-            background-color: #d35400;
+        #closeQuestionButton:hover {
+            background-color: #4cae4c;
         }
     </style>
 </head>
@@ -153,7 +180,7 @@
 
     <div id="start-area">
         <h1>Mở Mảnh Ghép Bí Mật: Nhà Toán Học</h1>
-        <button id="startButton" class="button-start">BẮT ĐẦU TRÒ CHƠI!!</button>
+        <button id="startButton" class="button-start">BẮT ĐẦU TRÒ CHƠI!</button>
     </div>
 
     <div id="game-wrapper" style="display: none;">
@@ -173,15 +200,11 @@
             <div class="q-title">Câu hỏi Mảnh <span id="current-piece-index"></span></div>
             <div class="q-text" id="question-text"></div>
             
-            <button id="showOptionsButton" class="button-start" style="width: 100%;">HIỆN ĐÁP ÁN</button>
-
-            <div class="options-container" id="options-container">
-                <div class="option" data-answer="A">A. <span id="option-a"></span></div>
-                <div class="option" data-answer="B">B. <span id="option-b"></span></div>
-                <div class="option" data-answer="C">C. <span id="option-c"></span></div>
-                <div class="option" data-answer="D">D. <span id="option-d"></span></div>
+            <div id="input-area" class="input-area">
+                <input type="text" id="answer-input" placeholder="Nhập đáp án (Số nguyên)" pattern="-?\d*">
+                <button id="checkAnswerButton">KIỂM TRA ĐÁP ÁN</button>
             </div>
-            
+
             <div class="result-message" id="result-message"></div>
             <div class="hint-message" id="hint-message" style="display:none;"></div>
 
@@ -191,16 +214,16 @@
     
     <script>
         const questions = [
-            // 9 CÂU HỎI VỀ CSC VÀ CSN (Mức độ Vận dụng Cơ bản)
-            { q: 'Cho CSC ($u_n$) có $u_1 = 3$ và tổng $S_{10} = 165$. Số hạng thứ mười $u_{10}$ là:', options: ['27', '30', '33', '35'], correct: 'B' },
-            { q: 'Cho CSC ($u_n$) biết $u_6 = 17$ và $u_{12} = 35$. Số hạng đầu $u_1$ là:', options: ['2', '3', '5', '7'], correct: 'B' },
-            { q: 'Cho CSN ($u_n$) có các số hạng dương, biết $u_3 = 12$ và $u_5 = 48$. Công bội $q$ là:', options: ['2', '3', '4', '6'], correct: 'A' },
-            { q: 'Cho CSC ($u_n$) có $u_1 = -5$ và công sai $d = 3$. Tổng $20$ số hạng đầu $S_{20}$ là:', options: ['470', '520', '485', '505'], correct: 'D' },
-            { q: 'Cho CSN ($u_n$) có $u_1 = 2$ và công bội $q = -3$. Tổng $S_4$ là:', options: ['-40', '40', '-60', '80'], correct: 'A' },
-            { q: 'Giá trị của $x$ để ba số $2x+1$, $x+2$, và $2x-5$ theo thứ tự lập thành CSC là:', options: ['$x = 4$', '$x = 5$', '$x = 6$', '$x = 7$'], correct: 'B' },
-            { q: 'Trong CSN ($u_n$) có $u_1 = 3$ và $u_n = 192$. Nếu công bội $q = 2$, thì $n$ bằng:', options: ['6', '7', '8', '9'], correct: 'B' },
-            { q: 'Trong CSC ($u_n$) có $u_1 = 1$ và $d = 4$. Hỏi số $41$ là số hạng thứ mấy?', options: ['9', '10', '11', '12'], correct: 'C' },
-            { q: 'Giá trị dương của $x$ để ba số $x-1$, $x+1$, và $x+4$ theo thứ tự lập thành CSN là:', options: ['$x = 3$', '$x = 4$', '$x = 5$', '$x = 6$'], correct: 'C' }
+            // CÂU HỎI VÀ ĐÁP ÁN (ĐÃ CHUYỂN SANG ĐÁP ÁN SỐ NGUYÊN)
+            { q: 'Cho CSC ($u_n$) có $u_1 = 3$ và tổng $S_{10} = 165$. Số hạng thứ mười $u_{10}$ là:', correct: '30' },
+            { q: 'Cho CSC ($u_n$) biết $u_6 = 17$ và $u_{12} = 35$. Số hạng đầu $u_1$ là:', correct: '3' },
+            { q: 'Cho CSN ($u_n$) có các số hạng dương, biết $u_3 = 12$ và $u_5 = 48$. Công bội dương $q$ là:', correct: '2' },
+            { q: 'Cho CSC ($u_n$) có $u_1 = -5$ và công sai $d = 3$. Tổng $20$ số hạng đầu $S_{20}$ là:', correct: '505' },
+            { q: 'Cho CSN ($u_n$) có $u_1 = 2$ và công bội $q = -3$. Tổng $S_4$ là:', correct: '-40' },
+            { q: 'Giá trị của $x$ để ba số $2x+1$, $x+2$, và $2x-5$ theo thứ tự lập thành CSC là:', correct: '5' },
+            { q: 'Trong CSN ($u_n$) có $u_1 = 3$ và $u_n = 192$. Nếu công bội $q = 2$, thì $n$ bằng:', correct: '7' },
+            { q: 'Trong CSC ($u_n$) có $u_1 = 1$ và $d = 4$. Hỏi số $41$ là số hạng thứ mấy?', correct: '11' },
+            { q: 'Giá trị dương của $x$ để ba số $x-1$, $x+1$, và $x+4$ theo thứ tự lập thành CSN là:', correct: '5' }
         ];
 
         const hints = [
@@ -213,8 +236,8 @@
         let currentPieceIndex = -1; 
         let piecesOpened = 0;
         let piecesState = new Array(9).fill(false); 
-        let isCorrectlyAnswered = false; // Biến mới kiểm tra trả lời đúng
-
+        let answerAttempts = 0; // Số lần trả lời cho mảnh ghép hiện tại
+        
         // DOM Elements
         const startButton = document.getElementById('startButton');
         const gameWrapper = document.getElementById('game-wrapper');
@@ -223,12 +246,12 @@
         const questionBox = document.getElementById('question-box');
         const qIndexDisplay = document.getElementById('current-piece-index');
         const questionText = document.getElementById('question-text');
-        const optionsContainer = document.getElementById('options-container');
-        const optionElements = optionsContainer.querySelectorAll('.option');
+        const inputArea = document.getElementById('input-area');
+        const answerInput = document.getElementById('answer-input');
+        const checkAnswerButton = document.getElementById('checkAnswerButton');
         const resultMessage = document.getElementById('result-message');
         const closeQuestionButton = document.getElementById('closeQuestionButton');
         const hintMessage = document.getElementById('hint-message');
-        const showOptionsButton = document.getElementById('showOptionsButton');
 
         // Dữ liệu Đội
         const teams = [
@@ -287,7 +310,6 @@
                     <div class="puzzle-image"></div>
                     <div class="piece-overlay">${i + 1}</div>
                 `;
-                // Chỉ cho phép click nếu mảnh ghép chưa mở
                 piece.addEventListener('click', () => {
                     if (!piecesState[i]) {
                         openQuestion(i);
@@ -299,128 +321,83 @@
         
         // Mở khung câu hỏi
         function openQuestion(index) {
-            // Đảm bảo không cho phép mở mảnh đã mở
             if (piecesState[index]) return; 
 
             currentPieceIndex = index;
             const currentQ = questions[index];
-            isCorrectlyAnswered = false; // Reset trạng thái trả lời
+            answerAttempts = 0; // RESET số lần trả lời khi mở mảnh ghép mới
 
             // 1. HIỂN THỊ KHUNG CÂU HỎI FULL SCREEN
             questionBox.style.display = 'flex'; 
 
             // 2. RESET TRẠNG THÁI KHUNG CÂU HỎI
             resultMessage.textContent = '';
+            resultMessage.className = 'result-message'; // Reset class
             closeQuestionButton.style.display = 'none';
             hintMessage.style.display = 'none';
             
-            // 3. Ẩn đáp án và hiển thị nút "HIỆN ĐÁP ÁN"
-            showOptionsButton.style.display = 'block'; 
-            
-            // Đảm bảo ẩn các lựa chọn đáp án và reset trạng thái click
-            optionElements.forEach(el => {
-                el.style.display = 'none'; // ẨN ĐÁP ÁN
-                el.classList.remove('correct', 'incorrect', 'disabled');
-                el.onclick = null; 
-            });
+            // Hiện nút kiểm tra và cho phép nhập
+            inputArea.style.display = 'block';
+            checkAnswerButton.style.display = 'block';
+            answerInput.value = '';
+            answerInput.readOnly = false; 
 
-
-            // 4. HIỂN THỊ CÂU HỎI
+            // 3. HIỂN THỊ CÂU HỎI
             qIndexDisplay.textContent = index + 1;
             questionText.innerHTML = currentQ.q;
             
-            // Đặt nội dung cho đáp án (nhưng vẫn ẩn)
-            optionElements.forEach((el, idx) => {
-                el.querySelector('span').innerHTML = currentQ.options[idx];
-            });
-
-
-            // 5. Yêu cầu xử lý MathJax cho câu hỏi 
+            // 4. Yêu cầu xử lý MathJax cho câu hỏi 
             if (window.MathJax) {
                 MathJax.typesetPromise([questionText]);
             }
         }
 
-        // XỬ LÝ KHI GIÁO VIÊN BẤM "HIỆN ĐÁP ÁN"
-        showOptionsButton.addEventListener('click', () => {
-            showOptionsButton.style.display = 'none';
-            const currentQ = questions[currentPieceIndex];
+        // XỬ LÝ KHI BẤM "KIỂM TRA ĐÁP ÁN"
+        checkAnswerButton.addEventListener('click', () => {
+            const index = currentPieceIndex;
+            if (index === -1) return;
+
+            const currentQ = questions[index];
+            // Chuẩn hóa đáp án (loại bỏ khoảng trắng, chuyển về string)
+            const userAnswer = answerInput.value.trim();
+            const correctAnswer = currentQ.correct.trim(); 
             
-            // Hiển thị các lựa chọn và bật lại sự kiện click
-            optionElements.forEach(el => {
-                el.style.display = 'block'; // HIỆN ĐÁP ÁN
-                el.onclick = () => checkAnswer(el, currentQ.correct);
-            });
-            
-             // Yêu cầu MathJax xử lý lại các đáp án vừa hiện ra
-            if (window.MathJax) {
-                MathJax.typesetPromise([optionsContainer]);
-            }
+            checkAnswer(userAnswer, correctAnswer);
         });
 
 
-        // Kiểm tra đáp án
-        function checkAnswer(selectedElement, correctAnswer) {
-            const selectedAnswer = selectedElement.getAttribute('data-answer');
+        // Kiểm tra đáp án (Logic Tự luận)
+        function checkAnswer(userAnswer, correctAnswer) {
             
-            // Vô hiệu hóa tất cả các lựa chọn để đội không thể bấm tiếp sau khi chọn
-            disableAllOptions();
-            
-            if (selectedAnswer === correctAnswer) {
-                // ĐÚNG:
-                isCorrectlyAnswered = true; // Đặt trạng thái đúng
-                selectedElement.classList.add('correct');
-                resultMessage.innerHTML = 'CHÍNH XÁC! Mảnh ghép sẽ được mở. Mời giáo viên **cộng điểm (+10)** cho đội.';
-                
-                // Hiển thị nút Đóng/Đoán nhân vật
-                if (piecesOpened === 8) { // Sẽ mở mảnh thứ 9
-                    closeQuestionButton.textContent = "Đoán Nhân Vật (Kết Thúc)";
-                } else {
-                    closeQuestionButton.textContent = "Đóng & Tiếp tục";
-                }
-                closeQuestionButton.style.display = 'block';
-
-
-            } else {
-                // SAI:
-                isCorrectlyAnswered = false; // Trạng thái sai
-                selectedElement.classList.add('incorrect');
-                resultMessage.innerHTML = 'CHƯA CHÍNH XÁC! Mảnh ghép chưa được mở. Đội khác có thể chọn lại mảnh này.';
-                
-                // Đánh dấu đáp án đúng
-                highlightCorrectAnswer(correctAnswer);
-                
-                // Hiển thị nút Đóng/Tiếp tục (Không mở mảnh)
-                closeQuestionButton.textContent = "Đóng & Tiếp tục";
-                closeQuestionButton.style.display = 'block';
+            // Nếu người dùng chưa nhập gì, yêu cầu nhập và cho phép thử lại
+            if (userAnswer === '') {
+                resultMessage.innerHTML = 'Vui lòng nhập đáp án.';
+                resultMessage.classList.remove('correct-answer');
+                resultMessage.classList.add('incorrect-answer');
+                answerInput.value = ''; // Xóa input
+                return;
             }
-        }
-        
-        function disableAllOptions() {
-             optionElements.forEach(el => {
-                el.classList.add('disabled'); 
-                el.onclick = null;
-            });
-        }
 
-        function highlightCorrectAnswer(correctAnswer) {
-             optionElements.forEach(el => {
-                if (el.getAttribute('data-answer') === correctAnswer) {
-                    el.classList.add('correct'); 
-                }
-            });
-        }
-        
-        // Đóng khung câu hỏi và tiếp tục trò chơi
-        closeQuestionButton.addEventListener('click', () => {
-            if (isCorrectlyAnswered) {
-                // Xử lý khi trả lời đúng
+            answerAttempts++; // Tăng số lần thử sau mỗi lần kiểm tra
+
+            if (userAnswer === correctAnswer) {
+                // TRẢ LỜI ĐÚNG:
+                
+                // Vô hiệu hóa input và nút kiểm tra
+                answerInput.readOnly = true; 
+                checkAnswerButton.style.display = 'none';
+
+                // Mở mảnh ghép và lưu trạng thái
                 const pieceElement = document.querySelector(`.puzzle-piece[data-index='${currentPieceIndex}']`);
-                pieceElement.classList.add('piece-open');
-                piecesState[currentPieceIndex] = true;
-                piecesOpened++;
+                if (!piecesState[currentPieceIndex]) {
+                    pieceElement.classList.add('piece-open');
+                    piecesState[currentPieceIndex] = true;
+                    piecesOpened++;
+                }
 
-                // LOGIC GỢI Ý
+                resultMessage.innerHTML = '<span class="correct-answer">CHÍNH XÁC!</span> Mảnh ghép được mở. Mời giáo viên **cộng điểm (+10)** cho đội.';
+                
+                // LOGIC GỢI Ý (hiện sau 3 mảnh)
                 if (piecesOpened === 3) {
                     hintMessage.innerHTML = hints[0];
                     hintMessage.style.display = 'block';
@@ -431,15 +408,55 @@
                     hintMessage.innerHTML = hints[2];
                     hintMessage.style.display = 'block';
                 }
-                
-                if (piecesOpened === 9) {
-                    alert("CHÚC MỪNG! Bức tranh đã hoàn thành. Người được tìm kiếm là CARL FRIEDRICH GAUSS.");
-                }
 
+                // Nút Đóng
+                if (piecesOpened === 9) {
+                    closeQuestionButton.textContent = "Đoán Nhân Vật (Kết Thúc)";
+                } else {
+                    closeQuestionButton.textContent = "Đóng & Tiếp tục";
+                }
+                closeQuestionButton.style.display = 'block';
+
+
+            } else {
+                // TRẢ LỜI SAI:
+                answerInput.value = ''; // Xóa đáp án sai
+
+                if (answerAttempts < 2) {
+                    // SAI LẦN 1: Cho phép thử lại
+                    resultMessage.innerHTML = '<span class="incorrect-answer">CHƯA CHÍNH XÁC!</span> Vui lòng nhập lại đáp án.';
+                    
+                    // Cho phép nhập tiếp
+                    answerInput.readOnly = false; 
+                    checkAnswerButton.style.display = 'block';
+
+                } else {
+                    // SAI LẦN 2 (HOẶC LỚN HƠN): Về giao diện chính
+                    resultMessage.innerHTML = '<span class="incorrect-answer">CHƯA CHÍNH XÁC!</span> Đã hết lượt trả lời. Mảnh ghép chưa được mở. Đội khác có thể chọn lại mảnh này.';
+                    
+                    // Vô hiệu hóa input và nút kiểm tra
+                    answerInput.readOnly = true; 
+                    checkAnswerButton.style.display = 'none';
+
+                    // Hiện nút Đóng
+                    closeQuestionButton.textContent = "Đóng & Tiếp tục";
+                    closeQuestionButton.style.display = 'block';
+                }
             }
+        }
+        
+        // Đóng khung câu hỏi và tiếp tục trò chơi
+        closeQuestionButton.addEventListener('click', () => {
+            // Kiểm tra xem mảnh ghép có được mở (trả lời đúng) hay không
+            const isPieceOpened = piecesState[currentPieceIndex];
+            
             // Dù đúng hay sai, đóng modal để quay lại màn hình chính
             questionBox.style.display = 'none';
             currentPieceIndex = -1;
+            
+            if (isPieceOpened && piecesOpened === 9) {
+                alert("CHÚC MỪNG! Bức tranh đã hoàn thành. Người được tìm kiếm là CARL FRIEDRICH GAUSS.");
+            }
         });
 
         // Hàm bắt đầu game
@@ -453,4 +470,3 @@
 
 </body>
 </html>
-
