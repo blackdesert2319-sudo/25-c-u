@@ -48,6 +48,7 @@
             left: 0;
             opacity: 0;
             transition: opacity 0.5s;
+            /* Bức tranh chân dung Gauss */
             background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Carl_Friedrich_Gauss_1840.jpg/450px-Carl_Friedrich_Gauss_1840.jpg'); 
             background-size: 450px 450px;
         }
@@ -71,6 +72,7 @@
         .piece-open .piece-overlay { opacity: 0; pointer-events: none; }
         .piece-open .puzzle-image { opacity: 1; }
 
+        /* Vị trí ảnh nền cho từng mảnh */
         .piece-0 .puzzle-image { background-position: 0 0; }
         .piece-1 .puzzle-image { background-position: -150px 0; }
         .piece-2 .puzzle-image { background-position: -300px 0; }
@@ -93,8 +95,8 @@
             display: none;
         }
         .q-title { font-size: 1.1em; color: #2A52BE; margin-bottom: 5px; }
-        .q-text { font-size: 1.6em; margin-bottom: 25px; font-weight: 500; text-align: center; } /* Căn giữa câu hỏi */
-        .options-container { margin-top: 15px; } /* Thêm khoảng cách sau nút Hiện Đáp án */
+        .q-text { font-size: 1.6em; margin-bottom: 25px; font-weight: 500; text-align: center; } 
+        .options-container { margin-top: 15px; } 
         .option { padding: 12px; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; margin-bottom: 8px; transition: background-color 0.2s; font-size: 1.1em; }
         .option:hover:not(.disabled) { background-color: #e9e9e9; }
         .option.correct { background-color: #d4edda; border: 2px solid #5cb85c; }
@@ -176,7 +178,7 @@
     
     <script>
         const questions = [
-            // CÂU HỎI MỚI (Mức độ Vận dụng Cơ bản)
+            // 9 CÂU HỎI VỀ CSC VÀ CSN (Mức độ Vận dụng Cơ bản)
             { q: 'Cho CSC ($u_n$) có $u_1 = 3$ và tổng $S_{10} = 165$. Số hạng thứ mười $u_{10}$ là:', options: ['27', '30', '33', '35'], correct: 'B' },
             { q: 'Cho CSC ($u_n$) biết $u_6 = 17$ và $u_{12} = 35$. Số hạng đầu $u_1$ là:', options: ['2', '3', '5', '7'], correct: 'B' },
             { q: 'Cho CSN ($u_n$) có các số hạng dương, biết $u_3 = 12$ và $u_5 = 48$. Công bội $q$ là:', options: ['2', '3', '4', '6'], correct: 'A' },
@@ -291,10 +293,12 @@
             
             // Ẩn đáp án và hiển thị nút "HIỆN ĐÁP ÁN"
             showOptionsButton.style.display = 'block'; 
+            
+            // Đảm bảo ẩn các lựa chọn đáp án và reset trạng thái click
             optionElements.forEach(el => {
-                el.style.display = 'none'; // Ẩn các lựa chọn
+                el.style.display = 'none'; 
                 el.classList.remove('correct', 'incorrect', 'disabled');
-                el.onclick = null; // Tắt sự kiện click
+                el.onclick = null; 
             });
 
 
@@ -308,7 +312,7 @@
             });
 
 
-            // Yêu cầu xử lý MathJax 
+            // Yêu cầu xử lý MathJax, sau đó hiển thị khung
             if (window.MathJax) {
                 MathJax.typesetPromise([questionText, optionsContainer]).then(() => {
                     questionBox.style.display = 'block'; 
@@ -399,7 +403,6 @@
             currentPieceIndex = -1;
             if (piecesOpened === 9) {
                 alert("CHÚC MỪNG! Bức tranh đã hoàn thành. Người được tìm kiếm là CARL FRIEDRICH GAUSS.");
-                // Có thể thêm logic kết thúc game đẹp hơn ở đây
             }
         });
 
