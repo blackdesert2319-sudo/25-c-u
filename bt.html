@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trò chơi Trắc nghiệm Cấp số Cộng & Cấp số Nhân</title>
+    
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']] // Nhận dạng công thức nằm trong $...$
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <style>
+        body { font-family: 'Arial', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background-color: #f4f7f6; }
+        .game-container { background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); width: 90%; max-width: 700px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 15px; }
+        .timer, .score { font-size: 1.5em; font-weight: bold; }
+        .timer { color: #d9534f; }
+        .score { color: #5cb85c; }
+        .question-box { margin-bottom: 25px; }
+        .question-number { font-size: 1.1em; color: #2A52BE; margin-bottom: 5px; }
+        .question-text { font-size: 1.3em; margin-bottom: 20px; font-weight: 500; }
+        .options-container { display: flex; flex-direction: column; gap: 10px; }
+        .option { padding: 12px; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; transition: background-color 0.2s, border-color 0.2s; font-size: 1.1em; }
+        .option:hover { background-color: #e9e9e9; border-color: #aaa; }
+        .option.correct { background-color: #d4edda; border-color: #c3e6cb; }
+        .option.incorrect { background-color: #f8d7da; border-color: #f5c6cb; }
+        .option.disabled { cursor: default; }
+        .button-start { padding: 15px 30px; font-size: 1.2em; cursor: pointer; background-color: #5cb85c; color: white; border: none; border-radius: 8px; transition: background-color 0.2s; }
+        .button-start:hover { background-color: #4cae4c; }
+        .result-message { margin-top: 15px; font-size: 1.2em; font-weight: bold; }
+        .math { font-style: italic; font-weight: 600; }
+        #game-content { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>Trò Chơi: Cấp Số Cộng & Cấp Số Nhân</h1>
+        <button id="startButton" class="button-start">BẮT ĐẦU THI KIẾN THỨC!</button>
+        
+        <div id="game-content">
+            <div class="header">
+                <div class="timer">Thời gian: <span id="time-left">10</span>s</div>
+                <div class="score">Điểm: <span id="current-score">0</span></div>
+            </div>
+
+            <div class="question-box">
+                <div class="question-number">Câu hỏi <span id="current-q-number">1</span>/25</div>
+                <div class="question-text" id="question-text"></div>
+            </div>
+
+            <div class="options-container" id="options-container">
+                <div class="option" data-answer="A">A. <span id="option-a"></span></div>
+                <div class="option" data-answer="B">B. <span id="option-b"></span></div>
+                <div class="option" data-answer="C">C. <span id="option-c"></span></div>
+                <div class="option" data-answer="D">D. <span id="option-d"></span></div>
+            </div>
+
+            <div class="result-message" id="result-message"></div>
+        </div>
+
+        <div id="final-results" style="display: none; text-align: center; margin-top: 30px;">
+            <h2>KẾT THÚC TRÒ CHƠI!</h2>
+            <p style="font-size: 1.5em;">Tổng điểm của em là: <span id="final-score" class="score" style="font-size: 2em;">0</span></p>
+            <button class="button-start" onclick="location.reload()">Chơi Lại</button>
+        </div>
+    </div>
+
+    <script>
+        // MẢNG CHỨA 25 CÂU HỎI (Đã kiểm tra và sửa lỗi cú pháp LaTeX)
+        const questions = [
+            // 15 CÂU CƠ BẢN (A)
+            { q: 'Cho CSC ($u_n$) có $u_1 = 5$, $d = -3$. Số hạng thứ tư $u_4$ là:', options: ['4', '-4', '-12', '2'], correct: 'B' },
+            { q: 'Cho CSC ($u_n$) có $u_5 = 18$, $u_{10} = 38$. Công sai $d$ là:', options: ['2', '3', '4', '5'], correct: 'C' },
+            { q: 'Cho CSC ($u_n$) có $u_1 = 2$, $d = 3$. Tổng $S_{10}$ là:', options: ['155', '310', '150', '95'], correct: 'A' },
+            { q: 'CSC ($u_n$) được định nghĩa bởi hệ thức truy hồi nào sau đây:', options: ['$u_n = u_{n-1} + n$', '$u_n = u_{n-1} \cdot 2$', '$u_n = u_{n-1} + 5$', '$u_n = u_1 + (n-1)d$'], correct: 'C' },
+            { q: 'Cho CSC ($u_n$) có $u_1 = 5$, $d = 2$. Để tổng $S_n = 480$, số lượng số hạng $n$ là:', options: ['15', '18', '20', '24'], correct: 'C' },
+            { q: 'Cho CSN ($u_n$) có $u_1 = -4$, $q = 3$. Số hạng thứ năm $u_5$ là:', options: ['-108', '-324', '324', '-400'], correct: 'B' },
+            { q: 'Công thức tính tổng $n$ số hạng đầu tiên của CSC ($u_n$) là:', options: ['$S_n = \\frac{n(u_1 + u_n)}{2}$', '$S_n = u_1 \\frac{1 - q^n}{1 - q}$', '$S_n = u_1 + (n-1)d$', '$S_n = n(u_1 + u_n)$'], correct: 'A' },
+            { q: 'Cho CSN ($u_n$) có $u_4 = 54$, $q = 3$. Số hạng đầu tiên $u_1$ là:', options: ['2', '6', '18', '162'], correct: 'A' },
+            { q: 'Số hạng tổng quát $u_n$ của một CSN ($n \\ge 1$) được xác định bởi công thức nào:', options: ['$u_n = u_1 + (n-1)q$', '$u_n = u_1 \\cdot q^{n-1}$', '$u_n = u_1 \\cdot q^n$', '$u_n = u_1 \\cdot q + u_{n-1}$'], correct: 'B' },
+            { q: 'Cho CSN ($u_n$) có $u_1 = 2$, $q = -3$. Tính tổng $S_4$:', options: ['-40', '122', '40', '-160'], correct: 'A' },
+            { q: 'Công thức tính tổng $n$ số hạng đầu tiên của CSC theo $u_1$ và $d$ là:', options: ['$S_n = \\frac{n}{2}[2u_1 + (n-1)d]$', '$S_n = n \\cdot u_n$', '$S_n = \\frac{n}{2}[u_1 + d]$', '$S_n = u_1 \\cdot q^{n-1}$'], correct: 'A' },
+            { q: 'Công thức tính tổng $n$ số hạng đầu tiên của CSN ($q \\ne 1$) là:', options: ['$S_n = u_1 (1 - q^n)$', '$S_n = u_1 + u_n$', '$S_n = u_1 \\frac{1 - q^n}{1 - q}$', '$S_n = \\frac{n}{2}[2u_1 + (n-1)q]$'], correct: 'C' },
+            { q: 'Cho CSC ($u_n$) có $u_1 = 10$, $S_{10} = 205$. Hãy tìm $u_{10}$:', options: ['31', '21', '41', '35'], correct: 'A' },
+            { q: 'Cho CSC ($u_n$) có $u_1 = -5$, $d = 4$. Công thức tính tổng $S_n$ là:', options: ['$S_n = n(2n - 7)$', '$S_n = n(4n - 9)$', '$S_n = 2n^2 - 5n$', '$S_n = n(4n - 10)$'], correct: 'A' },
+            { q: 'CSN ($u_n$) được định nghĩa bởi hệ thức truy hồi nào sau đây:', options: ['$u_n = u_{n-1} + 3$', '$u_n = u_{n-1} + u_{n-2}$', '$u_n = 2u_{n-1}$', '$u_n = u_1 + 2^{n-1}$'], correct: 'C' },
+
+            // 10 CÂU NHẬN DIỆN VÀ VIẾT SỐ HẠNG (B)
+            { q: 'Dãy số nào sau đây là **cấp số cộng**?', options: ['1; 2; 4; 8', '1; 3; 5; 7', '1; -1; 1; -1', '1; 4; 9; 16'], correct: 'B' },
+            { q: 'Dãy số nào sau đây là **cấp số nhân**?', options: ['2; 5; 8; 11', '10; 5; 2.5; 1.25', '1; 1; 2; 3; 5', '1; 3; 5; 7'], correct: 'B' },
+            { q: 'Cho CSC ($u_n$) có $u_1 = 10$, $d = -2$. Ba số hạng đầu tiên là:', options: ['10; 12; 14', '10; 8; 6', '10; -20; 40', '10; 5; 0'], correct: 'B' },
+            { q: 'Cho CSN ($u_n$) có $u_1 = 16$, $q = 0.5$. Ba số hạng đầu tiên là:', options: ['16; 8; 4', '16; 16.5; 17', '16; 32; 64', '16; 4; 1'], correct: 'A' },
+            { q: 'Dãy số ($u_n$) với $u_n = 3n + 1$. Số hạng $u_3$ là:', options: ['7', '10', '4', '13'], correct: 'B' },
+            { q: 'Dãy số ($u_n$) với $u_n = 2^{n+1}$. Số hạng $u_3$ là:', options: ['8', '16', '32', '10'], correct: 'B' },
+            { q: 'Dãy số 5; 5; 5; 5 là:', options: ['Chỉ là cấp số cộng', 'Chỉ là cấp số nhân', 'Vừa là CSC, vừa là CSN', 'Không phải CSC, không phải CSN'], correct: 'C' },
+            { q: 'Cho CSC ($u_n$) có $u_1 = 5$. Biết $u_3 = 11$. Công sai $d$ là:', options: ['3', '6', '5.5', '1'], correct: 'A' },
+            { q: 'Cho CSN ($u_n$) có $u_1 = 2$. Biết $u_3 = 18$ ($q > 0$). Công bội $q$ là:', options: ['9', '4', '3', '6'], correct: 'C' },
+            { q: 'Dãy số nào **không phải** CSC cũng **không phải** CSN?', options: ['2; 4; 6; 8', '2; 6; 18; 54', '1; 4; 2; 5', '10; 10; 10; 10'], correct: 'C' }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timeLeft = 10;
+        let timerInterval;
+
+        const startButton = document.getElementById('startButton');
+        const gameContent = document.getElementById('game-content');
+        const questionText = document.getElementById('question-text');
+        const qNumber = document.getElementById('current-q-number');
+        const scoreDisplay = document.getElementById('current-score');
+        const timeLeftDisplay = document.getElementById('time-left');
+        const optionsContainer = document.getElementById('options-container');
+        const resultMessage = document.getElementById('result-message');
+        const finalResults = document.getElementById('final-results');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const optionElements = optionsContainer.querySelectorAll('.option');
+
+        // Hàm bắt đầu game
+        startButton.addEventListener('click', () => {
+            startButton.style.display = 'none';
+            gameContent.style.display = 'block';
+            loadQuestion();
+        });
+
+        // Hàm tải câu hỏi mới
+        function loadQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                endGame();
+                return;
+            }
+
+            const currentQ = questions[currentQuestionIndex];
+            
+            // Reset trạng thái
+            clearInterval(timerInterval);
+            resultMessage.textContent = '';
+            timeLeft = 10;
+            timeLeftDisplay.textContent = timeLeft;
+
+            // Hiển thị câu hỏi
+            qNumber.textContent = currentQuestionIndex + 1;
+            questionText.innerHTML = currentQ.q;
+            
+            // Hiển thị các phương án
+            const optionLabels = ['A', 'B', 'C', 'D'];
+            optionElements.forEach((el, index) => {
+                el.classList.remove('correct', 'incorrect', 'disabled');
+                el.querySelector('span').innerHTML = currentQ.options[index];
+                el.onclick = () => checkAnswer(el, currentQ.correct);
+            });
+
+            // Bắt đầu đếm ngược
+            startTimer();
+        }
+
+        // Hàm đếm ngược thời gian
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timeLeftDisplay.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeOut();
+                }
+            }, 1000);
+        }
+
+        // Xử lý hết giờ
+        function handleTimeOut() {
+            resultMessage.textContent = 'Hết giờ! Câu trả lời đúng là ' + questions[currentQuestionIndex].correct + '.';
+            disableOptions(questions[currentQuestionIndex].correct);
+            setTimeout(() => {
+                currentQuestionIndex++;
+                loadQuestion();
+            }, 2000);
+        }
+
+        // Hàm kiểm tra đáp án
+        function checkAnswer(selectedElement, correctAnswer) {
+            clearInterval(timerInterval);
+            disableOptions(correctAnswer);
+
+            const selectedAnswer = selectedElement.getAttribute('data-answer');
+            
+            if (selectedAnswer === correctAnswer) {
+                selectedElement.classList.add('correct');
+                resultMessage.textContent = 'Chính xác! (+10 điểm)';
+                score += 10;
+                scoreDisplay.textContent = score;
+            } else {
+                selectedElement.classList.add('incorrect');
+                resultMessage.textContent = 'Chưa chính xác. Đáp án đúng là ' + correctAnswer + '.';
+            }
+
+            // Chuyển sang câu hỏi tiếp theo sau 2 giây
+            setTimeout(() => {
+                currentQuestionIndex++;
+                loadQuestion();
+            }, 2000);
+        }
+
+        // Hàm vô hiệu hóa các lựa chọn
+        function disableOptions(correctAnswer) {
+            optionElements.forEach(el => {
+                el.classList.add('disabled');
+                el.onclick = null;
+                if (el.getAttribute('data-answer') === correctAnswer) {
+                    el.classList.add('correct');
+                }
+            });
+        }
+
+        // Hàm kết thúc trò chơi
+        function endGame() {
+            gameContent.style.display = 'none';
+            finalResults.style.display = 'block';
+            finalScoreDisplay.textContent = score;
+        }
+
+        // Tự động thêm style cho công thức toán học và kích hoạt MathJax
+        function renderMath() {
+            // Thay thế $...$ thành \textContent để MathJax nhận
+            questions.forEach(q => {
+                q.q = q.q.replace(/(\$.*?\$)/g, '<span class="math">$1</span>');
+                q.options = q.options.map(opt => opt.replace(/(\$.*?\$)/g, '<span class="math">$1</span>'));
+            });
+            // Kích hoạt MathJax sau khi DOM được tải
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        }
+        
+        // Render MathJax khi trang tải xong
+        document.addEventListener('DOMContentLoaded', renderMath);
+
+    </script>
+
+</body>
+</html>
