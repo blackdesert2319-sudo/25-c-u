@@ -5,18 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trò chơi Trắc nghiệm Cấp số Cộng & Cấp số Nhân</title>
     
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>
+        // Cấu hình MathJax trước khi tải thư viện
         window.MathJax = {
             tex: {
                 inlineMath: [['$', '$'], ['\\(', '\\)']] // Nhận dạng công thức nằm trong $...$
             },
-            svg: {
-                fontCache: 'global'
+            startup: {
+                // Đảm bảo MathJax không tự động chạy typeset (xử lý công thức) khi tải trang
+                // Mà chỉ chạy khi hàm typesetPromise() được gọi trong JavaScript
+                typeset: false 
             }
         };
     </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
         body { font-family: 'Arial', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background-color: #f4f7f6; }
         .game-container { background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); width: 90%; max-width: 700px; }
@@ -75,7 +77,6 @@
     </div>
 
     <script>
-        // MẢNG CHỨA 25 CÂU HỎI (Đã kiểm tra và sửa lỗi cú pháp LaTeX)
         const questions = [
             // 15 CÂU CƠ BẢN (A)
             { q: 'Cho CSC ($u_n$) có $u_1 = 5$, $d = -3$. Số hạng thứ tư $u_4$ là:', options: ['4', '-4', '-12', '2'], correct: 'B' },
@@ -124,12 +125,30 @@
         const finalScoreDisplay = document.getElementById('final-score');
         const optionElements = optionsContainer.querySelectorAll('.option');
 
-        // Hàm bắt đầu game
-        startButton.addEventListener('click', () => {
-            startButton.style.display = 'none';
-            gameContent.style.display = 'block';
-            loadQuestion();
-        });
+        // Hàm xử lý việc hiển thị công thức toán học
+        function renderMath() {
+            // Tải lại các phần tử DOM sau khi MathJax Typeset xong
+            const currentQ = questions[currentQuestionIndex];
+            
+            // Đặt nội dung (đã có LaTeX) vào các phần tử
+            questionText.innerHTML = currentQ.q;
+            const optionLabels = ['A', 'B', 'C', 'D'];
+            optionElements.forEach((el, index) => {
+                el.querySelector('span').innerHTML = currentQ.options[index];
+            });
+
+            // Yêu cầu MathJax xử lý các công thức LaTeX vừa được đưa vào DOM
+            if (window.MathJax) {
+                // Sử dụng typesetPromise để đảm bảo việc xử lý là bất đồng bộ và an toàn
+                MathJax.typesetPromise([questionText, optionsContainer]).then(() => {
+                    // Sau khi xử lý xong, mới bắt đầu đếm ngược
+                    startTimer(); 
+                });
+            } else {
+                 // Nếu MathJax không tải được, vẫn bắt đầu game (nhưng công thức sẽ lỗi)
+                startTimer(); 
+            }
+        }
 
         // Hàm tải câu hỏi mới
         function loadQuestion() {
@@ -146,23 +165,28 @@
             timeLeft = 10;
             timeLeftDisplay.textContent = timeLeft;
 
-            // Hiển thị câu hỏi
+            // Hiển thị số câu hỏi
             qNumber.textContent = currentQuestionIndex + 1;
-            questionText.innerHTML = currentQ.q;
             
-            // Hiển thị các phương án
-            const optionLabels = ['A', 'B', 'C', 'D'];
-            optionElements.forEach((el, index) => {
+            // Cấu hình các nút đáp án
+            optionElements.forEach((el) => {
                 el.classList.remove('correct', 'incorrect', 'disabled');
-                el.querySelector('span').innerHTML = currentQ.options[index];
                 el.onclick = () => checkAnswer(el, currentQ.correct);
             });
-
-            // Bắt đầu đếm ngược
-            startTimer();
+            
+            // Yêu cầu xử lý và hiển thị công thức toán (renderMath sẽ tự gọi startTimer sau)
+            renderMath();
         }
 
-        // Hàm đếm ngược thời gian
+
+        // Hàm bắt đầu game
+        startButton.addEventListener('click', () => {
+            startButton.style.display = 'none';
+            gameContent.style.display = 'block';
+            loadQuestion();
+        });
+
+        // Hàm đếm ngược thời gian (Được gọi sau khi renderMath thành công)
         function startTimer() {
             timerInterval = setInterval(() => {
                 timeLeft--;
@@ -225,22 +249,6 @@
             finalResults.style.display = 'block';
             finalScoreDisplay.textContent = score;
         }
-
-        // Tự động thêm style cho công thức toán học và kích hoạt MathJax
-        function renderMath() {
-            // Thay thế $...$ thành \textContent để MathJax nhận
-            questions.forEach(q => {
-                q.q = q.q.replace(/(\$.*?\$)/g, '<span class="math">$1</span>');
-                q.options = q.options.map(opt => opt.replace(/(\$.*?\$)/g, '<span class="math">$1</span>'));
-            });
-            // Kích hoạt MathJax sau khi DOM được tải
-            if (window.MathJax) {
-                MathJax.typesetPromise();
-            }
-        }
-        
-        // Render MathJax khi trang tải xong
-        document.addEventListener('DOMContentLoaded', renderMath);
 
     </script>
 
