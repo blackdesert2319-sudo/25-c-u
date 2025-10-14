@@ -13,10 +13,24 @@
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
-        body { font-family: 'Arial', sans-serif; display: flex; align-items: flex-start; justify-content: center; min-height: 100vh; background-color: #282c34; padding: 20px; color: #fff; }
+        body { 
+            font-family: 'Arial', sans-serif; 
+            display: flex; 
+            flex-direction: column; /* Đổi thành cột để chứa các phần tử phụ */
+            align-items: center; 
+            justify-content: flex-start; 
+            min-height: 100vh; 
+            background-color: #282c34; 
+            padding: 20px; 
+            color: #fff; 
+        }
         
         /* KHUNG CHÍNH (CONTAINER) */
-        #game-wrapper { display: flex; align-items: flex-start; }
+        #game-wrapper { 
+            display: flex; 
+            align-items: flex-start; 
+            margin-top: 20px;
+        }
         
         /* KHUNG ẢNH VÀ CÂU HỎI */
         .puzzle-container {
@@ -174,6 +188,48 @@
         #closeQuestionButton:hover {
             background-color: #4cae4c;
         }
+
+        /* KHUNG ĐOÁN CUỐI CÙNG */
+        #final-guess-area {
+            margin-top: 20px;
+            padding: 15px 30px;
+            background-color: #3c414d;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 750px; /* Bằng tổng puzzle-container + score-board */
+            display: none; /* Ẩn ban đầu */
+        }
+
+        #final-guess-area span {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #f1c40f;
+        }
+
+        #reveal-button {
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            font-size: 1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #reveal-button:hover {
+            background-color: #c0392b;
+        }
+        
+        #final-answer {
+            font-size: 1.8em;
+            color: #2ecc71;
+            font-weight: bold;
+            display: none; /* Ẩn đáp án cuối cùng */
+        }
     </style>
 </head>
 <body>
@@ -181,6 +237,14 @@
     <div id="start-area">
         <h1>Mở Mảnh Ghép Bí Mật: Nhà Toán Học</h1>
         <button id="startButton" class="button-start">BẮT ĐẦU TRÒ CHƠI!</button>
+    </div>
+
+    <div id="game-controls-container" style="display: none; width: 750px; text-align: center;">
+        <div id="final-guess-area">
+            <span id="guess-prompt">🌟 MỜI CÁC ĐỘI ĐOÁN TÊN NHÀ TOÁN HỌC!</span>
+            <span id="final-answer">CARL FRIEDRICH GAUSS</span>
+            <button id="reveal-button">TIẾT LỘ ĐÁP ÁN</button>
+        </div>
     </div>
 
     <div id="game-wrapper" style="display: none;">
@@ -214,17 +278,17 @@
     
     <script>
         const questions = [
-            // CÂU HỎI VÀ ĐÁP ÁN (ĐÃ CẬP NHẬT ĐÁP ÁN CHÍNH XÁC THEO YÊU CẦU CỦA THẦY)
+            // CÂU HỎI VÀ ĐÁP ÁN 
             { q: 'Cho CSC ($u_n$) có $u_1 = 3$ và tổng $S_{10} = 165$. Số hạng thứ mười $u_{10}$ là:', correct: '30' },
             { q: 'Cho CSC ($u_n$) biết $u_6 = 17$ và $u_{12} = 35$. Số hạng đầu $u_1$ là:', correct: '2' }, 
             { q: 'Cho CSN ($u_n$) có các số hạng dương, biết $u_3 = 12$ và $u_5 = 48$. Công bội dương $q$ là:', correct: '2' },
             { q: 'Cho CSC ($u_n$) có $u_1 = -5$ và công sai $d = 3$. Tổng $20$ số hạng đầu $S_{20}$ là:', correct: '470' }, 
-            { q: 'Giá trị dương của $x$ để ba số $x-1$, $x+1$, và $x+4$ theo thứ tự lập thành CSN là:', correct: '5' }
+            { q: 'Cho CSN ($u_n$) có $u_1 = 2$ và công bội $q = -3$. Tổng $S_4$ là:', correct: '-40' },
             { q: 'Giá trị của $x$ để ba số $2x+1$, $x+2$, và $2x-5$ theo thứ tự lập thành CSC là:', correct: '4' }, 
             { q: 'Trong CSN ($u_n$) có $u_1 = 3$ và $u_n = 192$. Nếu công bội $q = 2$, thì $n$ bằng:', correct: '7' },
             { q: 'Trong CSC ($u_n$) có $u_1 = 1$ và $d = 4$. Hỏi số $41$ là số hạng thứ mấy?', correct: '11' },
-            { q: 'Cho CSN ($u_n$) có $u_1 = 2$ và công bội $q = -3$. Tổng $S_4$ là:', correct: '-40' },
-            ];
+            { q: 'Giá trị dương của $x$ để ba số $x-1$, $x+1$, và $x+4$ theo thứ tự lập thành CSN là:', correct: '5' }
+        ];
 
         const hints = [
             "**GỢI Ý 1 (Mở 3 mảnh):** Ông là nhà toán học người Đức và được mệnh danh là 'Hoàng tử Toán học' (Princeps mathematicorum).", 
@@ -252,6 +316,12 @@
         const resultMessage = document.getElementById('result-message');
         const closeQuestionButton = document.getElementById('closeQuestionButton');
         const hintMessage = document.getElementById('hint-message');
+        
+        // DOM cho phần đoán cuối cùng
+        const finalGuessArea = document.getElementById('final-guess-area');
+        const guessPrompt = document.getElementById('guess-prompt');
+        const finalAnswer = document.getElementById('final-answer');
+        const revealButton = document.getElementById('reveal-button');
 
         // Dữ liệu Đội
         const teams = [
@@ -369,25 +439,22 @@
         // Kiểm tra đáp án (Logic Tự luận)
         function checkAnswer(userAnswer, correctAnswer) {
             
-            // Nếu người dùng chưa nhập gì, yêu cầu nhập và cho phép thử lại
             if (userAnswer === '') {
                 resultMessage.innerHTML = 'Vui lòng nhập đáp án.';
                 resultMessage.classList.remove('correct-answer');
                 resultMessage.classList.add('incorrect-answer');
-                answerInput.value = ''; // Xóa input
+                answerInput.value = ''; 
                 return;
             }
 
-            answerAttempts++; // Tăng số lần thử sau mỗi lần kiểm tra
+            answerAttempts++; 
 
             if (userAnswer === correctAnswer) {
                 // TRẢ LỜI ĐÚNG:
                 
-                // Vô hiệu hóa input và nút kiểm tra
                 answerInput.readOnly = true; 
                 checkAnswerButton.style.display = 'none';
 
-                // Mở mảnh ghép và lưu trạng thái
                 const pieceElement = document.querySelector(`.puzzle-piece[data-index='${currentPieceIndex}']`);
                 if (!piecesState[currentPieceIndex]) {
                     pieceElement.classList.add('piece-open');
@@ -407,26 +474,22 @@
                 } else if (piecesOpened === 9) {
                     hintMessage.innerHTML = hints[2]; // Hiển thị "CÂU HỎI CUỐI CÙNG: Đây là ai?"
                     hintMessage.style.display = 'block';
+                    finalGuessArea.style.display = 'flex'; // HIỂN THỊ KHUNG ĐOÁN CUỐI CÙNG
                 }
 
                 // Nút Đóng
-                if (piecesOpened === 9) {
-                    closeQuestionButton.textContent = "Đoán Nhân Vật (Kết Thúc)"; // Đổi tên nút
-                } else {
-                    closeQuestionButton.textContent = "Đóng & Tiếp tục";
-                }
+                closeQuestionButton.textContent = "Đóng & Tiếp tục";
                 closeQuestionButton.style.display = 'block';
 
 
             } else {
                 // TRẢ LỜI SAI:
-                answerInput.value = ''; // Xóa đáp án sai
+                answerInput.value = ''; 
 
                 if (answerAttempts < 2) {
                     // SAI LẦN 1: Cho phép thử lại
                     resultMessage.innerHTML = `<span class="incorrect-answer">CHƯA CHÍNH XÁC!</span> Còn ${2 - answerAttempts} lượt trả lời. Vui lòng nhập lại đáp án.`;
                     
-                    // Cho phép nhập tiếp
                     answerInput.readOnly = false; 
                     checkAnswerButton.style.display = 'block';
 
@@ -434,7 +497,6 @@
                     // SAI LẦN 2 (HẾT LƯỢT): Về giao diện chính
                     resultMessage.innerHTML = '<span class="incorrect-answer">CHƯA CHÍNH XÁC!</span> Đã hết lượt trả lời. Mảnh ghép chưa được mở. Đội khác có thể chọn lại mảnh này.';
                     
-                    // Vô hiệu hóa input và nút kiểm tra
                     answerInput.readOnly = true; 
                     checkAnswerButton.style.display = 'none';
 
@@ -447,35 +509,29 @@
         
         // Đóng khung câu hỏi và tiếp tục trò chơi
         closeQuestionButton.addEventListener('click', () => {
-            
-            // Xử lý logic đoán nhân vật khi 9 mảnh đã mở
-            if (piecesOpened === 9 && closeQuestionButton.textContent === "Đoán Nhân Vật (Kết Thúc)") {
-                
-                // 1. Đóng khung câu hỏi
-                questionBox.style.display = 'none';
-
-                // 2. Yêu cầu học sinh đoán
-                // Sử dụng setTimeout để đảm bảo modal đóng trước khi alert hiện ra
-                setTimeout(() => {
-                    const guess = confirm("🌟 MỜI CÁC ĐỘI ĐOÁN TÊN NHÀ TOÁN HỌC! (Giáo viên quản lý phần đoán của học sinh, bấm OK để tiết lộ đáp án)");
-                    
-                    // 3. Tiết lộ đáp án (sau khi giáo viên bấm OK)
-                    if (guess || !guess) { // Luôn chạy sau khi confirm
-                        alert("CHÚC MỪNG! Bức tranh đã hoàn thành. Người được tìm kiếm là CARL FRIEDRICH GAUSS.");
-                    }
-                }, 100); // Độ trễ ngắn để đảm bảo giao diện được cập nhật
-                
-            } else {
-                // Logic đóng thông thường
-                questionBox.style.display = 'none';
-            }
-
+            // Dù đúng hay sai, đóng modal để quay lại màn hình chính
+            questionBox.style.display = 'none';
             currentPieceIndex = -1;
+        });
+
+        // XỬ LÝ NÚT TIẾT LỘ ĐÁP ÁN (NEW)
+        revealButton.addEventListener('click', () => {
+            if (piecesOpened === 9) {
+                // 1. Ẩn nút Reveal và lời nhắc đoán
+                guessPrompt.style.display = 'none';
+                revealButton.style.display = 'none';
+                
+                // 2. Hiện tên nhà toán học
+                finalAnswer.style.display = 'block';
+                
+                alert("BỨC TRANH ĐÃ HOÀN THÀNH! Người được tìm kiếm là CARL FRIEDRICH GAUSS.");
+            }
         });
 
         // Hàm bắt đầu game
         startButton.addEventListener('click', () => {
             startArea.style.display = 'none';
+            document.getElementById('game-controls-container').style.display = 'block'; // Hiển thị khung chứa thông báo/nút
             gameWrapper.style.display = 'flex';
             createPieces();
             renderScoreBoard(); 
@@ -484,4 +540,3 @@
 
 </body>
 </html>
-
