@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mật Mã Thám Tử V6: Giao Diện Tối Ưu</title>
+    <title>Mật Mã Thám Tử V7: Kết Thúc Thủ Công</title>
     
     <script>
         window.MathJax = {
@@ -34,8 +34,29 @@
             max-width: 1400px; 
             margin-top: 10px;
         }
+        
+        /* KHU VỰC CHỨA NÚT TỔNG KẾT */
+        #control-area {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        #conclusionButton {
+            padding: 10px 20px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            background-color: #e67e22; /* Màu cam nổi bật */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+            display: none; /* Mặc định ẩn, chỉ hiện khi có đội hoàn thành */
+        }
+        #conclusionButton:hover {
+            background-color: #d35400;
+        }
 
-        /* KHUNG HÀNG CỦA MỘT ĐỘI (Giảm độ cao) */
+        /* KHUNG HÀNG CỦA MỘT ĐỘI (Giữ nguyên giao diện nén V6) */
         .team-row {
             display: flex;
             align-items: stretch;
@@ -201,17 +222,17 @@
              color: #2ecc71;
         }
 
-
-        /* KHUNG KẾT THÚC */
+        /* KHUNG KẾT THÚC (FINAL MESSAGE) - Tối ưu cho Overlay */
         #final-message {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
+            /* Lớp phủ làm mờ (tối) phần giao diện phía dưới */
+            background-color: rgba(0, 0, 0, 0.95); 
             color: white;
-            display: none;
+            display: none; 
             justify-content: center;
             align-items: center;
             flex-direction: column;
@@ -220,22 +241,25 @@
             z-index: 2000;
         }
         #final-message-content {
-            padding: 40px;
-            background-color: #e67e22;
-            border-radius: 15px;
+            padding: 50px 70px;
+            background-color: #e67e22; /* Nền nổi bật */
+            border-radius: 20px;
             box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+            transform: scale(1.1); /* Hiệu ứng nổi bật */
         }
         #final-code {
-            font-size: 1.5em;
+            font-size: 2em;
             color: #fff176;
-            margin-top: 15px;
-            border: 2px solid #fff176;
-            padding: 10px 20px;
-            border-radius: 8px;
+            margin-top: 20px;
+            border: 3px solid #fff176;
+            padding: 10px 30px;
+            border-radius: 10px;
+            font-weight: bold;
         }
         #winning-team-name {
-            font-size: 3em;
-            color: #fff176;
+            font-size: 4em;
+            margin: 10px 0;
+            font-weight: 900;
         }
 
         /* Nút Bắt đầu */
@@ -261,16 +285,20 @@
     </div>
 
     <div id="game-wrapper" style="display: none;">
+        <div id="control-area">
+             <button id="conclusionButton" onclick="showFinalMessage()">TỔNG KẾT VÀ CÔNG BỐ MẬT MÃ!</button>
+        </div>
+        
         <div id="team-rows-container">
             </div>
     </div>
 
     <div id="final-message">
         <div id="final-message-content">
-            <p style="font-size: 1.5em; font-weight: bold;">CHÚC MỪNG ĐỘI CHIẾN THẮNG!</p>
-            <p id="winning-team-name" style="font-size: 3em; color: #fff176;"></p>
+            <p style="font-size: 1.5em; font-weight: bold;">CHÚC MỪNG ĐỘI ĐẦU TIÊN GIẢI MÃ!</p>
+            <p id="winning-team-name"></p>
             <p style="font-size: 1.5em; margin-top: 20px;">MẬT MÃ KHO BÁU LÀ:</p>
-            <div id="final-code" style="font-size: 1.5em; color: #fff176; margin-top: 15px; border: 2px solid #fff176; padding: 10px 20px; border-radius: 8px;"></div>
+            <div id="final-code"></div>
         </div>
     </div>
     
@@ -307,6 +335,9 @@
             { id: 'purple', name: 'Đội Tím', colorClass: 'team-purple', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(QUESTIONS.length).fill(false) }, 
         ];
         
+        // BIẾN TOÀN CỤC MỚI
+        let firstWinningTeam = null; 
+        
         // DOM Elements
         const startButton = document.getElementById('startButton');
         const gameWrapper = document.getElementById('game-wrapper');
@@ -314,7 +345,8 @@
         const teamRowsContainer = document.getElementById('team-rows-container');
         const finalMessage = document.getElementById('final-message');
         const finalCodeDisplay = document.getElementById('final-code');
-        const winningTeamName = document.getElementById('winning-team-name');
+        const winningTeamNameElement = document.getElementById('winning-team-name');
+        const conclusionButton = document.getElementById('conclusionButton');
         
         // ---------------------------------------------------
         // CHỨC NĂNG BẢNG ĐIỂM
@@ -360,7 +392,7 @@
                 
                 if (isGameFinished) {
                     row.classList.add('finished');
-                    questionHTML = `<div class="q-text">🎉 **HOÀN THÀNH 7/7 MANH MỐI!** Đội ${team.name} đang chờ kết quả chung cuộc.</div>`;
+                    questionHTML = `<div class="q-text">🎉 **HOÀN THÀNH 7/7 MANH MỐI!** Đội ${team.name} đang chờ giáo viên tổng kết.</div>`;
                     inputHTML = `<div class="result-message correct-answer">Tổng điểm: ${team.score}</div>`;
                 } else {
                     row.classList.remove('finished');
@@ -460,40 +492,52 @@
                      // HOÀN THÀNH 7/7
                      team.score += BONUS_POINTS;
                      msg += `<br>🎉 **THƯỞNG LỚN!** Hoàn thành 7/7 Manh Mối.`;
-                     endGame(team);
+                     
+                     // LOGIC MỚI: Chỉ lưu đội thắng đầu tiên và hiển thị nút Tổng Kết
+                     if (!firstWinningTeam) {
+                        firstWinningTeam = team;
+                        conclusionButton.style.display = 'block'; // Hiển thị nút Tổng kết
+                     }
                 }
                 
                 resultMessage.innerHTML = msg;
                 resultMessage.className = 'result-message correct-answer';
-                answerInput.value = ''; // Xóa đáp án sau khi đúng
+                answerInput.value = ''; 
                 
                 // Cập nhật giao diện toàn bộ game
-                updateTeamScore(teamId, 0); // Chỉ để trigger cập nhật score trên giao diện
+                updateTeamScore(teamId, 0);
                 renderTeamRows(); 
 
             } else {
-                // TRẢ LỜI SAI: Cho phép nhập lại (Không giới hạn lượt)
+                // TRẢ LỜI SAI
                 answerInput.value = ''; 
                 resultMessage.innerHTML = `<span class="incorrect-answer">CHƯA CHÍNH XÁC!</span> Thử lại.`;
                 resultMessage.className = 'result-message incorrect-answer';
             }
         }
         
-        // HÀM KẾT THÚC TRÒ CHƠI
-        function endGame(winningTeam) {
-            const finalCodeString = SECRET_CODE.join('-');
+        // HÀM HIỂN THỊ KẾT QUẢ (Gắn với nút TỔNG KẾT)
+        window.showFinalMessage = function() {
+            if (!firstWinningTeam) {
+                alert('Chưa có đội nào hoàn thành 7/7 Manh Mối!');
+                return;
+            }
+            
+            const winningTeam = firstWinningTeam;
+            const finalCodeString = SECRET_CODE.join(' - ');
+            
             finalCodeDisplay.textContent = finalCodeString;
-            winningTeamName.textContent = winningTeam.name;
+            winningTeamNameElement.textContent = winningTeam.name;
             
             // Lấy màu border để tô màu tên đội chiến thắng
             const teamRow = document.getElementById(`team-row-${winningTeam.id}`);
             if (teamRow) {
-                winningTeamName.style.color = window.getComputedStyle(teamRow).borderColor || '#fff176';
+                winningTeamNameElement.style.color = window.getComputedStyle(teamRow).borderColor || '#fff176';
             } else {
-                winningTeamName.style.color = '#fff176';
+                winningTeamNameElement.style.color = '#fff176';
             }
 
-            // Hiện thông báo kết thúc
+            // Hiển thị khung kết thúc full screen overlay
             finalMessage.style.display = 'flex';
         }
 
@@ -508,6 +552,8 @@
                 team.currentManhMoiIndex = 0;
                 team.manhMoiCompletedState.fill(false);
             });
+            firstWinningTeam = null;
+            conclusionButton.style.display = 'none';
             
             renderTeamRows();
         });
