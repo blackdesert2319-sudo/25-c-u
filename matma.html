@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mật Mã Thám Tử V10: Sửa Lỗi Câu Hỏi MathJax</title>
+    <title>Mật Mã Thám Tử V13: Điểm Tự Động & Nút Bỏ Qua</title>
     
     <script>
         window.MathJax = {
@@ -70,10 +70,6 @@
             border: 2px solid transparent;
             min-height: 100px; 
         }
-        .team-row:hover {
-            transform: none;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
-        }
 
         /* CSS MÀU CHO 5 ĐỘI */
         .team-red { background-color: #e74c3c; border-color: #c0392b; }
@@ -97,24 +93,32 @@
             border-right: 1px solid rgba(255, 255, 255, 0.3);
             flex-shrink: 0;
         }
-        .team-yellow .team-score-control { border-right: 1px solid rgba(0, 0, 0, 0.3); }
 
         .team-score-value { 
             font-size: 2.5em;
             font-weight: 900; 
             margin-bottom: 5px;
         }
-        .score-control button {
-            background: rgba(0, 0, 0, 0.2); 
+        /* Nút BỎ QUA */
+        .control-button {
+            background: #f39c12; 
             border: none; 
             color: white; 
-            padding: 3px 6px;
-            margin: 0 2px;
+            padding: 5px 10px;
+            margin-top: 5px;
             border-radius: 4px; 
             cursor: pointer; 
-            font-size: 0.8em; 
-            font-weight: 900; 
+            font-size: 0.9em; 
+            font-weight: bold; 
+            transition: background-color 0.2s;
         }
+        .control-button:hover {
+            background-color: #e67e22;
+        }
+        .team-row.finished .control-button {
+            display: none;
+        }
+
 
         /* CỘT 2: TRẠNG THÁI VÀ INPUT */
         .team-input-status-area {
@@ -126,7 +130,6 @@
             border-right: 1px solid rgba(255, 255, 255, 0.3);
             flex-shrink: 0;
         }
-        .team-yellow .team-input-status-area { border-right: 1px solid rgba(0, 0, 0, 0.3); }
 
         .team-status-bar {
             display: flex;
@@ -134,13 +137,14 @@
             align-items: center;
             margin-bottom: 8px;
         }
-        .manh-moi-status {
-            width: 18px;
-            height: 18px;
-            line-height: 18px;
-            font-size: 0.7em;
+        /* Vòng tròn trạng thái */
+        .manh-moi-status { 
+            width: 30px; 
+            height: 20px;
+            line-height: 20px;
+            font-size: 0.8em;
             text-align: center;
-            border-radius: 50%;
+            border-radius: 10px; 
             background-color: rgba(0, 0, 0, 0.2);
             font-weight: bold;
             color: white;
@@ -149,35 +153,16 @@
         .manh-moi-completed { background-color: #2ecc71; }
         .manh-moi-active { background-color: #f1c40f; color: #333; }
 
-        .input-group {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-        }
         .input-group input {
             padding: 8px;
             width: 120px;
-            border: none;
-            border-radius: 5px;
             font-size: 1em;
             text-align: center;
             margin-right: 8px;
             color: #333;
             flex-shrink: 0;
         }
-        .input-group button {
-            padding: 8px 10px;
-            font-size: 1em;
-            font-weight: bold;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: opacity 0.2s;
-            background-color: #34495e; 
-            color: white;
-            flex-grow: 1;
-            min-width: 100px;
-        }
+
         .result-message { 
             margin-top: 5px;
             font-size: 0.9em; 
@@ -185,6 +170,7 @@
         }
         .correct-answer { color: #2ecc71; }
         .incorrect-answer { color: #e74c3c; }
+        .skip-penalty { color: #f39c12; }
 
         /* CỘT 3: CÂU HỎI */
         .team-question-area {
@@ -194,73 +180,16 @@
             flex-direction: column;
             justify-content: center;
         }
+        .q-number {
+            font-size: 1.2em; 
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
         .q-text {
             font-size: 1.4em;
             font-weight: 700;
             line-height: 1.3;
         }
-        .team-row.finished .q-text {
-             font-size: 1.2em;
-             font-weight: 600;
-             color: #2ecc71;
-        }
-
-        /* KHUNG KẾT THÚC (FINAL MESSAGE) */
-        #final-message {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.95); 
-            color: white;
-            display: none; 
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            text-align: center;
-            font-size: 2em;
-            z-index: 2000;
-        }
-        #final-message-content {
-            padding: 50px 70px;
-            background-color: #e67e22; 
-            border-radius: 20px;
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
-            transform: scale(1.1); 
-        }
-        #final-code {
-            font-size: 2em;
-            color: #fff176;
-            margin-top: 20px;
-            border: 3px solid #fff176;
-            padding: 10px 30px;
-            border-radius: 10px;
-            font-weight: bold;
-        }
-        #winning-team-name {
-            font-size: 4em;
-            margin: 10px 0;
-            font-weight: 900;
-        }
-        #final-message-title {
-            font-size: 1.5em; 
-            font-weight: bold;
-        }
-
-        /* Nút Bắt đầu */
-        #startButton { 
-            padding: 15px 30px; 
-            font-size: 1.5em; 
-            cursor: pointer; 
-            background-color: #5cb85c; 
-            color: white; 
-            border: none; 
-            border-radius: 10px; 
-            transition: background-color 0.2s; 
-            margin-top: 20px;
-        }
-        #startButton:hover { background-color: #4cae4c; }
     </style>
 </head>
 <body>
@@ -291,7 +220,8 @@
     <script>
         // CẤU HÌNH ĐIỂM VÀ MẬT MÃ
         const SECRET_CODE = ['7', '0', '3', '6', '9', '2', '5'];
-        const POINTS_PER_MANH_MOI = 10;
+        const POINTS_PER_CORRECT = 10;
+        const PENALTY_PER_SKIP = 20; // Trừ 20 điểm khi bỏ qua
         const BONUS_POINTS = 30;
 
         // DỮ LIỆU 5 BỘ CÂU HỎI RIÊNG BIỆT CHO 5 ĐỘI (Đáp án phải KHỚP với SECRET_CODE: 7, 0, 3, 6, 9, 2, 5)
@@ -371,9 +301,10 @@
         const winningTeamNameElement = document.getElementById('winning-team-name');
         
         // ---------------------------------------------------
-        // CHỨC NĂNG BẢNG ĐIỂM
+        // CHỨC NĂNG BẢNG ĐIỂM & ĐIỀU KHIỂN
         // ---------------------------------------------------
         
+        // Cập nhật điểm và hiệu ứng
         function updateTeamScore(teamId, delta) {
             const team = teams.find(t => t.id === teamId);
             if (team) {
@@ -392,6 +323,30 @@
             }
         }
         window.updateTeamScore = updateTeamScore; 
+        
+        // Xử lý BỎ QUA
+        window.skipQuestion = function(teamId) {
+            const team = teams.find(t => t.id === teamId);
+            if (!team || team.currentManhMoiIndex >= SECRET_CODE.length) return;
+            
+            const qIndex = team.currentManhMoiIndex;
+            const resultMessage = document.getElementById(`result-message-${teamId}`);
+            
+            // 1. Trừ điểm phạt
+            updateTeamScore(teamId, -PENALTY_PER_SKIP);
+            
+            // 2. Cập nhật trạng thái và chuyển câu
+            // Câu hỏi bị BỎ QUA vẫn đánh dấu là CHƯA hoàn thành (manhMoiCompletedState[qIndex] = false)
+            team.currentManhMoiIndex++; 
+            
+            // 3. Hiển thị thông báo
+            let msg = `<span class="skip-penalty">BỎ QUA!</span> -${PENALTY_PER_SKIP} điểm. Chuyển sang Câu ${team.currentManhMoiIndex + 1 || 'Kết thúc'}.`;
+            resultMessage.innerHTML = msg;
+            resultMessage.className = 'result-message skip-penalty';
+            
+            // 4. Render lại giao diện
+            renderTeamRows();
+        }
 
         // ---------------------------------------------------
         // CHỨC NĂNG TRÒ CHƠI
@@ -401,7 +356,6 @@
             const team = teams.find(t => t.id === teamId);
             if (!team || team.currentManhMoiIndex >= SECRET_CODE.length) return null;
             
-            // Lấy bộ câu hỏi riêng của đội và trả về câu hỏi hiện tại
             const teamQuestions = ALL_TEAM_QUESTIONS[teamId];
             return teamQuestions ? teamQuestions[team.currentManhMoiIndex] : null;
         }
@@ -423,12 +377,12 @@
                 
                 if (isGameFinished) {
                     row.classList.add('finished');
-                    questionHTML = `<div class="q-text">🎉 **HOÀN THÀNH 7/7 MANH MỐI!** Đội ${team.name} đang chờ giáo viên tổng kết.</div>`;
+                    questionHTML = `<div class="q-text">🎉 **HOÀN THÀNH 7/7 CÂU HỎI!** Đội ${team.name} đang chờ giáo viên tổng kết.</div>`;
                     inputHTML = `<div class="result-message correct-answer">Tổng điểm: ${team.score}</div>`;
                 } else if (questionData) {
                     row.classList.remove('finished');
                     questionHTML = `
-                        <div class="q-number">Manh Mối ${qIndex + 1}</div>
+                        <div class="q-number">Câu ${qIndex + 1}</div>
                         <div class="q-text" id="q-text-${team.id}">${questionData.q}</div>
                     `;
                     inputHTML = `
@@ -448,10 +402,7 @@
                 row.innerHTML = `
                     <div class="team-score-control">
                         <div class="team-score-value" id="score-${team.id}">${team.score}</div>
-                        <div class="score-control">
-                            <button onclick="updateTeamScore('${team.id}', 10)">+10</button>
-                            <button onclick="updateTeamScore('${team.id}', -5)">-5</button>
-                        </div>
+                        ${!isGameFinished ? `<button class="control-button" onclick="skipQuestion('${team.id}')">BỎ QUA (-${PENALTY_PER_SKIP})</button>` : ''}
                     </div>
                     <div class="team-input-status-area">
                         <div class="team-status-bar" id="status-bar-${team.id}">
@@ -468,7 +419,6 @@
                 
                 // Xử lý MathJax cho câu hỏi (nếu có)
                 if (!isGameFinished && questionData && window.MathJax) {
-                    // Yêu cầu MathJax render lại phần tử mới được thêm vào
                     MathJax.typesetPromise([document.getElementById(`q-text-${team.id}`)]);
                 }
             });
@@ -482,7 +432,7 @@
             team.manhMoiCompletedState.forEach((isCompleted, index) => {
                 const status = document.createElement('div');
                 status.className = 'manh-moi-status';
-                status.textContent = index + 1;
+                status.textContent = 'C' + (index + 1); 
                 
                 if (isCompleted) {
                     status.classList.add('manh-moi-completed');
@@ -521,15 +471,15 @@
                 team.manhMoiCompletedState[qIndex] = true;
                 team.currentManhMoiIndex++; 
                 
-                // Cập nhật điểm
-                team.score += POINTS_PER_MANH_MOI;
+                // Tự động cộng điểm
+                team.score += POINTS_PER_CORRECT;
                 
-                let msg = `<span class="correct-answer">CHÍNH XÁC!</span> Manh Mối ${qIndex + 1} đã được mở khóa.`;
+                let msg = `<span class="correct-answer">CHÍNH XÁC!</span> +${POINTS_PER_CORRECT} điểm. Câu ${qIndex + 1} đã được mở khóa.`;
 
                 if (team.currentManhMoiIndex === SECRET_CODE.length) {
                      // HOÀN THÀNH 7/7
                      team.score += BONUS_POINTS;
-                     msg += `<br>🎉 **THƯỞNG LỚN!** Hoàn thành 7/7 Manh Mối.`;
+                     msg += `<br>🎉 **THƯỞNG LỚN!** Hoàn thành 7/7 Câu Hỏi. (+${BONUS_POINTS} điểm)`;
                      
                      // LOGIC: Lưu đội thắng đầu tiên (nếu chưa có)
                      if (!firstWinningTeam) {
