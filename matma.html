@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mật Mã Thám Tử V17: 2 Bước Khởi Động</title>
+    <title>Mật Mã Thám Tử V18: Sửa Lỗi Hiển Thị Câu Hỏi</title>
     
     <script>
         window.MathJax = {
@@ -394,7 +394,7 @@
     <div id="timer">10:00</div>
 
     <div id="start-area">
-        <h1>MẬT MÃ RƯƠNG BÁU: 5 ĐỘI TRANH TÀI</h1>
+        <h1>MẬT MÃ THÁM TỬ: 5 ĐỘI TRANH TÀI</h1>
         <p style="font-size: 1.2em; margin-bottom: 20px; color: #ccc;">Giải mã 7 câu hỏi trong 10 phút để tìm ra MẬT MÃ KHO BÁU!</p>
         <p style="font-size: 1em; color: #ccc;">(Ấn nút **BẮT ĐẦU PHI VỤ!** để chuyển sang màn hình chơi và giải thích luật)</p>
         <button id="transitionButton">BẮT ĐẦU PHI VỤ!</button>
@@ -586,6 +586,7 @@
             resultMessage.innerHTML = msg;
             resultMessage.className = 'result-message skip-penalty';
             
+            // Cập nhật giao diện để hiện câu hỏi mới
             renderTeamRows();
         }
 
@@ -622,6 +623,7 @@
                     questionHTML = `<div class="q-text">🎉 **HOÀN THÀNH 7/7 CÂU HỎI!** Đội ${team.name} đã giải mã xong.</div>`;
                     inputHTML = `<div class="result-message correct-answer">Điểm chung cuộc: ${team.score}</div>`;
                 } else if (gameActive && questionData) {
+                    // Game đang chạy và có câu hỏi
                     row.classList.remove('finished');
                     questionHTML = `
                         <div class="q-number">Câu ${qIndex + 1}</div>
@@ -731,6 +733,7 @@
                 answerInput.value = ''; 
                 
                 updateTeamScore(teamId, 0);
+                // Cập nhật giao diện để hiện câu hỏi mới
                 renderTeamRows(); 
 
             } else {
@@ -853,10 +856,10 @@
         // KHỞI TẠO GAME (START Button 2)
         // ---------------------------------------------------
         window.startGame = function() {
-            // Hiển thị câu hỏi và các nút điều khiển
-            renderTeamRows();
-            // Bắt đầu đếm ngược
+            // 1. Kích hoạt đồng hồ
             startTimer(); 
+            // 2. Hiển thị câu hỏi và các nút điều khiển
+            renderTeamRows(); 
         };
 
         // ---------------------------------------------------
@@ -877,13 +880,17 @@
             firstWinningTeam = null;
             timeRemaining = GAME_DURATION_SECONDS; 
             chestOpened = false; 
+            gameActive = false; // Đảm bảo trạng thái chưa chạy
 
             // Hiện đồng hồ nhưng chưa chạy
             timerElement.textContent = formatTime(GAME_DURATION_SECONDS);
             timerElement.style.display = 'block';
-            timerElement.style.color = '#e74c3c'; // Màu pause
+            timerElement.style.color = '#e74c3c'; 
 
-            // Render giao diện Game (Bảng điểm đã có, phần câu hỏi trống)
+            // Hiện lại nút Start 2
+            startGameButton.style.display = 'block'; 
+
+            // Render giao diện Game (Chỉ hiện bảng điểm và thông báo chờ)
             renderTeamRows(); 
         });
         
@@ -891,4 +898,3 @@
 
 </body>
 </html>
-
