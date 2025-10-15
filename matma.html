@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mật Mã Thám Tử V5: Giao Diện Nén 5 Hàng</title>
+    <title>Mật Mã Thám Tử V6: Giao Diện Tối Ưu</title>
     
     <script>
         window.MathJax = {
@@ -19,12 +19,10 @@
             flex-direction: column; 
             align-items: center; 
             justify-content: flex-start; 
-            /* Đảm bảo nội dung vừa vặn trên màn hình cao 100vh */
             min-height: 100vh; 
             background-color: #282c34; 
-            padding: 10px 10px 20px 10px; /* Giảm padding trên dưới */
+            padding: 10px 10px 20px 10px;
             color: #fff; 
-            /* Thêm scroll cho body nếu 5 đội vẫn quá cao */
             overflow-y: auto;
         }
 
@@ -33,35 +31,20 @@
         /* KHUNG CHUNG CỦA CÁC ĐỘI */
         #game-wrapper {
             width: 98%; 
-            max-width: 1400px; /* Tăng chiều rộng tối đa */
+            max-width: 1400px; 
             margin-top: 10px;
-        }
-
-        /* KHUNG CHUNG HIỂN THỊ MẬT MÃ KHO BÁU CUỐI CÙNG */
-        #code-display {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 15px;
-            font-size: 2.5em; /* Giảm kích thước chữ để tiết kiệm không gian */
-            font-weight: bold;
-            color: #f1c40f;
-            border: 3px solid #f1c40f;
-            padding: 5px 10px;
-            border-radius: 8px;
-            background-color: #34495e;
-            width: 100%;
         }
 
         /* KHUNG HÀNG CỦA MỘT ĐỘI (Giảm độ cao) */
         .team-row {
             display: flex;
-            align-items: stretch; /* Đảm bảo các cột có chiều cao bằng nhau */
-            margin-bottom: 10px; /* Giảm khoảng cách giữa các hàng */
+            align-items: stretch;
+            margin-bottom: 10px;
             padding: 0;
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
             border: 2px solid transparent;
-            min-height: 100px; /* Chiều cao tối thiểu của một hàng */
+            min-height: 100px; 
         }
         .team-row:hover {
             transform: none;
@@ -74,7 +57,6 @@
         .team-green { background-color: #2ecc71; border-color: #27ae60; }
         .team-yellow { background-color: #f1c40f; color: #333; border-color: #f39c12; }
         .team-purple { background-color: #9b59b6; border-color: #8e44ad; }
-        /* Điều chỉnh màu chữ và nút cho đội Vàng */
         .team-yellow .team-score-value, .team-yellow .q-text, .team-yellow .manh-moi-status { color: #333; }
         .team-yellow button { color: white; background-color: #e67e22; border: none; }
         .team-yellow button:hover { background-color: #d35400; }
@@ -94,7 +76,7 @@
         .team-yellow .team-score-control { border-right: 1px solid rgba(0, 0, 0, 0.3); }
 
         .team-score-value { 
-            font-size: 2.5em; /* Kích thước lớn */
+            font-size: 2.5em;
             font-weight: 900; 
             margin-bottom: 5px;
         }
@@ -102,7 +84,7 @@
             background: rgba(0, 0, 0, 0.2); 
             border: none; 
             color: white; 
-            padding: 3px 6px; /* Giảm padding nút */
+            padding: 3px 6px;
             margin: 0 2px;
             border-radius: 4px; 
             cursor: pointer; 
@@ -128,13 +110,19 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px; /* Giảm khoảng cách */
+            margin-bottom: 8px;
         }
         .manh-moi-status {
-            width: 18px; /* Giảm kích thước */
+            width: 18px;
             height: 18px;
             line-height: 18px;
             font-size: 0.7em;
+            text-align: center;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.2);
+            font-weight: bold;
+            color: white;
+            transition: background-color 0.3s, transform 0.3s;
         }
         .manh-moi-completed { background-color: #2ecc71; }
         .manh-moi-active { background-color: #f1c40f; color: #333; }
@@ -144,25 +132,39 @@
         .input-group {
             display: flex;
             align-items: center;
-            flex-wrap: wrap; /* Cho phép xuống dòng nếu cần */
+            flex-wrap: wrap;
         }
         .input-group input {
             padding: 8px;
-            width: 120px; /* Giảm chiều rộng input */
+            width: 120px;
+            border: none;
+            border-radius: 5px;
             font-size: 1em;
+            text-align: center;
             margin-right: 8px;
+            color: #333;
             flex-shrink: 0;
         }
         .input-group button {
             padding: 8px 10px;
             font-size: 1em;
             font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            background-color: #34495e; 
+            color: white;
             flex-grow: 1;
             min-width: 100px;
         }
+        .input-group button:hover {
+            opacity: 0.8;
+        }
         .result-message { 
-            margin-top: 5px; /* Giảm khoảng cách */
+            margin-top: 5px;
             font-size: 0.9em; 
+            font-weight: bold;
         }
         .correct-answer { color: #2ecc71; }
         .incorrect-answer { color: #e74c3c; }
@@ -183,7 +185,7 @@
             margin-bottom: 5px;
         }
         .q-text {
-            font-size: 1.4em; /* TĂNG KÍCH CỠ CHỮ CÂU HỎI */
+            font-size: 1.4em;
             font-weight: 700;
             line-height: 1.3;
         }
@@ -202,11 +204,53 @@
 
         /* KHUNG KẾT THÚC */
         #final-message {
-            /* Giữ nguyên */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            font-size: 2em;
+            z-index: 2000;
+        }
+        #final-message-content {
+            padding: 40px;
+            background-color: #e67e22;
+            border-radius: 15px;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
         }
         #final-code {
-            /* Giữ nguyên */
+            font-size: 1.5em;
+            color: #fff176;
+            margin-top: 15px;
+            border: 2px solid #fff176;
+            padding: 10px 20px;
+            border-radius: 8px;
         }
+        #winning-team-name {
+            font-size: 3em;
+            color: #fff176;
+        }
+
+        /* Nút Bắt đầu */
+        #startButton { 
+            padding: 15px 30px; 
+            font-size: 1.5em; 
+            cursor: pointer; 
+            background-color: #5cb85c; 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            transition: background-color 0.2s; 
+            margin-top: 20px;
+        }
+        #startButton:hover { background-color: #4cae4c; }
     </style>
 </head>
 <body>
@@ -217,11 +261,6 @@
     </div>
 
     <div id="game-wrapper" style="display: none;">
-        <h2 style="color: #3498db; text-align: center; margin-bottom: 5px; font-size: 1.2em;">MẬT MÃ KHO BÁU CHUNG</h2>
-        <div id="code-display">
-            ??? - ??? - ??? - ??? - ??? - ??? - ???
-        </div>
-        
         <div id="team-rows-container">
             </div>
     </div>
@@ -255,13 +294,10 @@
             { q: 'Tìm tổng $S_3$ của CSC có $u_1=2$ và $u_3=4$.', correct: '9', manhMoiIndex: 4 }, // u2=3 => S3 = 2+3+4=9
             // Manh Mối 6: Cấp số nhân (Đáp án 2)
             { q: 'Cho CSN có $u_2=10$ và $u_3=20$. Tìm công bội $q$.', correct: '2', manhMoiIndex: 5 }, 
-            // Manh Mối 7: Cấp số cộng (Đáp án 5)
-            { q: 'Cho CSC có $u_5=10$ và $d=1$. Tìm $u_1$.', correct: '6', manhMoiIndex: 6 } // u1 = 10 - 4*1 = 6. (Lưu ý: Đáp án trước là 5, em sửa lại thành 6 theo tính toán $u_1 = 10 - 4 \cdot 1 = 6$) -> **Thầy cần kiểm tra đáp án này!**
+            // Manh Mối 7: Cấp số cộng (Đáp án 6)
+            { q: 'Cho CSC có $u_5=10$ và $d=1$. Tìm $u_1$.', correct: '6', manhMoiIndex: 6 } // u1 = 10 - 4*1 = 6
         ];
         
-        // **QUAN TRỌNG:** Sửa đáp án câu 7 trong code trên là **'5'** thành **'6'** cho đúng với $u_1 = u_5 - 4d = 10 - 4(1) = 6$.
-        QUESTIONS[6].correct = '6';
-
         // Dữ liệu 5 ĐỘI CHƠI
         const teams = [
             { id: 'red', name: 'Đội Đỏ', colorClass: 'team-red', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(QUESTIONS.length).fill(false) },
@@ -275,7 +311,6 @@
         const startButton = document.getElementById('startButton');
         const gameWrapper = document.getElementById('game-wrapper');
         const startArea = document.getElementById('start-area');
-        const codeDisplay = document.getElementById('code-display');
         const teamRowsContainer = document.getElementById('team-rows-container');
         const finalMessage = document.getElementById('final-message');
         const finalCodeDisplay = document.getElementById('final-code');
@@ -449,7 +484,14 @@
             const finalCodeString = SECRET_CODE.join('-');
             finalCodeDisplay.textContent = finalCodeString;
             winningTeamName.textContent = winningTeam.name;
-            winningTeamName.style.color = window.getComputedStyle(document.getElementById(`team-row-${winningTeam.id}`)).borderColor || '#fff176'; // Lấy màu từ border của team row
+            
+            // Lấy màu border để tô màu tên đội chiến thắng
+            const teamRow = document.getElementById(`team-row-${winningTeam.id}`);
+            if (teamRow) {
+                winningTeamName.style.color = window.getComputedStyle(teamRow).borderColor || '#fff176';
+            } else {
+                winningTeamName.style.color = '#fff176';
+            }
 
             // Hiện thông báo kết thúc
             finalMessage.style.display = 'flex';
