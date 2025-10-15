@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mật Mã Thám Tử V20: Đáp Án Ngắn - Sửa Lỗi Hiển Thị</title>
+    <title>Mật Mã Thám Tử V21: Dữ liệu chuẩn hóa</title>
     
     <script>
         window.MathJax = {
@@ -439,7 +439,6 @@
     
     <script>
         // CẤU HÌNH ĐIỂM, MẬT MÃ VÀ THỜI GIAN
-        // Dữ liệu mật mã đã bị loại bỏ theo yêu cầu của GV, chỉ còn chức năng kiểm tra đáp án
         const POINTS_PER_CORRECT = 10;
         const PENALTY_PER_SKIP = 20;
         const BONUS_POINTS = 30;
@@ -459,13 +458,13 @@
         const FINAL_SECRET_CODE = '1432'; 
 
 
-        // DỮ LIỆU CÂU HỎI MỚI (V20 FINAL) - Đáp án ngắn, số nguyên
+        // DỮ LIỆU CÂU HỎI MỚI (V21 - Dữ liệu chuẩn hóa)
         const ALL_TEAM_QUESTIONS = {
             red: [{ q: 'Cho CSC có $u_1=3$ và công sai $d=2$. Tìm $u_{10}$.', correct: '21' }, { q: 'Cho CSN có $u_1=2$ và công bội $q=2$. Tìm $u_5$.', correct: '32' }, { q: 'Cho CSC có $u_1=2, u_5=18$. Tìm công sai $d$.', correct: '4' }, { q: 'Cho CSN có $u_1=2, u_3=18$. Tìm công bội $q$ dương.', correct: '3' }, { q: 'Cho CSC có $u_1=1, u_4=7$. Tìm tổng $S_4$.', correct: '16' }, { q: 'Cho CSN có $u_1=1, q=3$. Tìm tổng $S_3$.', correct: '13' }, { q: 'Cho CSC có $u_1=5, d=3$. Biết $u_n=32$. Tìm $n$.', correct: '10' } ],
-            blue: [{ q: 'Cho CSC có $u_1=10, d=3$. Tìm $u_8$.', correct: '31' }, { q: 'Cho CSN có $u_1=3, q=2$. Tìm $u_4$.', correct: '24' }, { q: 'Cho CSC có $u_2=5, u_4=11$. Tìm công sai $d$.', correct: '3' }, { q: 'Cho CSN có $u_2=12, u_4=48$. Tìm công bội $q$ dương.', correct: '2' }, { q: 'Cho CSC có $u_1=5, d=2$. Tìm tổng $S_5$.', correct: '45' }, { q: 'Cho CSN có $u_1=2, q=2$. Tìm tổng $S_4$.', correct: '30' }, { q: 'Cho CSN có $u_1=1, q=2$. Biết $u_n=64$. Tìm $n$.', correct: '7' } ],
+            blue: [{ q: 'Cho CSC có $u_1=10, d=3$. Tìm $u_8$.', correct: '31' }, { q: 'Cho CSN có $u_1=3, q=2$. Tìm $u_4$.', correct: '24' }, { q: 'Cho CSC có $u_1=2, u_4=11$. Tìm công sai $d$.', correct: '3' }, { q: 'Cho CSN có $u_1=3, u_3=12$. Tìm công bội $q$ dương.', correct: '2' }, { q: 'Cho CSC có $u_1=5, d=2$. Tìm tổng $S_5$.', correct: '45' }, { q: 'Cho CSN có $u_1=2, q=2$. Tìm tổng $S_4$.', correct: '30' }, { q: 'Cho CSN có $u_1=1, q=2$. Biết $u_n=64$. Tìm $n$.', correct: '7' } ],
             green: [{ q: 'Cho CSC có $u_1=5, d=4$. Tìm $u_6$.', correct: '25' }, { q: 'Cho CSN có $u_1=4, q=3$. Tìm $u_3$.', correct: '36' }, { q: 'Cho CSC có $u_1=10, u_7=40$. Tìm công sai $d$.', correct: '5' }, { q: 'Cho CSN có $u_1=5, u_3=45$. Tìm công bội $q$ dương.', correct: '3' }, { q: 'Cho CSC có $u_1=2, u_6=12$. Tìm tổng $S_6$.', correct: '42' }, { q: 'Cho CSN có $u_1=4, q=2$. Tìm tổng $S_3$.', correct: '28' }, { q: 'Cho CSC có $u_1=1, d=4$. Biết $u_n=29$. Tìm $n$.', correct: '8' } ],
-            yellow: [{ q: 'Cho CSC có $u_1=1, d=5$. Tìm $u_7$.', correct: '31' }, { q: 'Cho CSN có $u_1=2, q=3$. Tìm $u_4$.', correct: '54' }, { q: 'Cho CSC có $u_3=7, u_6=16$. Tìm công sai $d$.', correct: '3' }, { q: 'Cho CSN có $u_3=20, u_4=100$. Tìm công bội $q$.', correct: '5' }, { q: 'Cho CSC có $u_1=1, d=3$. Tìm tổng $S_4$.', correct: '22' }, { q: 'Cho CSN có $u_1=5, q=-2$. Tìm tổng $S_3$.', correct: '15' }, { q: 'Cho CSN có $u_1=3, q=2$. Biết $u_n=48$. Tìm $n$.', correct: '5' } ],
-            purple: [{ q: 'Cho CSC có $u_1=2, d=4$. Tìm $u_5$.', correct: '18' }, { q: 'Cho CSN có $u_1=5, q=2$. Tìm $u_4$.', correct: '40' }, { q: 'Cho CSC có $u_4=15, u_6=25$. Tìm công sai $d$.', correct: '5' }, { q: 'Cho CSN có $u_2=10, u_5=80$. Tìm công bội $q$.', correct: '2' }, { q: 'Cho CSC có $u_1=10, d=-1$. Tìm tổng $S_5$.', correct: '40' }, { q: 'Cho CSN có $u_1=4, q=3$. Tìm tổng $S_3$.', correct: '52' }, { q: 'Cho CSC có $u_1=10, d=-2$. Biết $u_n=0$. Tìm $n$.', correct: '6' } ]
+            yellow: [{ q: 'Cho CSC có $u_1=1, d=5$. Tìm $u_7$.', correct: '31' }, { q: 'Cho CSN có $u_1=2, q=3$. Tìm $u_4$.', correct: '54' }, { q: 'Cho CSC có $u_1=1, u_4=10$. Tìm công sai $d$.', correct: '3' }, { q: 'Cho CSN có $u_1=4, u_2=20$. Tìm công bội $q$.', correct: '5' }, { q: 'Cho CSC có $u_1=1, d=3$. Tìm tổng $S_4$.', correct: '22' }, { q: 'Cho CSN có $u_1=5, q=-2$. Tìm tổng $S_3$.', correct: '15' }, { q: 'Cho CSN có $u_1=3, q=2$. Biết $u_n=48$. Tìm $n$.', correct: '5' } ],
+            purple: [{ q: 'Cho CSC có $u_1=2, d=4$. Tìm $u_5$.', correct: '18' }, { q: 'Cho CSN có $u_1=5, q=2$. Tìm $u_4$.', correct: '40' }, { q: 'Cho CSC có $u_1=5, u_3=15$. Tìm công sai $d$.', correct: '5' }, { q: 'Cho CSN có $u_1=10, u_4=80$. Tìm công bội $q$.', correct: '2' }, { q: 'Cho CSC có $u_1=10, d=-1$. Tìm tổng $S_5$.', correct: '40' }, { q: 'Cho CSN có $u_1=4, q=3$. Tìm tổng $S_3$.', correct: '52' }, { q: 'Cho CSC có $u_1=10, d=-2$. Biết $u_n=0$. Tìm $n$.', correct: '6' } ]
         };
         
         // Dữ liệu 5 ĐỘI CHƠI
