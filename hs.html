@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mật Mã Thám Tử - Nhập Đáp Án</title>
+    <style>
+        body { 
+            font-family: 'Arial', sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 20px; 
+            background-color: #34495e; 
+            color: white; 
+            min-height: 100vh;
+            text-align: center;
+        }
+        h1 { color: #f1c40f; margin-bottom: 5px; }
+        #team-info {
+            font-size: 2.5em; 
+            font-weight: bold; 
+            margin-bottom: 30px;
+            padding: 10px 20px;
+            background-color: #2c3e50;
+            border-radius: 10px;
+        }
+        #answer-input {
+            padding: 15px; 
+            font-size: 1.8em; 
+            width: 80%; 
+            max-width: 300px; 
+            margin-bottom: 20px; 
+            text-align: center;
+            border: 3px solid #f1c40f;
+            border-radius: 5px;
+            color: #333;
+        }
+        #submit-button {
+            padding: 15px 30px; 
+            font-size: 1.5em; 
+            background-color: #2ecc71; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        #submit-button:hover:not(:disabled) { background-color: #27ae60; }
+        #submit-button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        #status-message {
+            margin-top: 20px; 
+            font-style: italic;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <h1>NHẬP ĐÁP ÁN</h1>
+    <div id="team-info">ĐỘI CHỜ KẾT NỐI...</div>
+    
+    <input type="text" id="answer-input" placeholder="Nhập đáp án..." maxlength="50">
+    <button id="submit-button" disabled>GỬI ĐÁP ÁN</button>
+    <div id="status-message">Vui lòng quét mã QR code của đội.</div>
+
+    <script type="module">
+        // 1. IMPORT CÁC CHỨC NĂNG CẦN THIẾT (App và Firestore)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+        // 2. CẤU HÌNH FIREBASE CỦA BẠN
+        const firebaseConfig = {
+            apiKey: "AIzaSyDfcMrblRonAS9Q7BSfD9ZZYeOmSy4UjfQ",
+            authDomain: "nutnhap.firebaseapp.com",
+            projectId: "nutnhap",
+            storageBucket: "nutnhap.firebasestorage.app",
+            messagingSenderId: "359344838873",
+            appId: "1:359344838873:web:d1746d32920881091c86c8",
+            measurementId: "G-0VTTNLWDD9"
+        };
+
+        // 3. KHỞI TẠO
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let teamId = null;
+        let currentQuestionIndex = 1; // Giả định bắt đầu từ câu 1 (cần đồng bộ với GV)
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            teamId = urlParams.get('teamId');
+
+            if (teamId) {
+                // Hiển thị tên đội và kích hoạt nút gửi
+                document.getElementById('team-info').textContent = `ĐỘI: ${teamId.toUpperCase()}`;
+                document.getElementById('submit-button').disabled = false;
+                document.getElementById('submit-button').onclick = submitAnswer;
+                document.getElementById('status-message').textContent = 'Sẵn sàng gửi đáp án khi có lệnh của GV.';
+            } else {
+                document.getElementById('status-message').textContent = 'Lỗi: Không tìm thấy ID đội. Vui lòng quét lại mã QR code.';
+            }
+        });
+
+        // HÀM XỬ LÝ GỬI ĐÁP ÁN LÊN FIREBASE
+        async function submitAnswer() {
+            if (!teamId) return;
+
+            const answer = document.getElementById('answer-input').value.trim();
+            const submitButton = document.getElementById('submit-button');
+            const statusMessage = document.getElementById('status-message');
+
+            if (answer === "") {
+                statusMessage.textContent = "Vui lòng nhập đáp án!";
+                statusMessage.style.color = '#e74c3c';
+                return;
+            }
+
+            submitButton.disabled = true;
+            statusMessage.textContent = 'Đang gửi đáp án...';
+            statusMessage.style.color = '#f1c40f';
+
+            try {
+                // Thêm dữ liệu vào collection 'submissions' (Hàng đợi)
+                await addDoc(collection(db, "submissions"), {
+                    teamId: teamId,
+                    answer: answer,
+                    questionIndex: currentQuestionIndex, // Ghi lại câu hỏi hiện tại
+                    timestamp: serverTimestamp(), // Thời gian gửi chính xác
+                    status: 'pending' // Chờ GV duyệt
+                });
+
+                statusMessage.textContent = `Đã gửi đáp án '${answer}'. Chờ GV duyệt.`;
+                statusMessage.style.color = '#2ecc71';
+                document.getElementById('answer-input').value = ''; 
+                document.getElementById('answer-input').focus();
+                
+            } catch (error) {
+                statusMessage.textContent = 'Gửi thất bại. Kiểm tra kết nối mạng.';
+                statusMessage.style.color = '#e74c3c';
+                console.error("Lỗi khi gửi đáp án: ", error);
+            } finally {
+                // Cho phép gửi lại sau 5 giây (để đội sửa sai nếu muốn)
+                setTimeout(() => {
+                    submitButton.disabled = false;
+                }, 5000); 
+            }
+        }
+    </script>
+</body>
+</html>
