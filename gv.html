@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mật Mã Thám Tử V-FIREBASE: Màn Hình GV</title>
     
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+    
     <script>
         window.MathJax = {
             tex: { 
@@ -118,7 +120,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
             border: 2px solid transparent;
-            min-height: 120px; 
+            min-height: 100px; 
         }
 
         /* CSS MÀU CHO 5 ĐỘI */
@@ -130,11 +132,11 @@
         .team-yellow .team-score-value, .team-yellow .q-text { color: #333; }
         .team-yellow .control-button-v2 { color: white; background-color: #e67e22; border: none; }
 
-        /* CỘT 1: ĐIỂM VÀ ĐIỀU KHIỂN CHUNG */
+        /* CỘT 1: ĐIỂM VÀ ĐIỀU KHIỂN CHUNG (Thu hẹp) */
         .team-score-control {
-            width: 130px; 
+            width: 90px;
             text-align: center;
-            padding: 10px 5px;
+            padding: 5px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -143,16 +145,15 @@
         }
 
         .team-score-value { 
-            font-size: 2.5em;
+            font-size: 2em; 
             font-weight: 900; 
             margin-bottom: 5px;
         }
         
-        /* CỘT 2: TRẠNG THÁI VÀ INPUT */
-        /* Cột này sẽ bị loại bỏ hoặc đơn giản hóa trong mã mới, không cần input */
+        /* CỘT 2: TRẠNG THÁI (Thanh 7 câu hỏi - Thu hẹp) */
         .team-status-area {
-            width: 380px;
-            padding: 10px 15px;
+            width: 250px; 
+            padding: 10px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -162,17 +163,17 @@
 
         .q-status-bar {
             display: flex;
-            gap: 5px;
-            margin-bottom: 10px;
+            gap: 3px; 
+            margin-bottom: 5px;
         }
         .q-status-item {
-            width: 20px;
-            height: 20px;
+            width: 18px; 
+            height: 18px; 
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 0.8em;
+            font-size: 0.7em; 
             font-weight: bold;
             color: white;
             background-color: #7f8c8d;
@@ -183,20 +184,20 @@
         /* CỘT 3: CÂU HỎI */
         .team-question-area {
             flex-grow: 1;
-            padding: 10px 20px;
+            padding: 5px 15px; 
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
         .q-number {
-            font-size: 1.2em; 
+            font-size: 1em; 
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
         }
         .q-text {
-            font-size: 1.4em;
+            font-size: 1.2em; 
             font-weight: 700;
-            line-height: 1.3;
+            line-height: 1.2;
         }
 
         /* GIAO DIỆN HÀNG ĐỢI DUYỆT ĐÁP ÁN MỚI */
@@ -228,6 +229,39 @@
             cursor: pointer; 
             font-weight: bold;
         }
+
+        /* KHU VỰC HIỂN THỊ QR CODE */
+        #qr-code-area {
+            width: 100%;
+            max-width: 1200px;
+            margin: 20px auto 30px auto;
+            padding: 20px;
+            background-color: #34495e;
+            border-radius: 10px;
+            text-align: center;
+        }
+        #qr-list {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        .qr-item {
+            width: 180px; 
+            margin: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            color: #333;
+            background-color: white; 
+            text-align: center;
+            font-weight: bold;
+        }
+        .qr-item img {
+            width: 150px;
+            height: 150px;
+            border: 2px solid #333;
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
@@ -235,7 +269,7 @@
     <div id="timer">10:00</div>
 
     <div id="start-area">
-        <h1>MẬT MÃ THÁM TỬ V-FIREBASE: 5 ĐỘI TRANH TÀI</h1>
+        <h1>MẬT MÃ RƯƠNG BÁU: 5 ĐỘI TRANH TÀI</h1>
         <p style="font-size: 1.2em; margin-bottom: 20px; color: #ccc;">Giải mã 7 câu hỏi trong 10 phút để trở thành thám tử xuất sắc nhất!</p>
         <p style="font-size: 1em; color: #ccc;">(Ấn nút **BẮT ĐẦU PHI VỤ!** để chuyển sang màn hình chơi và giải thích luật)</p>
         <button id="transitionButton">BẮT ĐẦU PHI VỤ!</button>
@@ -245,6 +279,16 @@
         <div id="control-area">
             <button id="startGameButton" onclick="startGame()">BẮT ĐẦU ĐẾM GIỜ VÀ HIỆN CÂU HỎI</button>
             <button id="conclusionButton" onclick="showFinalMessage(false)">TỔNG KẾT BẤT KỂ HẾT GIỜ</button>
+            
+            <hr style="margin: 15px 0; border-color: #f1c40f;">
+
+            <div id="qr-code-area">
+                <h2 style="color: #f1c40f;">QUÉT MÃ QR CODE ĐỂ NHẬP ĐÁP ÁN</h2>
+                <p style="color: #ccc; font-style: italic;">(Cần chạy trên Server/Host để tạo link chính xác)</p>
+                <div id="qr-list">
+                    </div>
+                <button onclick="generateQRCodes()" style="padding: 10px 20px; font-size: 1.2em; margin-top: 15px; background-color: #e67e22; color: white; border: none; border-radius: 5px; cursor: pointer;">TẠO/CẬP NHẬT MÃ QR</button>
+            </div>
             
             <hr style="margin: 15px 0; border-color: #f1c40f;">
 
@@ -259,6 +303,23 @@
             </div>
     </div>
 
+    <div id="conclusion-screen" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.9); z-index: 2000; justify-content: center; align-items: center; flex-direction: column;">
+        <h1 style="color: #f1c40f; font-size: 3em;">KẾT THÚC PHI VỤ!</h1>
+        <div id="ranking" style="margin-top: 20px; font-size: 1.5em;"></div>
+        <button onclick="showChestScreen()" style="padding: 15px 30px; font-size: 1.5em; background-color: #2ecc71; color: white; border: none; border-radius: 10px; margin-top: 30px; cursor: pointer;">MỞ HỘP BÍ MẬT</button>
+    </div>
+    
+    <div id="chest-screen" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.95); z-index: 3000; justify-content: center; align-items: center; flex-direction: column;">
+        <h1 style="color: #f1c40f; font-size: 3em;">CHÚC MỪNG ĐỘI CHIẾN THẮNG!</h1>
+        <div id="chest-winner" style="font-size: 2em; margin: 20px; color: #3498db; font-weight: bold;"></div>
+        
+        <h2 style="color: white; margin-top: 30px;">MẬT MÃ KHO BÁU LÀ:</h2>
+        <input type="text" id="final-code-input" placeholder="Nhập mã bí mật..." style="padding: 10px; font-size: 1.5em; text-align: center; border: 3px solid #f1c40f; border-radius: 5px; margin-top: 10px;">
+        <button onclick="openChest()" style="padding: 15px 30px; font-size: 1.5em; background-color: #e74c3c; color: white; border: none; border-radius: 10px; margin-top: 20px; cursor: pointer;">MỞ KHO BÁU</button>
+        <div id="prize-result" style="font-size: 2em; margin-top: 20px; color: #2ecc71; font-weight: bold;"></div>
+    </div>
+
+    
     <script type="module">
         // ---------------------------------------------------
         // 1. IMPORT FIREBASE CÁC CHỨC NĂNG CẦN THIẾT
@@ -267,7 +328,7 @@
         import { getFirestore, collection, query, orderBy, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
         // ---------------------------------------------------
-        // 2. CẤU HÌNH FIREBASE CỦA BẠN
+        // 2. CẤU HÌNH FIREBASE CỦA BẠN (SỬ DỤNG THÔNG TIN ĐÃ CUNG CẤP)
         // ---------------------------------------------------
         const firebaseConfig = {
             apiKey: "AIzaSyDfcMrblRonAS9Q7BSfD9ZZYeOmSy4UjfQ",
@@ -287,7 +348,7 @@
         // 4. CẤU HÌNH GAME (GIỮ NGUYÊN)
         // ---------------------------------------------------
         const POINTS_PER_CORRECT = 10;
-        const PENALTY_PER_SKIP = 20;
+        const PENALTY_PER_SKIP = 20; // Hiện tại không dùng
         const BONUS_POINTS = 30;
         const GAME_DURATION_SECONDS = 10 * 60; 
         const FINAL_SECRET_CODE = '1432'; 
@@ -307,8 +368,8 @@
         
         // DỮ LIỆU CÂU HỎI
         const ALL_TEAM_QUESTIONS = {
-            red: [{ q: 'Cho CSC có $u_1=3$ và công sai $d=2$. Tìm $u_{10}$.', correct: '21' }, { q: 'Cho CSN có $u_1=2$ và công bội $q=2$. Tìm $u_5$.', correct: '32' }, { q: 'Cho CSC có $u_1=2, u_5=18$. Tìm công sai $d$.', correct: '4' }, { q: 'Cho CSN có $u_1=2, u_3=18$. Tìm công bội $q$ dương.', correct: '3' }, { q: 'Cho CSC có $u_1=2, u_4=14$. Tìm tổng $S_4$.', correct: '32' }, { q: 'Cho CSN có $u_1=2, q=3$. Tìm tổng $S_3$.', correct: '26' }, { q: 'Cho CSC có $u_1=5, d=3$. Biết $u_n=32$. Tìm $n$.', correct: '10' } ],
-            blue: [{ q: 'Cho CSC có $u_1=10, d=3$. Tìm $u_8$.', correct: '31' }, { q: 'Cho CSN có $u_1=3, q=2$. Tìm $u_4$.', correct: '24' }, { q: 'Cho CSC có $u_1=3, u_5=15$. Tìm công sai $d$.', correct: '3' }, { q: 'Cho CSN có $u_1=3, u_3=12$. Tìm công bội $q$ dương.', correct: '2' }, { q: 'Cho CSC có $u_1=5, d=2$. Tìm tổng $S_5$.', correct: '45' }, { q: 'Cho CSN có $u_1=3, q=2$. Tìm tổng $S_4$.', correct: '45' }, { q: 'Cho CSN có $u_1=2, q=2$. Biết $u_n=64$. Tìm $n$.', correct: '6' } ],
+            red: [{ q: 'Cho CSC có $u_1=3$ và công sai $d=2$. Tìm $u_{10}$.', correct: '21' }, { q: 'Cho CSN có $u_1=2$ và công bội $q=2$. Tìm $u_5$.', correct: '32' }, { q: 'Cho CSC có $u_1=2, u_5=18$. Tìm công sai $d$.', correct: '4' }, { q: 'Cho CSN có $u_1=3, u_3=12$. Tìm công bội $q$ dương.', correct: '2' }, { q: 'Cho CSC có $u_1=5, d=2$. Tìm tổng $S_5$.', correct: '45' }, { q: 'Cho CSN có $u_1=3, q=2$. Tìm tổng $S_4$.', correct: '45' }, { q: 'Cho CSC có $u_1=5, d=3$. Biết $u_n=32$. Tìm $n$.', correct: '10' } ],
+            blue: [{ q: 'Cho CSC có $u_1=10, d=3$. Tìm $u_8$.', correct: '31' }, { q: 'Cho CSN có $u_1=3, q=2$. Tìm $u_4$.', correct: '24' }, { q: 'Cho CSC có $u_1=3, u_5=15$. Tìm công sai $d$.', correct: '3' }, { q: 'Cho CSN có $u_1=2, u_3=50$. Tìm công bội $q$ dương.', correct: '5' }, { q: 'Cho CSC có $u_1=5, d=2$. Tìm tổng $S_5$.', correct: '45' }, { q: 'Cho CSN có $u_1=3, q=2$. Tìm tổng $S_4$.', correct: '45' }, { q: 'Cho CSN có $u_1=2, q=2$. Biết $u_n=64$. Tìm $n$.', correct: '6' } ],
             green: [{ q: 'Cho CSC có $u_1=5, d=4$. Tìm $u_6$.', correct: '25' }, { q: 'Cho CSN có $u_1=4, q=3$. Tìm $u_3$.', correct: '36' }, { q: 'Cho CSC có $u_1=10, u_5=30$. Tìm công sai $d$.', correct: '5' }, { q: 'Cho CSN có $u_1=5, u_3=45$. Tìm công bội $q$ dương.', correct: '3' }, { q: 'Cho CSC có $u_1=2, u_6=12$. Tìm tổng $S_6$.', correct: '42' }, { q: 'Cho CSN có $u_1=4, q=2$. Tìm tổng $S_3$.', correct: '28' }, { q: 'Cho CSC có $u_1=2, d=4$. Biết $u_n=26$. Tìm $n$.', correct: '7' } ],
             yellow: [{ q: 'Cho CSC có $u_1=2, d=5$. Tìm $u_7$.', correct: '32' }, { q: 'Cho CSN có $u_1=2, q=3$. Tìm $u_4$.', correct: '54' }, { q: 'Cho CSC có $u_1=4, u_5=28$. Tìm công sai $d$.', correct: '6' }, { q: 'Cho CSN có $u_1=2, u_3=50$. Tìm công bội $q$ dương.', correct: '5' }, { q: 'Cho CSC có $u_1=1, d=3$. Tìm tổng $S_4$.', correct: '22' }, { q: 'Cho CSN có $u_1=5, q=-2$. Tìm tổng $S_3$.', correct: '15' }, { q: 'Cho CSN có $u_1=3, q=2$. Biết $u_n=48$. Tìm $n$.', correct: '5' } ],
             purple: [{ q: 'Cho CSC có $u_1=3, d=4$. Tìm $u_5$.', correct: '19' }, { q: 'Cho CSN có $u_1=5, q=2$. Tìm $u_4$.', correct: '40' }, { q: 'Cho CSC có $u_1=5, u_5=29$. Tìm công sai $d$.', correct: '6' }, { q: 'Cho CSN có $u_1=4, u_3=100$. Tìm công bội $q$ dương.', correct: '5' }, { q: 'Cho CSC có $u_1=10, d=-1$. Tìm tổng $S_5$.', correct: '40' }, { q: 'Cho CSN có $u_1=4, q=3$. Tìm tổng $S_3$.', correct: '52' }, { q: 'Cho CSC có $u_1=10, d=-2$. Biết $u_n=0$. Tìm $n$.', correct: '6' } ]
@@ -335,6 +396,7 @@
             document.getElementById('start-area').style.display = 'none';
             document.getElementById('game-wrapper').style.display = 'block';
             renderTeamRows(); 
+            generateQRCodes(); // Tự động tạo QR code khi chuyển màn hình
         }
 
         document.getElementById('transitionButton').onclick = transitionToGame;
@@ -355,18 +417,14 @@
         
         // Hàm lắng nghe hàng đợi submissions và cập nhật màn hình GV (FIREBASE)
         window.listenForSubmissions = function() {
-            // Truy vấn sắp xếp theo timestamp (từ sớm nhất đến muộn nhất)
             const q = query(collection(db, "submissions"), orderBy("timestamp", "asc"));
             
-            // Lắng nghe real-time
             onSnapshot(q, (snapshot) => {
                 window.submissionsQueue = [];
                 snapshot.forEach((doc) => {
-                    // Lấy dữ liệu và ID của submission
                     window.submissionsQueue.push({ id: doc.id, ...doc.data() });
                 });
                 
-                // Cập nhật giao diện Hàng đợi
                 window.renderSubmissionQueue();
             });
         }
@@ -382,39 +440,32 @@
             const team = teams.find(t => t.id === teamId);
             if (!team) return alert("Lỗi: Không tìm thấy đội.");
 
-            // Kiểm tra nếu đội đã hoàn thành
             if (team.currentManhMoiIndex >= ALL_TEAM_QUESTIONS[teamId].length) {
                 alert(`${team.name} đã hoàn thành 7 câu. Đáp án này sẽ bị xóa.`);
                 await deleteDoc(doc(db, "submissions", submissionId)); 
                 return;
             }
             
-            // Lấy đáp án đúng của câu hỏi hiện tại của đội
             const currentQIndex = team.currentManhMoiIndex;
             const correctAns = ALL_TEAM_QUESTIONS[teamId][currentQIndex].correct;
             
-            // Kiểm tra đáp án
             const isCorrect = submission.answer.trim().toLowerCase() === correctAns.toLowerCase();
             
-            // Xử lý logic và cập nhật điểm cục bộ
             let resultMessage = "";
             if (isCorrect) {
                 team.score += POINTS_PER_CORRECT;
-                team.currentManhMoiIndex++; // Chuyển sang câu hỏi tiếp theo
+                team.currentManhMoiIndex++; 
                 team.manhMoiCompletedState[currentQIndex] = true;
                 resultMessage = `CHÍNH XÁC! +${POINTS_PER_CORRECT} điểm cho ${team.name}.`;
             } else {
                 resultMessage = `SAI! Đáp án của ${team.name} là ${submission.answer}. Đáp án đúng: ${correctAns}.`;
             }
 
-            // Cập nhật giao diện GV và loại bỏ khỏi hàng đợi Firebase
             updateScoreDisplay(); 
             alert(resultMessage); 
             
-            // Xóa submission khỏi hàng đợi Firebase
             await deleteDoc(doc(db, "submissions", submissionId));
             
-            // Kiểm tra nếu có đội đã thắng (hoàn thành 7 câu)
             checkWinCondition();
         }
 
@@ -431,19 +482,15 @@
             } else {
                 html += '<div style="border: 2px solid #f1c40f; padding: 10px; border-radius: 8px;">';
                 
-                // Hiển thị 5 đội đầu tiên trong hàng đợi
                 submissionsQueue.slice(0, 5).forEach((sub, index) => {
                     const team = teams.find(t => t.id === sub.teamId);
-                    if (!team) return; // Bỏ qua nếu không tìm thấy đội
+                    if (!team) return; 
                     
                     const teamName = team.name;
-                    // Lấy câu hỏi hiện tại của đội theo logic game
                     const qIndex = team.currentManhMoiIndex < ALL_TEAM_QUESTIONS[team.id].length ? team.currentManhMoiIndex : ALL_TEAM_QUESTIONS[team.id].length - 1;
                     
-                    // Format timestamp (Firebase Timestamp)
                     const timeStr = sub.timestamp ? new Date(sub.timestamp.seconds * 1000).toLocaleTimeString() : 'Đang tải...';
                     
-                    // Xác định màu nền dựa trên màu đội
                     let bgColor = '#2c3e50';
                     let textColor = 'white';
                     if (team.colorClass === 'team-yellow') { 
@@ -476,7 +523,50 @@
             queueContainer.innerHTML = html;
         }
 
-        // HÀM TẠO GIAO DIỆN HÀNG ĐỘI (Đã loại bỏ input cũ)
+        // HÀM TẠO MÃ QR CHO CÁC ĐỘI
+        window.generateQRCodes = function() {
+            // QUAN TRỌNG: THAY ĐỔI URL NÀY BẰNG URL BẠN HOST file client_input.html
+            const BASE_CLIENT_URL = window.location.origin + '/client_input.html'; 
+
+            const qrList = document.getElementById('qr-list');
+            qrList.innerHTML = ''; 
+
+            teams.forEach(team => {
+                const teamId = team.id;
+                const link = `${BASE_CLIENT_URL}?teamId=${teamId}`;
+                
+                const qrItemContainer = document.createElement('div');
+                qrItemContainer.className = 'qr-item';
+
+                const nameTag = document.createElement('p');
+                nameTag.textContent = `Đội ${team.name.toUpperCase()}`;
+                
+                // Div nơi QR code sẽ được vẽ vào
+                const qrCodeDiv = document.createElement('div');
+                qrCodeDiv.id = `qr-${team.id}`;
+                qrCodeDiv.style.margin = '5px auto';
+
+                qrItemContainer.appendChild(nameTag);
+                qrItemContainer.appendChild(qrCodeDiv);
+                qrList.appendChild(qrItemContainer);
+
+                // Tạo QR code
+                // Lưu ý: Thư viện qrcode.min.js cần chạy bên ngoài thẻ <script type="module">, đã thêm ở phần <head>
+                new QRCode(qrCodeDiv, {
+                    text: link,
+                    width: 150,
+                    height: 150,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+                
+            });
+            document.getElementById('qr-code-area').scrollIntoView({ behavior: 'smooth' });
+        }
+
+
+        // HÀM TẠO GIAO DIỆN HÀNG ĐỘI (Đã thu gọn cột)
         function renderTeamRows() {
             const container = document.getElementById('team-rows-container');
             let html = '';
@@ -485,11 +575,9 @@
                 const currentQ = team.currentManhMoiIndex;
                 const totalQ = ALL_TEAM_QUESTIONS[team.id].length;
                 
-                // Hiển thị câu hỏi nếu chưa hoàn thành
                 const qDisplay = currentQ < totalQ ? ALL_TEAM_QUESTIONS[team.id][currentQ].q : "ĐÃ HOÀN THÀNH 7/7 CÂU!";
                 const qNumber = currentQ < totalQ ? `Mãnh Mối ${currentQ + 1}` : 'HOÀN THÀNH';
 
-                // Tạo thanh trạng thái câu hỏi
                 let statusHtml = '<div class="q-status-bar">';
                 for (let i = 0; i < totalQ; i++) {
                     let statusClass = team.manhMoiCompletedState[i] ? 'status-correct' : (i === currentQ ? 'status-ready' : '');
@@ -502,13 +590,13 @@
                         
                         <div class="team-score-control">
                             <div class="team-score-value" id="score-${team.id}">${team.score}</div>
-                            <span style="font-weight: bold;">${team.name.toUpperCase()}</span>
+                            <span style="font-weight: bold; font-size: 0.8em;">${team.name.toUpperCase()}</span>
                         </div>
                         
                         <div class="team-status-area">
                             ${statusHtml}
-                            <div id="status-message-${team.id}" style="font-weight: bold; font-size: 1em;">
-                                Chờ đội gửi đáp án qua điện thoại...
+                            <div id="status-message-${team.id}" style="font-weight: bold; font-size: 0.9em; margin-top: 5px;">
+                                Chờ đội gửi đáp án qua QR...
                             </div>
                         </div>
 
@@ -523,15 +611,13 @@
             });
             
             container.innerHTML = html;
-            // Cập nhật lại công thức toán MathJax
             if (window.MathJax) {
                 window.MathJax.typesetPromise([container]);
             }
         }
         
-        // CÁC HÀM CŨ ĐƯỢC GIỮ LẠI (Cần thiết cho logic game)
+        // CÁC HÀM CŨ ĐƯỢC GIỮ LẠI (Hàm hiển thị, timer, win condition)
         
-        // Cập nhật điểm và trạng thái câu hỏi (được gọi sau khi duyệt đáp án)
         function updateScoreDisplay() {
             teams.forEach(team => {
                 document.getElementById(`score-${team.id}`).textContent = team.score;
@@ -540,11 +626,7 @@
                 const totalQ = ALL_TEAM_QUESTIONS[team.id].length;
                 
                 const qDisplay = currentQ < totalQ ? ALL_TEAM_QUESTIONS[team.id][currentQ].q : "ĐÃ HOÀN THÀNH 7/7 CÂU!";
-                const qNumber = currentQ < totalQ ? `Mãnh Mối ${currentQ + 1}` : 'HOÀN THÀNH';
-
-                document.getElementById(`q-text-${team.id}`).innerHTML = qDisplay;
                 
-                // Cập nhật thanh trạng thái
                 const container = document.getElementById('team-rows-container');
                 let statusHtml = '<div class="q-status-bar">';
                 for (let i = 0; i < totalQ; i++) {
@@ -552,9 +634,10 @@
                     statusHtml += `<div class="q-status-item ${statusClass}">${i + 1}</div>`;
                 }
                 statusHtml += '</div>';
-                document.querySelector(`.team-row.${team.colorClass} .team-status-area`).innerHTML = statusHtml + `<div id="status-message-${team.id}" style="font-weight: bold; font-size: 1em;">Chờ đội gửi đáp án qua điện thoại...</div>`;
+                
+                document.getElementById(`q-text-${team.id}`).innerHTML = qDisplay;
+                document.querySelector(`.team-row.${team.colorClass} .team-status-area`).innerHTML = statusHtml + `<div id="status-message-${team.id}" style="font-weight: bold; font-size: 0.9em; margin-top: 5px;">Chờ đội gửi đáp án qua QR...</div>`;
 
-                // Cập nhật lại công thức toán MathJax
                 if (window.MathJax) {
                     window.MathJax.typesetPromise([container]);
                 }
@@ -567,15 +650,12 @@
             if (completedTeams.length > 0) {
                 completedTeams.forEach(team => {
                     if (!team.hasWon) {
-                        team.score += BONUS_POINTS; // Cộng điểm thưởng cho đội hoàn thành
+                        team.score += BONUS_POINTS; 
                         team.hasWon = true; 
                         
                         if (!firstWinningTeam) {
                             firstWinningTeam = team.id;
-                            updateScoreDisplay(); // Cập nhật điểm thưởng trên màn hình
-                            
-                            // Tùy chọn: Dừng game ngay khi có đội đầu tiên hoàn thành
-                            // showFinalMessage(true); 
+                            updateScoreDisplay(); 
                         }
                     }
                 });
@@ -583,7 +663,6 @@
         }
 
         function startTimer() {
-            // ... (Hàm này giữ nguyên)
             timerInterval = setInterval(() => {
                 timeRemaining--;
                 const minutes = Math.floor(timeRemaining / 60);
@@ -599,22 +678,48 @@
         }
 
         function showFinalMessage(isTimeUp) {
-            // ... (Hàm này giữ nguyên)
+            // Sắp xếp điểm
+            const sortedTeams = [...teams].sort((a, b) => b.score - a.score);
+            
+            let rankingHtml = '<ol style="text-align: left; list-style-position: inside;">';
+            sortedTeams.forEach((team, index) => {
+                let status = (team.id === firstWinningTeam) ? ' (Hoàn thành sớm nhất)' : '';
+                rankingHtml += `<li style="margin: 10px 0; font-weight: bold;">#${index + 1}: ${team.name} - ${team.score} điểm ${status}</li>`;
+            });
+            rankingHtml += '</ol>';
+
+            document.getElementById('ranking').innerHTML = rankingHtml;
+            document.getElementById('game-wrapper').style.display = 'none';
+            document.getElementById('timer').style.display = 'none';
+            document.getElementById('conclusion-screen').style.display = 'flex';
         }
         
         function showChestScreen() {
-             // ... (Hàm này giữ nguyên)
+            const winner = teams.find(t => t.id === firstWinningTeam) || teams.sort((a, b) => b.score - a.score)[0];
+            document.getElementById('chest-winner').textContent = winner.name.toUpperCase();
+            document.getElementById('conclusion-screen').style.display = 'none';
+            document.getElementById('chest-screen').style.display = 'flex';
         }
         
         function openChest() {
-             // ... (Hàm này giữ nguyên)
+            const inputCode = document.getElementById('final-code-input').value.trim();
+            const prizeResult = document.getElementById('prize-result');
+            
+            if (inputCode === FINAL_SECRET_CODE) {
+                const prizeIndex = Math.floor(Math.random() * PRIZE_POOL.length);
+                const prize = PRIZE_POOL[prizeIndex];
+                prizeResult.textContent = `KHO BÁU: ${prize}`;
+                prizeResult.style.color = '#2ecc71';
+            } else {
+                prizeResult.textContent = 'MÃ BÍ MẬT SAI. THỬ LẠI!';
+                prizeResult.style.color = '#e74c3c';
+            }
         }
 
         // Khởi tạo giao diện lần đầu khi tải trang
         document.addEventListener('DOMContentLoaded', () => {
             renderTeamRows();
-            // Lắng nghe Firebase ngay khi tải trang (để thấy trạng thái)
-            listenForSubmissions(); 
+            listenForSubmissions(); // Bắt đầu lắng nghe Firebase ngay lập tức
         });
         
     </script>
