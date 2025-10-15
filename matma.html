@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mật Mã Thám Tử V4: Giao Diện 5 Hàng Độc Lập</title>
+    
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            startup: { typeset: false }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body { 
+            font-family: 'Arial', sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: flex-start; 
+            min-height: 100vh; 
+            background-color: #282c34; 
+            padding: 20px; 
+            color: #fff; 
+        }
+
+        h1 { color: #f1c40f; }
+
+        /* KHUNG CHUNG CỦA CÁC ĐỘI */
+        #game-wrapper {
+            width: 95%; /* Chiều rộng lớn hơn để chứa 5 cột trạng thái */
+            max-width: 1200px; 
+            margin-top: 30px;
+        }
+
+        /* KHUNG CHUNG HIỂN THỊ MẬT MÃ KHO BÁU CUỐI CÙNG */
+        #code-display {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 25px;
+            font-size: 3.5em; 
+            font-weight: bold;
+            color: #f1c40f;
+            border: 3px solid #f1c40f;
+            padding: 10px 10px;
+            border-radius: 10px;
+            background-color: #34495e;
+            width: 100%;
+        }
+
+        /* KHUNG HÀNG CỦA MỘT ĐỘI */
+        .team-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            transition: transform 0.2s;
+            border: 2px solid transparent;
+        }
+        .team-row:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+        }
+
+        /* CSS MÀU CHO 5 ĐỘI */
+        .team-red { background-color: #e74c3c; border-color: #c0392b; }
+        .team-blue { background-color: #3498db; border-color: #2980b9; }
+        .team-green { background-color: #2ecc71; border-color: #27ae60; }
+        .team-yellow { background-color: #f1c40f; color: #333; border-color: #f39c12; }
+        .team-purple { background-color: #9b59b6; border-color: #8e44ad; }
+        .team-yellow .q-number, .team-yellow .team-score-value { color: #3498db; }
+        .team-yellow button { color: #333; background-color: #ecf0f1; border: 1px solid #bdc3c7; }
+        .team-yellow button:hover { background-color: #bdc3c7; }
+
+        /* KHUNG ĐIỂM VÀ TÊN */
+        .team-score-control {
+            width: 120px;
+            text-align: center;
+            padding-right: 15px;
+            border-right: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .team-name { font-size: 1.2em; font-weight: bold; margin-bottom: 5px; }
+        .team-score-value { font-size: 2.2em; font-weight: 900; }
+        .score-control button {
+            background: rgba(0, 0, 0, 0.2); 
+            border: none; 
+            color: white; 
+            padding: 5px 8px; 
+            margin: 0 2px;
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 0.9em; 
+            font-weight: 900; 
+            transition: background 0.2s;
+        }
+
+        /* KHUNG CÂU HỎI VÀ INPUT */
+        .team-question-area {
+            flex-grow: 1;
+            padding: 0 20px;
+        }
+        .q-number {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .q-text {
+            font-size: 1.1em;
+            font-weight: 500;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .input-group input {
+            padding: 8px;
+            width: 150px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            text-align: center;
+            margin-right: 10px;
+            color: #333;
+        }
+        .input-group button {
+            padding: 8px 15px;
+            font-size: 1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            background-color: #34495e; 
+            color: white;
+        }
+        .input-group button:hover {
+            opacity: 0.8;
+        }
+        .result-message { 
+            margin-top: 10px; 
+            font-size: 1em; 
+            font-weight: bold; 
+        }
+        .correct-answer { color: #2ecc71; }
+        .incorrect-answer { color: #e74c3c; }
+        .team-yellow .correct-answer { color: #27ae60; }
+        .team-yellow .incorrect-answer { color: #c0392b; }
+
+        /* KHUNG TRẠNG THÁI HOÀN THÀNH (7 cột) */
+        .team-status-bar {
+            width: 200px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-left: 15px;
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .manh-moi-status {
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            text-align: center;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.2); 
+            font-size: 0.8em;
+            font-weight: bold;
+            color: white;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        .manh-moi-completed {
+            background-color: #2ecc71;
+            transform: scale(1.1);
+        }
+        .manh-moi-active {
+            background-color: #f1c40f; 
+            color: #333;
+            animation: pulse-status 1s infinite alternate;
+        }
+        @keyframes pulse-status {
+            from { opacity: 1; }
+            to { opacity: 0.6; }
+        }
+
+        /* KHUNG KẾT THÚC */
+        #final-message {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            font-size: 2em;
+            z-index: 2000;
+        }
+        #final-message-content {
+            padding: 40px;
+            background-color: #e67e22;
+            border-radius: 15px;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+        }
+        #final-code {
+            font-size: 1.5em;
+            color: #fff176;
+            margin-top: 15px;
+            border: 2px solid #fff176;
+            padding: 10px 20px;
+            border-radius: 8px;
+        }
+
+        /* Nút Bắt đầu */
+        #startButton { 
+            padding: 15px 30px; 
+            font-size: 1.5em; 
+            cursor: pointer; 
+            background-color: #5cb85c; 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            transition: background-color 0.2s; 
+            margin-top: 20px;
+        }
+        #startButton:hover { background-color: #4cae4c; }
+    </style>
+</head>
+<body>
+
+    <div id="start-area">
+        <h1>MẬT MÃ THÁM TỬ: 5 ĐỘI TRANH TÀI (Giao diện 5 Hàng)</h1>
+        <button id="startButton">BẮT ĐẦU PHI VỤ!</button>
+    </div>
+
+    <div id="game-wrapper" style="display: none;">
+        <h2 style="color: #3498db; text-align: center; margin-bottom: 10px;">TRẠNG THÁI CHUNG</h2>
+        <div id="code-display">
+            ??? - ??? - ??? - ??? - ??? - ??? - ???
+        </div>
+        
+        <div id="team-rows-container">
+            </div>
+    </div>
+
+    <div id="final-message">
+        <div id="final-message-content">
+            <p>CHÚC MỪNG ĐỘI CHIẾN THẮNG!</p>
+            <p>MẬT MÃ KHO BÁU LÀ:</p>
+            <div id="final-code"></div>
+        </div>
+    </div>
+    
+    <script>
+        // CẤU HÌNH ĐIỂM VÀ MẬT MÃ
+        const SECRET_CODE = ['7', '0', '3', '6', '9', '2', '5'];
+        const POINTS_PER_MANH_MOI = 10;
+        const BONUS_POINTS = 30;
+
+        // CÂU HỎI (7 câu - Cấp số cộng/nhân)
+        const QUESTIONS = [
+            // Manh Mối 1: Cấp số cộng (Đáp án 7)
+            { q: 'Cho CSC có $u_1=1$ và công sai $d=2$. Tìm $u_4$.', correct: '7', manhMoiIndex: 0 }, 
+            // Manh Mối 2: Cấp số cộng (Đáp án 0)
+            { q: 'Cho CSC có $u_1=10$ và $d=-5$. Hỏi $u_3$ có giá trị bằng?', correct: '0', manhMoiIndex: 1 }, 
+            // Manh Mối 3: Cấp số nhân (Đáp án 3)
+            { q: 'Cho CSN có $u_1=1$ và công bội $q=3$. Tìm $u_2$.', correct: '3', manhMoiIndex: 2 }, 
+            // Manh Mối 4: Cấp số nhân (Đáp án 6)
+            { q: 'Tìm $x$ để 3 số $1, x, 36$ lập thành CSN dương. $x=$?', correct: '6', manhMoiIndex: 3 }, 
+            // Manh Mối 5: Cấp số cộng (Đáp án 9)
+            { q: 'Tìm tổng $S_3$ của CSC có $u_1=2$ và $u_3=4$.', correct: '9', manhMoiIndex: 4 }, // u2=3 => S3 = 2+3+4=9
+            // Manh Mối 6: Cấp số nhân (Đáp án 2)
+            { q: 'Cho CSN có $u_2=10$ và $u_3=20$. Tìm công bội $q$.', correct: '2', manhMoiIndex: 5 }, 
+            // Manh Mối 7: Cấp số cộng (Đáp án 5)
+            { q: 'Cho CSC có $u_5=10$ và $d=1$. Tìm $u_1$.', correct: '5', manhMoiIndex: 6 } // u1 = 10 - 4*1 = 6
+        ];
+
+        // Dữ liệu 5 ĐỘI CHƠI
+        const teams = [
+            { id: 'red', name: 'Đội Đỏ', colorClass: 'team-red', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(QUESTIONS.length).fill(false) },
+            { id: 'blue', name: 'Đội Xanh', colorClass: 'team-blue', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(QUESTIONS.length).fill(false) },
+            { id: 'green', name: 'Đội Lá', colorClass: 'team-green', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(QUESTIONS.length).fill(false) },
+            { id: 'yellow', name: 'Đội Vàng', colorClass: 'team-yellow', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(QUESTIONS.length).fill(false) },
+            { id: 'purple', name: 'Đội Tím', colorClass: 'team-purple', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(QUESTIONS.length).fill(false) }, 
+        ];
+        
+        // DOM Elements
+        const startButton = document.getElementById('startButton');
+        const gameWrapper = document.getElementById('game-wrapper');
+        const startArea = document.getElementById('start-area');
+        const codeDisplay = document.getElementById('code-display');
+        const teamRowsContainer = document.getElementById('team-rows-container');
+        const finalMessage = document.getElementById('final-message');
+        const finalCodeDisplay = document.getElementById('final-code');
+        
+        // ---------------------------------------------------
+        // CHỨC NĂNG BẢNG ĐIỂM
+        // ---------------------------------------------------
+        
+        function updateTeamScore(teamId, delta) {
+            const team = teams.find(t => t.id === teamId);
+            if (team) {
+                team.score += delta;
+                const scoreElement = document.getElementById(`score-${teamId}`);
+                if (scoreElement) {
+                    scoreElement.textContent = team.score;
+                    // Hiệu ứng nhấp nháy
+                    scoreElement.style.transition = 'none';
+                    scoreElement.style.transform = 'scale(1.2)';
+                    setTimeout(() => {
+                        scoreElement.style.transition = 'transform 0.2s';
+                        scoreElement.style.transform = 'scale(1.0)';
+                    }, 50);
+                }
+            }
+        }
+        window.updateTeamScore = updateTeamScore; 
+
+        // ---------------------------------------------------
+        // CHỨC NĂNG TRÒ CHƠI
+        // ---------------------------------------------------
+        
+        function renderTeamRows() {
+            teamRowsContainer.innerHTML = ''; 
+            
+            teams.forEach(team => {
+                const qIndex = team.currentManhMoiIndex;
+                const questionData = QUESTIONS[qIndex];
+                const isGameFinished = qIndex === QUESTIONS.length;
+                
+                const row = document.createElement('div');
+                row.className = `team-row ${team.colorClass}`;
+                row.id = `team-row-${team.id}`;
+                
+                let questionHTML = '';
+                let inputHTML = '';
+                
+                if (isGameFinished) {
+                    // Trạng thái hoàn thành 7/7
+                    questionHTML = `<div class="q-text">🎉 **HOÀN THÀNH 7/7 MANH MỐI!** Đang chờ kết quả chung cuộc...</div>`;
+                    inputHTML = '';
+                } else {
+                    // Trạng thái đang giải manh mối
+                    questionHTML = `
+                        <div class="q-number">Manh Mối ${qIndex + 1}</div>
+                        <div class="q-text" id="q-text-${team.id}">${questionData.q}</div>
+                    `;
+                    inputHTML = `
+                        <div class="input-group">
+                            <input type="number" id="answer-input-${team.id}" placeholder="Đáp án (1 chữ số)" min="0" max="9" step="1" maxlength="1" oninput="if(this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);">
+                            <button onclick="checkTeamAnswer('${team.id}')">KIỂM TRA</button>
+                        </div>
+                        <div class="result-message" id="result-message-${team.id}"></div>
+                    `;
+                }
+
+                // Cấu trúc HTML cho một hàng đội
+                row.innerHTML = `
+                    <div class="team-score-control">
+                        <div class="team-name">${team.name}</div>
+                        <div class="team-score-value" id="score-${team.id}">${team.score}</div>
+                        <div class="score-control">
+                            <button onclick="updateTeamScore('${team.id}', 10)">+10</button>
+                            <button onclick="updateTeamScore('${team.id}', -5)">-5</button>
+                        </div>
+                    </div>
+                    <div class="team-question-area">
+                        ${questionHTML}
+                        ${inputHTML}
+                    </div>
+                    <div class="team-status-bar" id="status-bar-${team.id}">
+                        </div>
+                `;
+                
+                teamRowsContainer.appendChild(row);
+                renderStatusBar(team);
+                
+                // Xử lý MathJax cho câu hỏi (nếu có)
+                if (!isGameFinished && window.MathJax) {
+                    MathJax.typesetPromise([document.getElementById(`q-text-${team.id}`)]);
+                }
+            });
+        }
+        
+        function renderStatusBar(team) {
+            const statusBar = document.getElementById(`status-bar-${team.id}`);
+            if (!statusBar) return;
+            statusBar.innerHTML = '';
+            
+            team.manhMoiCompletedState.forEach((isCompleted, index) => {
+                const status = document.createElement('div');
+                status.className = 'manh-moi-status';
+                status.textContent = index + 1;
+                
+                if (isCompleted) {
+                    status.classList.add('manh-moi-completed');
+                } else if (index === team.currentManhMoiIndex) {
+                    status.classList.add('manh-moi-active');
+                }
+                
+                statusBar.appendChild(status);
+            });
+        }
+        
+        // HÀM KIỂM TRA ĐÁP ÁN CHO TỪNG ĐỘI
+        window.checkTeamAnswer = function(teamId) {
+            const team = teams.find(t => t.id === teamId);
+            if (!team || team.currentManhMoiIndex >= QUESTIONS.length) return;
+            
+            const qIndex = team.currentManhMoiIndex;
+            const questionData = QUESTIONS[qIndex];
+            const resultMessage = document.getElementById(`result-message-${teamId}`);
+            const answerInput = document.getElementById(`answer-input-${teamId}`);
+            
+            const userAnswer = answerInput.value.trim();
+            const correctAnswer = questionData.correct.trim(); 
+            
+            if (userAnswer.length !== 1 || isNaN(parseInt(userAnswer))) {
+                resultMessage.innerHTML = 'Đáp án phải là **một chữ số** (0-9).';
+                resultMessage.className = 'result-message incorrect-answer';
+                answerInput.value = ''; 
+                return;
+            }
+
+            if (userAnswer === correctAnswer) {
+                // TRẢ LỜI ĐÚNG
+                team.manhMoiCompletedState[qIndex] = true;
+                team.currentManhMoiIndex++; 
+                
+                // Tăng điểm
+                team.score += POINTS_PER_MANH_MOI;
+                
+                let msg = `<span class="correct-answer">CHÍNH XÁC!</span> Đã mở khóa Manh Mối ${qIndex + 1}. **(+${POINTS_PER_MANH_MOI} điểm)**.`;
+
+                if (team.currentManhMoiIndex === QUESTIONS.length) {
+                     // HOÀN THÀNH 7/7
+                     team.score += BONUS_POINTS;
+                     msg += `<br><span class="correct-answer">NHẬN THƯỞNG!</span> Hoàn thành 7/7 Manh Mối. Thưởng thêm **+${BONUS_POINTS} điểm**!`;
+                     endGame(team);
+                }
+                
+                resultMessage.innerHTML = msg;
+                resultMessage.className = 'result-message correct-answer';
+                
+                // Cập nhật giao diện toàn bộ game
+                updateTeamScore(teamId, 0); // Chỉ để trigger cập nhật score trên giao diện
+                renderTeamRows(); 
+
+            } else {
+                // TRẢ LỜI SAI: Cho phép nhập lại (Không giới hạn lượt)
+                answerInput.value = ''; 
+                resultMessage.innerHTML = `<span class="incorrect-answer">CHƯA CHÍNH XÁC!</span> Vui lòng xem xét lại và nhập lại.`;
+                resultMessage.className = 'result-message incorrect-answer';
+            }
+        }
+        
+        // HÀM KẾT THÚC TRÒ CHƠI
+        function endGame(winningTeam) {
+            const finalCodeString = SECRET_CODE.join('-');
+            finalCodeDisplay.textContent = finalCodeString;
+            
+            // Hiện thông báo kết thúc
+            finalMessage.style.display = 'flex';
+            
+            // Cập nhật thông báo cuối cùng
+            const finalMsgContent = document.getElementById('final-message-content');
+            finalMsgContent.innerHTML = `
+                <p style="font-size: 1.5em; font-weight: bold;">CHÚC MỪNG ĐỘI CHIẾN THẮNG!</p>
+                <p style="font-size: 3em; color: ${winningTeam.colorClass.split('-')[1]};">${winningTeam.name}</p>
+                <p style="font-size: 1.5em; margin-top: 20px;">MẬT MÃ KHO BÁU LÀ:</p>
+                <div id="final-code" style="font-size: 1.5em; color: #fff176; margin-top: 15px; border: 2px solid #fff176; padding: 10px 20px; border-radius: 8px;">${finalCodeString}</div>
+            `;
+        }
+
+        // HÀM BẮT ĐẦU GAME
+        startButton.addEventListener('click', () => {
+            startArea.style.display = 'none';
+            gameWrapper.style.display = 'block';
+            
+            // Reset trạng thái
+            teams.forEach(team => {
+                team.score = 0;
+                team.currentManhMoiIndex = 0;
+                team.manhMoiCompletedState.fill(false);
+            });
+            
+            renderTeamRows();
+        });
+    </script>
+
+</body>
+</html>
