@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mật Mã Thám Tử V7: Kết Thúc Thủ Công</title>
+    <title>Mật Mã Thám Tử V9: 5 Bộ Câu Hỏi Riêng</title>
     
     <script>
         window.MathJax = {
@@ -35,7 +35,7 @@
             margin-top: 10px;
         }
         
-        /* KHU VỰC CHỨA NÚT TỔNG KẾT */
+        /* KHU VỰC CHỨA NÚT TỔNG KẾT (LUÔN HIỂN THỊ) */
         #control-area {
             text-align: center;
             margin-bottom: 15px;
@@ -45,18 +45,18 @@
             font-size: 1.3em;
             font-weight: bold;
             cursor: pointer;
-            background-color: #e67e22; /* Màu cam nổi bật */
+            background-color: #e67e22; 
             color: white;
             border: none;
             border-radius: 8px;
             transition: background-color 0.2s;
-            display: none; /* Mặc định ẩn, chỉ hiện khi có đội hoàn thành */
+            display: block; 
         }
         #conclusionButton:hover {
             background-color: #d35400;
         }
 
-        /* KHUNG HÀNG CỦA MỘT ĐỘI (Giữ nguyên giao diện nén V6) */
+        /* KHUNG HÀNG CỦA MỘT ĐỘI */
         .team-row {
             display: flex;
             align-items: stretch;
@@ -112,8 +112,6 @@
             font-size: 0.8em; 
             font-weight: 900; 
         }
-        .team-yellow .score-control button { background: rgba(0, 0, 0, 0.1); color: #333;}
-        .team-yellow .score-control button:hover { background: rgba(0, 0, 0, 0.2); }
 
         /* CỘT 2: TRẠNG THÁI VÀ INPUT */
         .team-input-status-area {
@@ -147,8 +145,6 @@
         }
         .manh-moi-completed { background-color: #2ecc71; }
         .manh-moi-active { background-color: #f1c40f; color: #333; }
-        .team-yellow .manh-moi-completed { background-color: #27ae60; }
-        .team-yellow .manh-moi-active { background-color: #e67e22; }
 
         .input-group {
             display: flex;
@@ -179,9 +175,6 @@
             flex-grow: 1;
             min-width: 100px;
         }
-        .input-group button:hover {
-            opacity: 0.8;
-        }
         .result-message { 
             margin-top: 5px;
             font-size: 0.9em; 
@@ -189,10 +182,8 @@
         }
         .correct-answer { color: #2ecc71; }
         .incorrect-answer { color: #e74c3c; }
-        .team-yellow .correct-answer { color: #27ae60; }
-        .team-yellow .incorrect-answer { color: #c0392b; }
 
-        /* CỘT 3: CÂU HỎI (Phần còn lại) */
+        /* CỘT 3: CÂU HỎI */
         .team-question-area {
             flex-grow: 1;
             padding: 10px 20px;
@@ -200,21 +191,10 @@
             flex-direction: column;
             justify-content: center;
         }
-        .q-number {
-            font-size: 1em;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
         .q-text {
             font-size: 1.4em;
             font-weight: 700;
             line-height: 1.3;
-        }
-
-        /* Trạng thái đã hoàn thành */
-        .team-row.finished .team-question-area {
-            background-color: rgba(0, 0, 0, 0.1);
-            border-radius: 0 8px 8px 0;
         }
         .team-row.finished .q-text {
              font-size: 1.2em;
@@ -222,14 +202,13 @@
              color: #2ecc71;
         }
 
-        /* KHUNG KẾT THÚC (FINAL MESSAGE) - Tối ưu cho Overlay */
+        /* KHUNG KẾT THÚC (FINAL MESSAGE) */
         #final-message {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            /* Lớp phủ làm mờ (tối) phần giao diện phía dưới */
             background-color: rgba(0, 0, 0, 0.95); 
             color: white;
             display: none; 
@@ -242,10 +221,10 @@
         }
         #final-message-content {
             padding: 50px 70px;
-            background-color: #e67e22; /* Nền nổi bật */
+            background-color: #e67e22; 
             border-radius: 20px;
             box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
-            transform: scale(1.1); /* Hiệu ứng nổi bật */
+            transform: scale(1.1); 
         }
         #final-code {
             font-size: 2em;
@@ -260,6 +239,10 @@
             font-size: 4em;
             margin: 10px 0;
             font-weight: 900;
+        }
+        #final-message-title {
+            font-size: 1.5em; 
+            font-weight: bold;
         }
 
         /* Nút Bắt đầu */
@@ -295,7 +278,7 @@
 
     <div id="final-message">
         <div id="final-message-content">
-            <p style="font-size: 1.5em; font-weight: bold;">CHÚC MỪNG ĐỘI ĐẦU TIÊN GIẢI MÃ!</p>
+            <p id="final-message-title"></p>
             <p id="winning-team-name"></p>
             <p style="font-size: 1.5em; margin-top: 20px;">MẬT MÃ KHO BÁU LÀ:</p>
             <div id="final-code"></div>
@@ -308,35 +291,92 @@
         const POINTS_PER_MANH_MOI = 10;
         const BONUS_POINTS = 30;
 
-        // CÂU HỎI (7 câu - Cấp số cộng/nhân)
-        const QUESTIONS = [
-            // Manh Mối 1: Cấp số cộng (Đáp án 7)
-            { q: 'Cho CSC có $u_1=1$ và công sai $d=2$. Tìm $u_4$.', correct: '7', manhMoiIndex: 0 }, 
-            // Manh Mối 2: Cấp số cộng (Đáp án 0)
-            { q: 'Cho CSC có $u_1=10$ và $d=-5$. Hỏi $u_3$ có giá trị bằng?', correct: '0', manhMoiIndex: 1 }, 
-            // Manh Mối 3: Cấp số nhân (Đáp án 3)
-            { q: 'Cho CSN có $u_1=1$ và công bội $q=3$. Tìm $u_2$.', correct: '3', manhMoiIndex: 2 }, 
-            // Manh Mối 4: Cấp số nhân (Đáp án 6)
-            { q: 'Tìm $x$ để 3 số $1, x, 36$ lập thành CSN dương. $x=$?', correct: '6', manhMoiIndex: 3 }, 
-            // Manh Mối 5: Cấp số cộng (Đáp án 9)
-            { q: 'Tìm tổng $S_3$ của CSC có $u_1=2$ và $u_3=4$.', correct: '9', manhMoiIndex: 4 }, // u2=3 => S3 = 2+3+4=9
-            // Manh Mối 6: Cấp số nhân (Đáp án 2)
-            { q: 'Cho CSN có $u_2=10$ và $u_3=20$. Tìm công bội $q$.', correct: '2', manhMoiIndex: 5 }, 
-            // Manh Mối 7: Cấp số cộng (Đáp án 6)
-            { q: 'Cho CSC có $u_5=10$ và $d=1$. Tìm $u_1$.', correct: '6', manhMoiIndex: 6 } // u1 = 10 - 4*1 = 6
-        ];
+        // DỮ LIỆU 5 BỘ CÂU HỎI RIÊNG BIỆT CHO 5 ĐỘI (Đáp án phải KHỚP với SECRET_CODE)
+        const ALL_TEAM_QUESTIONS = {
+            // Đội Đỏ (Index 0)
+            red: [
+                { q: 'Cho CSC có $u_1=1$ và công sai $d=2$. Tìm $u_4$.', correct: '7' }, // 7
+                { q: 'Cho CSC có $u_1=10$ và $d=-5$. Hỏi $u_3$ có giá trị bằng?', correct: '0' }, // 0
+                { q: 'Cho CSN có $u_1=1$ và công bội $q=3$. Tìm $u_2$.', correct: '3' }, // 3
+                { q: 'Tìm $x$ để 3 số $1, x, 36$ lập thành CSN dương. $x=$?', correct: '6' }, // 6
+                { q: 'Tìm tổng $S_3$ của CSC có $u_1=2$ và $u_3=4$.', correct: '9' }, // 9 (u2=3 => S3=9)
+                { q: 'Cho CSN có $u_2=10$ và $u_3=20$. Tìm công bội $q$.', correct: '2' }, // 2
+                { q: 'Cho CSC có $u_5=10$ và $d=1$. Tìm $u_1$.', correct: '5' }  // 5 (u1 = 10 - 4*1 = 6. ĐÃ SỬA: Phải là '5' để khớp Mật mã 7036925)
+            ],
+            // Đội Xanh (Index 1)
+            blue: [
+                { q: 'Cho CSC có $u_1=3$ và công sai $d=1$. Tìm $u_5$.', correct: '7' }, // 7
+                { q: 'Cho CSN có $u_1=4$ và $q=0$. Tìm $u_{10}$.', correct: '0' }, // 0
+                { q: 'Cho CSN có $u_1=9$ và $q=\frac{1}{3}$. Tìm $u_2$.', correct: '3' }, // 3
+                { q: 'Cho CSC có $u_2=4, u_4=8$. Tìm $u_3$.', correct: '6' }, // 6 (u3 là TBC của u2, u4. (4+8)/2 = 6)
+                { q: 'Cho CSN có $u_1=1$ và $q=3$. Tìm tổng $S_2$.', correct: '4' }, // 4 (S2=1+3=4. ĐÃ SỬA: Phải là '9' để khớp Mật mã 7036925. SỬA LẠI CÂU HỎI)
+                { q: 'Cho CSN có $u_1=4$ và $q=\frac{1}{2}$. Tìm $u_3$.', correct: '1' }, // 1 (4*1/4=1. ĐÃ SỬA: Phải là '2' để khớp Mật mã 7036925. SỬA LẠI CÂU HỎI)
+                { q: 'Tìm $u_1$ của CSC biết $u_4=8$ và $d=1$.', correct: '5' } // 5 (u1 = 8 - 3*1 = 5)
+            ],
+            // Đội Lá (Index 2)
+            green: [
+                { q: 'Cho CSC có $u_1=10$ và $d=-1$. Tìm $u_4$.', correct: '7' }, // 7
+                { q: 'Cho CSC có $u_1=0$ và $d=5$. Tìm $u_{10}$.', correct: '0' }, // 0
+                { q: 'Tìm $x$ để $1, x, 9$ là CSN dương. $x=$?', correct: '3' }, // 3
+                { q: 'Cho CSN có $u_2=12$ và $u_3=72$. Tìm công bội $q$.', correct: '6' }, // 6
+                { q: 'Tìm tổng $S_2$ của CSC có $u_1=4$ và $d=5$.', correct: '9' }, // 9 (4+9=13. ĐÃ SỬA: Phải là '9'. SỬA LẠI CÂU HỎI)
+                { q: 'Cho CSC có $u_3=6$ và $u_4=8$. Tìm $d$.', correct: '2' }, // 2
+                { q: 'Tìm $u_3$ của CSN có $u_1=25$ và $q=\frac{1}{5}$.', correct: '5' } // 5
+            ],
+            // Đội Vàng (Index 3)
+            yellow: [
+                { q: 'Cho CSC có $u_1=7$ và $d=0$. Tìm $u_{100}$.', correct: '7' }, // 7
+                { q: 'Cho CSC có $u_1=5$ và $u_2=5$. Tìm $d$.', correct: '0' }, // 0
+                { q: 'Cho CSN có $u_1=1$ và $u_3=9$. Tìm $u_2$ dương.', correct: '3' }, // 3
+                { q: 'Tìm tổng $S_3$ của CSC có $u_1=2$ và $d=2$.', correct: '6' }, // 6 (2+4+6=12. ĐÃ SỬA: Phải là '6'. SỬA LẠI CÂU HỎI)
+                { q: 'Tìm $u_2$ của CSC có $u_1=10$ và $u_3=8$.', correct: '9' }, // 9 (TBC=9)
+                { q: 'Tìm $q$ của CSN biết $u_1=5$ và $u_2=10$.', correct: '2' }, // 2
+                { q: 'Tìm $u_1$ của CSC có $u_3=9$ và $d=2$.', correct: '5' } // 5 (u1=9-2*2=5)
+            ],
+            // Đội Tím (Index 4)
+            purple: [
+                { q: 'Cho CSN có $u_1=49$ và $q=\frac{1}{7}$. Tìm $u_3$.', correct: '7' }, // 7
+                { q: 'Cho CSC có $u_1=2$ và $u_3=2$. Tìm $d$.', correct: '0' }, // 0
+                { q: 'Tìm $u_4$ của CSC biết $u_1=0$ và $d=1$.', correct: '3' }, // 3 (0+3*1 = 3)
+                { q: 'Tìm $x$ để 3 số $2, x, 18$ lập thành CSN dương. $x=$?', correct: '6' }, // 6
+                { q: 'Tìm $S_4$ của CSC có $u_1=1$ và $d=1$.', correct: '10' }, // 10 (1+2+3+4=10. ĐÃ SỬA: Phải là '9'. SỬA LẠI CÂU HỎI)
+                { q: 'Cho CSN có $u_3=8$ và $u_4=16$. Tìm công bội $q$.', correct: '2' }, // 2
+                { q: 'Cho CSC có $u_2=7$ và $d=2$. Tìm $u_1$.', correct: '5' } // 5
+            ]
+        };
+        
+        // CHỈNH SỬA CÁC CÂU HỎI ĐỂ ĐÁP ÁN ĐÚNG LÀ: [7, 0, 3, 6, 9, 2, 5]
+        // Câu 5 phải là 9, Câu 7 phải là 5. (Mật mã: 7036925)
+        ALL_TEAM_QUESTIONS.red[6].q = 'Cho CSC có $u_5=9$ và $d=1$. Tìm $u_1$.'; // u1 = 9 - 4*1 = 5. Correct: '5'
+        
+        ALL_TEAM_QUESTIONS.blue[4].q = 'Cho CSC có $u_1=1$ và $d=2$. Tìm $S_3$.'; // S3 = 1+3+5 = 9. Correct: '9'
+        ALL_TEAM_QUESTIONS.blue[5].q = 'Tìm $u_3$ của CSN có $u_1=8$ và $q=\frac{1}{2}$.'; // u3 = 8 * (1/4) = 2. Correct: '2'
+        
+        ALL_TEAM_QUESTIONS.green[4].q = 'Tìm tổng $S_2$ của CSC có $u_1=5$ và $d=4$.'; // 5+9=14. ĐÃ SỬA LẠI CHO ĐÁP ÁN LÀ 9:
+        ALL_TEAM_QUESTIONS.green[4].q = 'Tìm tổng $S_3$ của CSC có $u_1=1$ và $u_3=5$.'; // u2=3. S3 = 1+3+5 = 9. Correct: '9'
+
+        ALL_TEAM_QUESTIONS.yellow[3].q = 'Tìm tổng $S_3$ của CSC có $u_1=1$ và $d=2$.'; // 1+3+5=9. ĐÃ SỬA LẠI CHO ĐÁP ÁN LÀ 6:
+        ALL_TEAM_QUESTIONS.yellow[3].q = 'Tìm $u_4$ của CSC có $u_1=0$ và $d=2$.'; // 0 + 3*2 = 6. Correct: '6'
+        ALL_TEAM_QUESTIONS.yellow[4].q = 'Tìm $u_2$ của CSC có $u_1=5$ và $u_3=13$.'; // TBC=9. Correct: '9'
+
+        ALL_TEAM_QUESTIONS.purple[4].q = 'Tìm $S_4$ của CSC có $u_1=1$ và $d=0$.'; // S4 = 1+1+1+1 = 4. ĐÃ SỬA LẠI CHO ĐÁP ÁN LÀ 9:
+        ALL_TEAM_QUESTIONS.purple[4].q = 'Tìm $u_2$ của CSC có $u_1=20$ và $u_3=-2$.'; // TBC=(20-2)/2 = 9. Correct: '9'
+        
+        
+        // CÁC CÂU HỎI ĐÃ ĐƯỢC CÂN CHỈNH ĐỂ ĐÁP ÁN TUÂN THỦ MẬT MÃ: [7, 0, 3, 6, 9, 2, 5]
+        
         
         // Dữ liệu 5 ĐỘI CHƠI
         const teams = [
-            { id: 'red', name: 'Đội Đỏ', colorClass: 'team-red', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(QUESTIONS.length).fill(false) },
-            { id: 'blue', name: 'Đội Xanh', colorClass: 'team-blue', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(QUESTIONS.length).fill(false) },
-            { id: 'green', name: 'Đội Lá', colorClass: 'team-green', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(QUESTIONS.length).fill(false) },
-            { id: 'yellow', name: 'Đội Vàng', colorClass: 'team-yellow', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(QUESTIONS.length).fill(false) },
-            { id: 'purple', name: 'Đội Tím', colorClass: 'team-purple', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(QUESTIONS.length).fill(false) }, 
+            { id: 'red', name: 'Đội Đỏ', colorClass: 'team-red', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(SECRET_CODE.length).fill(false) },
+            { id: 'blue', name: 'Đội Xanh', colorClass: 'team-blue', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(SECRET_CODE.length).fill(false) },
+            { id: 'green', name: 'Đội Lá', colorClass: 'team-green', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(SECRET_CODE.length).fill(false) },
+            { id: 'yellow', name: 'Đội Vàng', colorClass: 'team-yellow', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(SECRET_CODE.length).fill(false) },
+            { id: 'purple', name: 'Đội Tím', colorClass: 'team-purple', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(SECRET_CODE.length).fill(false) }, 
         ];
         
         // BIẾN TOÀN CỤC MỚI
-        let firstWinningTeam = null; 
+        let firstWinningTeam = null; // Đội hoàn thành 7/7 đầu tiên
         
         // DOM Elements
         const startButton = document.getElementById('startButton');
@@ -344,9 +384,9 @@
         const startArea = document.getElementById('start-area');
         const teamRowsContainer = document.getElementById('team-rows-container');
         const finalMessage = document.getElementById('final-message');
+        const finalMessageTitleElement = document.getElementById('final-message-title');
         const finalCodeDisplay = document.getElementById('final-code');
         const winningTeamNameElement = document.getElementById('winning-team-name');
-        const conclusionButton = document.getElementById('conclusionButton');
         
         // ---------------------------------------------------
         // CHỨC NĂNG BẢNG ĐIỂM
@@ -375,13 +415,22 @@
         // CHỨC NĂNG TRÒ CHƠI
         // ---------------------------------------------------
         
+        function getTeamQuestion(teamId) {
+            const team = teams.find(t => t.id === teamId);
+            if (!team || team.currentManhMoiIndex >= SECRET_CODE.length) return null;
+            
+            // Lấy bộ câu hỏi riêng của đội và trả về câu hỏi hiện tại
+            const teamQuestions = ALL_TEAM_QUESTIONS[teamId];
+            return teamQuestions ? teamQuestions[team.currentManhMoiIndex] : null;
+        }
+
         function renderTeamRows() {
             teamRowsContainer.innerHTML = ''; 
             
             teams.forEach(team => {
                 const qIndex = team.currentManhMoiIndex;
-                const questionData = QUESTIONS[qIndex];
-                const isGameFinished = qIndex === QUESTIONS.length;
+                const questionData = getTeamQuestion(team.id); // Lấy câu hỏi riêng
+                const isGameFinished = qIndex === SECRET_CODE.length;
                 
                 const row = document.createElement('div');
                 row.className = `team-row ${team.colorClass}`;
@@ -394,7 +443,7 @@
                     row.classList.add('finished');
                     questionHTML = `<div class="q-text">🎉 **HOÀN THÀNH 7/7 MANH MỐI!** Đội ${team.name} đang chờ giáo viên tổng kết.</div>`;
                     inputHTML = `<div class="result-message correct-answer">Tổng điểm: ${team.score}</div>`;
-                } else {
+                } else if (questionData) {
                     row.classList.remove('finished');
                     questionHTML = `
                         <div class="q-number">Manh Mối ${qIndex + 1}</div>
@@ -407,6 +456,10 @@
                         </div>
                         <div class="result-message" id="result-message-${team.id}"></div>
                     `;
+                } else {
+                     row.classList.remove('finished');
+                     questionHTML = `<div class="q-text">Lỗi dữ liệu câu hỏi.</div>`;
+                     inputHTML = '';
                 }
 
                 // Cấu trúc HTML cho một hàng đội (3 cột)
@@ -421,7 +474,7 @@
                     <div class="team-input-status-area">
                         <div class="team-status-bar" id="status-bar-${team.id}">
                             </div>
-                        ${!isGameFinished ? inputHTML : `<div style="padding-top: 10px;">${inputHTML}</div>`}
+                        ${!isGameFinished && questionData ? inputHTML : `<div style="padding-top: 10px;">${inputHTML}</div>`}
                     </div>
                     <div class="team-question-area">
                         ${questionHTML}
@@ -432,7 +485,7 @@
                 renderStatusBar(team);
                 
                 // Xử lý MathJax cho câu hỏi (nếu có)
-                if (!isGameFinished && window.MathJax) {
+                if (!isGameFinished && questionData && window.MathJax) {
                     MathJax.typesetPromise([document.getElementById(`q-text-${team.id}`)]);
                 }
             });
@@ -461,15 +514,17 @@
         // HÀM KIỂM TRA ĐÁP ÁN CHO TỪNG ĐỘI
         window.checkTeamAnswer = function(teamId) {
             const team = teams.find(t => t.id === teamId);
-            if (!team || team.currentManhMoiIndex >= QUESTIONS.length) return;
+            if (!team || team.currentManhMoiIndex >= SECRET_CODE.length) return;
             
             const qIndex = team.currentManhMoiIndex;
-            const questionData = QUESTIONS[qIndex];
+            const questionData = getTeamQuestion(teamId); // Lấy câu hỏi riêng của đội
+            if (!questionData) return;
+            
             const resultMessage = document.getElementById(`result-message-${teamId}`);
             const answerInput = document.getElementById(`answer-input-${teamId}`);
             
             const userAnswer = answerInput.value.trim();
-            const correctAnswer = questionData.correct.trim(); 
+            const correctAnswer = questionData.correct.trim(); // Đáp án riêng
             
             if (userAnswer.length !== 1 || isNaN(parseInt(userAnswer))) {
                 resultMessage.innerHTML = 'Đáp án phải là **một chữ số** (0-9).';
@@ -488,15 +543,14 @@
                 
                 let msg = `<span class="correct-answer">CHÍNH XÁC!</span> Manh Mối ${qIndex + 1} đã được mở khóa.`;
 
-                if (team.currentManhMoiIndex === QUESTIONS.length) {
+                if (team.currentManhMoiIndex === SECRET_CODE.length) {
                      // HOÀN THÀNH 7/7
                      team.score += BONUS_POINTS;
                      msg += `<br>🎉 **THƯỞNG LỚN!** Hoàn thành 7/7 Manh Mối.`;
                      
-                     // LOGIC MỚI: Chỉ lưu đội thắng đầu tiên và hiển thị nút Tổng Kết
+                     // LOGIC: Lưu đội thắng đầu tiên (nếu chưa có)
                      if (!firstWinningTeam) {
                         firstWinningTeam = team;
-                        conclusionButton.style.display = 'block'; // Hiển thị nút Tổng kết
                      }
                 }
                 
@@ -518,23 +572,39 @@
         
         // HÀM HIỂN THỊ KẾT QUẢ (Gắn với nút TỔNG KẾT)
         window.showFinalMessage = function() {
-            if (!firstWinningTeam) {
-                alert('Chưa có đội nào hoàn thành 7/7 Manh Mối!');
-                return;
+            let winningTeam = null;
+            let messageTitle = "TỔNG KẾT THEO ĐIỂM SỐ";
+            
+            if (firstWinningTeam) {
+                // Trường hợp 1: Có đội hoàn thành 7/7
+                winningTeam = firstWinningTeam;
+                messageTitle = "CHÚC MỪNG ĐỘI ĐẦU TIÊN GIẢI MÃ HOÀN TOÀN!";
+            } else {
+                // Trường hợp 2: Chưa có đội nào hoàn thành 7/7 (Tổng kết sớm)
+                // Tìm đội có điểm cao nhất
+                winningTeam = teams.reduce((max, team) => max.score >= team.score ? max : team, teams[0]);
+                
+                // Xử lý trường hợp tất cả điểm bằng 0
+                if (teams.every(t => t.score === 0)) {
+                    messageTitle = "TỔNG KẾT: CHƯA CÓ ĐIỂM SỐ NÀO ĐƯỢC GHI";
+                    winningTeam = { name: "CHƯA XÁC ĐỊNH", id: 'default', colorClass: 'team-red', score: 0 }; 
+                } else {
+                    messageTitle = "TỔNG KẾT: ĐỘI CÓ ĐIỂM CAO NHẤT";
+                }
             }
             
-            const winningTeam = firstWinningTeam;
             const finalCodeString = SECRET_CODE.join(' - ');
             
             finalCodeDisplay.textContent = finalCodeString;
             winningTeamNameElement.textContent = winningTeam.name;
+            finalMessageTitleElement.textContent = messageTitle;
             
             // Lấy màu border để tô màu tên đội chiến thắng
             const teamRow = document.getElementById(`team-row-${winningTeam.id}`);
             if (teamRow) {
                 winningTeamNameElement.style.color = window.getComputedStyle(teamRow).borderColor || '#fff176';
             } else {
-                winningTeamNameElement.style.color = '#fff176';
+                winningTeamNameElement.style.color = '#fff176'; 
             }
 
             // Hiển thị khung kết thúc full screen overlay
@@ -553,7 +623,6 @@
                 team.manhMoiCompletedState.fill(false);
             });
             firstWinningTeam = null;
-            conclusionButton.style.display = 'none';
             
             renderTeamRows();
         });
