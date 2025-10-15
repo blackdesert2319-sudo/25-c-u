@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mật Mã Thám Tử V15: Start Có Nút & Mở Rương Bằng Mật Mã</title>
+    <title>Mật Mã Thám Tử V16: Đồng Hồ Khởi Động Chính Xác</title>
     
     <script>
         window.MathJax = {
@@ -376,7 +376,7 @@
     <div id="start-area">
         <h1>MẬT MÃ THÁM TỬ: 5 ĐỘI TRANH TÀI</h1>
         <p style="font-size: 1.2em; margin-bottom: 20px; color: #ccc;">Giải mã 7 câu hỏi trong 10 phút để tìm ra MẬT MÃ KHO BÁU!</p>
-        <p style="font-size: 1em; color: #ccc;">(Ấn nút "BẮT ĐẦU PHI VỤ!" khi thầy/cô đã giải thích luật chơi xong.)</p>
+        <p style="font-size: 1em; color: #ccc;">(Ấn nút **BẮT ĐẦU PHI VỤ!** khi đã giải thích luật chơi xong.)</p>
         <button id="startButton">BẮT ĐẦU PHI VỤ!</button>
     </div>
 
@@ -635,6 +635,7 @@
                 renderStatusBar(team);
                 
                 if (!isGameFinished && questionData && window.MathJax) {
+                    // Sau khi render xong HTML, yêu cầu MathJax xử lý các công thức toán
                     MathJax.typesetPromise([document.getElementById(`q-text-${team.id}`)]);
                 }
             });
@@ -752,8 +753,9 @@
             // Render điểm của tất cả các đội
             let scoreHTML = `<div style="max-width: 300px; margin: 0 auto;">`;
             teams.sort((a, b) => b.score - a.score).forEach(team => {
+                // Đảm bảo lấy màu sắc chính xác, ngay cả khi teamRow bị ẩn
                 const teamRow = document.getElementById(`team-row-${team.id}`);
-                const teamColor = teamRow ? window.getComputedStyle(teamRow).borderColor : '#fff';
+                const teamColor = teamRow ? window.getComputedStyle(teamRow).borderColor : '#fff'; 
                 scoreHTML += `
                     <div class="summary-score-item" style="color: ${teamColor};">
                         <span>${team.name}</span>
@@ -823,10 +825,12 @@
         }
 
         // ---------------------------------------------------
-        // HÀM BẮT ĐẦU GAME
+        // HÀM BẮT ĐẦU GAME (CHỈ CHẠY KHI ẤN NÚT)
         // ---------------------------------------------------
         startButton.addEventListener('click', () => {
+            // Ẩn màn hình Start
             startArea.style.display = 'none';
+            // Hiện màn hình Game
             gameWrapper.style.display = 'block';
             
             // Reset trạng thái
@@ -839,14 +843,12 @@
             timeRemaining = GAME_DURATION_SECONDS; 
             chestOpened = false; 
 
+            // Render giao diện Game (câu hỏi, điểm)
             renderTeamRows();
+            // Bắt đầu đếm ngược
             startTimer(); 
         });
         
-        // Render ban đầu (trống)
-        document.addEventListener('DOMContentLoaded', () => {
-            renderTeamRows();
-        });
     </script>
 
 </body>
