@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mật Mã Thám Tử V16: Đồng Hồ Khởi Động Chính Xác</title>
+    <title>Mật Mã Thám Tử V17: 2 Bước Khởi Động</title>
     
     <script>
         window.MathJax = {
@@ -44,7 +44,7 @@
             border-radius: 10px;
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
             z-index: 1000;
-            display: none; /* ẨN HOÀN TOÀN TRƯỚC KHI START */
+            display: none; 
         }
         
         /* KHU VỰC START BAN ĐẦU */
@@ -55,7 +55,7 @@
             justify-content: center;
             height: 80vh; 
         }
-        #startButton {
+        #transitionButton { /* Start button 1: Chuyển màn hình */
             padding: 15px 40px;
             font-size: 1.5em;
             font-weight: bold;
@@ -67,7 +67,7 @@
             transition: background-color 0.2s;
             margin-top: 20px;
         }
-        #startButton:hover {
+        #transitionButton:hover {
             background-color: #27ae60;
         }
 
@@ -77,15 +77,28 @@
             width: 98%; 
             max-width: 1400px; 
             margin-top: 10px;
-            /* Ẩn ban đầu, chỉ hiện khi Start */
+            /* Ẩn ban đầu, chỉ hiện khi Start 1 */
             display: none; 
         }
         
-        /* KHU VỰC CHỨA NÚT TỔNG KẾT (LUÔN HIỂN THỊ) */
+        /* KHU VỰC ĐIỀU KHIỂN CHUNG */
         #control-area {
             text-align: center;
             margin-bottom: 15px;
         }
+
+        /* Start Button 2: Bắt đầu đếm giờ */
+        #startGameButton { 
+            padding: 15px 40px; 
+            font-size: 1.5em; 
+            background-color: #3498db; 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
         #conclusionButton {
             padding: 10px 20px;
             font-size: 1.3em;
@@ -97,6 +110,7 @@
             border-radius: 8px;
             transition: background-color 0.2s;
             display: block; 
+            margin: 0 auto 15px auto;
         }
         #conclusionButton:hover {
             background-color: #d35400;
@@ -230,6 +244,12 @@
             font-size: 1.4em;
             font-weight: 700;
             line-height: 1.3;
+        }
+        .initial-message { /* Thông báo trước khi game chạy */
+            font-size: 1.2em;
+            font-weight: 500;
+            color: #ccc;
+            text-align: center;
         }
 
         /* KHUNG KẾT THÚC (FINAL MESSAGE) - Chung cho HẾT GIỜ và CHIẾN THẮNG */
@@ -376,13 +396,14 @@
     <div id="start-area">
         <h1>MẬT MÃ THÁM TỬ: 5 ĐỘI TRANH TÀI</h1>
         <p style="font-size: 1.2em; margin-bottom: 20px; color: #ccc;">Giải mã 7 câu hỏi trong 10 phút để tìm ra MẬT MÃ KHO BÁU!</p>
-        <p style="font-size: 1em; color: #ccc;">(Ấn nút **BẮT ĐẦU PHI VỤ!** khi đã giải thích luật chơi xong.)</p>
-        <button id="startButton">BẮT ĐẦU PHI VỤ!</button>
+        <p style="font-size: 1em; color: #ccc;">(Ấn nút **BẮT ĐẦU PHI VỤ!** để chuyển sang màn hình chơi và giải thích luật)</p>
+        <button id="transitionButton">BẮT ĐẦU PHI VỤ!</button>
     </div>
 
     <div id="game-wrapper">
         <div id="control-area">
-             <button id="conclusionButton" onclick="showFinalMessage(false)">TỔNG KẾT BẤT KỂ HẾT GIỜ</button>
+            <button id="startGameButton" onclick="startGame()">BẮT ĐẦU ĐẾM GIỜ VÀ HIỆN CÂU HỎI</button>
+            <button id="conclusionButton" onclick="showFinalMessage(false)">TỔNG KẾT BẤT KỂ HẾT GIỜ</button>
         </div>
         
         <div id="team-rows-container">
@@ -458,10 +479,11 @@
         let firstWinningTeam = null; 
         let timerInterval = null;
         let timeRemaining = GAME_DURATION_SECONDS;
-        let gameActive = false; 
+        let gameActive = false; // Trạng thái: FALSE khi đang chờ nút Start 2, TRUE khi đồng hồ chạy
         
         // DOM Elements
-        const startButton = document.getElementById('startButton');
+        const transitionButton = document.getElementById('transitionButton');
+        const startGameButton = document.getElementById('startGameButton');
         const gameWrapper = document.getElementById('game-wrapper');
         const startArea = document.getElementById('start-area');
         const teamRowsContainer = document.getElementById('team-rows-container');
@@ -494,6 +516,7 @@
             if (timerInterval) clearInterval(timerInterval);
             timerElement.style.display = 'block';
             gameActive = true;
+            startGameButton.style.display = 'none'; // Ẩn nút start thứ 2
 
             timerInterval = setInterval(() => {
                 if (!gameActive) {
@@ -572,7 +595,8 @@
         
         function getTeamQuestion(teamId) {
             const team = teams.find(t => t.id === teamId);
-            if (!team || team.currentManhMoiIndex >= SECRET_CODE_ARRAY.length) return null;
+            // Vẫn cho phép truy cập câu hỏi cuối cùng nếu đã hoàn thành (isGameFinished)
+            if (!team || team.currentManhMoiIndex > SECRET_CODE_ARRAY.length) return null; 
             
             const teamQuestions = ALL_TEAM_QUESTIONS[teamId];
             return teamQuestions ? teamQuestions[team.currentManhMoiIndex] : null;
@@ -597,7 +621,7 @@
                     row.classList.add('finished');
                     questionHTML = `<div class="q-text">🎉 **HOÀN THÀNH 7/7 CÂU HỎI!** Đội ${team.name} đã giải mã xong.</div>`;
                     inputHTML = `<div class="result-message correct-answer">Điểm chung cuộc: ${team.score}</div>`;
-                } else if (questionData) {
+                } else if (gameActive && questionData) {
                     row.classList.remove('finished');
                     questionHTML = `
                         <div class="q-number">Câu ${qIndex + 1}</div>
@@ -605,15 +629,16 @@
                     `;
                     inputHTML = `
                         <div class="input-group">
-                            <input type="number" id="answer-input-${team.id}" placeholder="Đáp án (1 chữ số)" min="0" max="9" step="1" maxlength="1" oninput="if(this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" ${!gameActive ? 'disabled' : ''}>
-                            <button onclick="checkTeamAnswer('${team.id}')" ${!gameActive ? 'disabled' : ''}>KIỂM TRA</button>
+                            <input type="number" id="answer-input-${team.id}" placeholder="Đáp án (1 chữ số)" min="0" max="9" step="1" maxlength="1" oninput="if(this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);">
+                            <button onclick="checkTeamAnswer('${team.id}')">KIỂM TRA</button>
                         </div>
                         <div class="result-message" id="result-message-${team.id}"></div>
                     `;
                 } else {
+                     // Trường hợp gameActive = false (chưa bấm Start 2)
                      row.classList.remove('finished');
-                     questionHTML = `<div class="q-text">Lỗi dữ liệu câu hỏi.</div>`;
-                     inputHTML = '';
+                     questionHTML = `<div class="initial-message">Chờ Giáo viên bấm nút Start để hiện câu hỏi.</div>`;
+                     inputHTML = `<div class="result-message" style="color: #f1c40f;">Sẵn sàng...</div>`;
                 }
 
                 row.innerHTML = `
@@ -624,7 +649,7 @@
                     <div class="team-input-status-area">
                         <div class="team-status-bar" id="status-bar-${team.id}">
                             </div>
-                        ${!isGameFinished && questionData ? inputHTML : `<div style="padding-top: 10px;">${inputHTML}</div>`}
+                        ${!isGameFinished && questionData || !gameActive ? inputHTML : `<div style="padding-top: 10px;">${inputHTML}</div>`}
                     </div>
                     <div class="team-question-area">
                         ${questionHTML}
@@ -634,8 +659,8 @@
                 teamRowsContainer.appendChild(row);
                 renderStatusBar(team);
                 
-                if (!isGameFinished && questionData && window.MathJax) {
-                    // Sau khi render xong HTML, yêu cầu MathJax xử lý các công thức toán
+                // Chỉ xử lý MathJax nếu game đã bắt đầu (gameActive = true) và có câu hỏi
+                if (gameActive && !isGameFinished && questionData && window.MathJax) {
                     MathJax.typesetPromise([document.getElementById(`q-text-${team.id}`)]);
                 }
             });
@@ -653,7 +678,7 @@
                 
                 if (isCompleted) {
                     status.classList.add('manh-moi-completed');
-                } else if (index === team.currentManhMoiIndex) {
+                } else if (index === team.currentManhMoiIndex && gameActive) { // Active chỉ khi game đang chạy
                     status.classList.add('manh-moi-active');
                 }
                 
@@ -738,6 +763,7 @@
                 `;
             } else if (isTimeout) {
                 messageTitle = "HẾT GIỜ!";
+                // Sắp xếp lại danh sách các đội theo điểm để tìm người chiến thắng
                 winningTeam = teams.reduce((max, team) => max.score >= team.score ? max : team, teams[0]);
                 
                 winningTeamDisplayElement.textContent = `TỔNG KẾT THEO ĐIỂM SỐ: Đội ${winningTeam.name} dẫn đầu.`;
@@ -753,7 +779,6 @@
             // Render điểm của tất cả các đội
             let scoreHTML = `<div style="max-width: 300px; margin: 0 auto;">`;
             teams.sort((a, b) => b.score - a.score).forEach(team => {
-                // Đảm bảo lấy màu sắc chính xác, ngay cả khi teamRow bị ẩn
                 const teamRow = document.getElementById(`team-row-${team.id}`);
                 const teamColor = teamRow ? window.getComputedStyle(teamRow).borderColor : '#fff'; 
                 scoreHTML += `
@@ -764,7 +789,7 @@
                 `;
             });
             scoreHTML += `</div>`;
-            scoreSummaryElement.innerHTML = scoreSummaryElement.innerHTML.split('</div>')[0] + scoreHTML;
+            scoreSummaryElement.innerHTML = `<p style="text-align: center; margin-bottom: 15px; font-size: 1.2em; color: #f1c40f;">ĐIỂM SỐ CHUNG CUỘC:</p>` + scoreHTML;
 
             finalTitleElement.textContent = messageTitle;
             finalMessageOverlay.style.display = 'flex';
@@ -825,15 +850,25 @@
         }
 
         // ---------------------------------------------------
-        // HÀM BẮT ĐẦU GAME (CHỈ CHẠY KHI ẤN NÚT)
+        // KHỞI TẠO GAME (START Button 2)
         // ---------------------------------------------------
-        startButton.addEventListener('click', () => {
-            // Ẩn màn hình Start
+        window.startGame = function() {
+            // Hiển thị câu hỏi và các nút điều khiển
+            renderTeamRows();
+            // Bắt đầu đếm ngược
+            startTimer(); 
+        };
+
+        // ---------------------------------------------------
+        // CHUYỂN MÀN HÌNH (START Button 1)
+        // ---------------------------------------------------
+        transitionButton.addEventListener('click', () => {
+            // Ẩn màn hình Start 1
             startArea.style.display = 'none';
             // Hiện màn hình Game
             gameWrapper.style.display = 'block';
             
-            // Reset trạng thái
+            // Thiết lập trạng thái ban đầu (chưa chạy giờ)
             teams.forEach(team => {
                 team.score = 0;
                 team.currentManhMoiIndex = 0;
@@ -843,10 +878,13 @@
             timeRemaining = GAME_DURATION_SECONDS; 
             chestOpened = false; 
 
-            // Render giao diện Game (câu hỏi, điểm)
-            renderTeamRows();
-            // Bắt đầu đếm ngược
-            startTimer(); 
+            // Hiện đồng hồ nhưng chưa chạy
+            timerElement.textContent = formatTime(GAME_DURATION_SECONDS);
+            timerElement.style.display = 'block';
+            timerElement.style.color = '#e74c3c'; // Màu pause
+
+            // Render giao diện Game (Bảng điểm đã có, phần câu hỏi trống)
+            renderTeamRows(); 
         });
         
     </script>
