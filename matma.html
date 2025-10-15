@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mật Mã Thám Tử V18: Sửa Lỗi Hiển Thị Câu Hỏi</title>
+    <title>Mật Mã Thám Tử V20: Đáp Án Ngắn - Sửa Lỗi Hiển Thị</title>
     
     <script>
         window.MathJax = {
@@ -206,7 +206,7 @@
             transition: background-color 0.3s, transform 0.3s;
         }
         .manh-moi-completed { background-color: #2ecc71; }
-        .manh-moi-active { background-color: #f1c40f; color: #333; }
+        .man-moi-active { background-color: #f1c40f; color: #333; }
 
         .input-group input {
             padding: 8px;
@@ -310,7 +310,7 @@
             to { transform: scale(1.05); opacity: 0.9; }
         }
 
-        /* GIAO DIỆN RƯƠNG KHO BÁU */
+        /* KHUNG RƯƠNG KHO BÁU */
         #chest-screen-overlay {
             position: fixed;
             top: 0;
@@ -395,7 +395,7 @@
 
     <div id="start-area">
         <h1>MẬT MÃ THÁM TỬ: 5 ĐỘI TRANH TÀI</h1>
-        <p style="font-size: 1.2em; margin-bottom: 20px; color: #ccc;">Giải mã 7 câu hỏi trong 10 phút để tìm ra MẬT MÃ KHO BÁU!</p>
+        <p style="font-size: 1.2em; margin-bottom: 20px; color: #ccc;">Giải mã 7 câu hỏi trong 10 phút để trở thành thám tử xuất sắc nhất!</p>
         <p style="font-size: 1em; color: #ccc;">(Ấn nút **BẮT ĐẦU PHI VỤ!** để chuyển sang màn hình chơi và giải thích luật)</p>
         <button id="transitionButton">BẮT ĐẦU PHI VỤ!</button>
     </div>
@@ -417,7 +417,7 @@
             <div id="score-summary">
                 <p style="text-align: center; margin-bottom: 15px; font-size: 1.2em; color: #f1c40f;">ĐIỂM SỐ CHUNG CUỘC:</p>
                 </div>
-             <button id="open-chest-button-trigger" onclick="showChestScreen()">CHUYỂN SANG GIAO DIỆN RƯƠNG</button>
+             <button id="open-chest-button-trigger" onclick="showChestScreen()">CHUYỂN SANG GIAO DIỆN RƯƠNG KHO BÁU</button>
         </div>
     </div>
     
@@ -426,7 +426,7 @@
         <div id="chest-icon" class="chest-closed">🔒</div>
         
         <div id="open-chest-group">
-            <input type="text" id="chest-code-input" placeholder="Nhập MẬT MÃ 7 chữ số" maxlength="7">
+            <input type="text" id="chest-code-input" placeholder="Nhập MẬT MÃ (ĐÁP ÁN CUỐI CÙNG)" maxlength="4">
             <button id="open-chest-button" onclick="openChest()">MỞ KHÓA RƯƠNG</button>
             <div id="chest-message"></div>
         </div>
@@ -439,8 +439,7 @@
     
     <script>
         // CẤU HÌNH ĐIỂM, MẬT MÃ VÀ THỜI GIAN
-        const SECRET_CODE_ARRAY = ['7', '0', '3', '6', '9', '2', '5'];
-        const SECRET_CODE_STRING = SECRET_CODE_ARRAY.join('');
+        // Dữ liệu mật mã đã bị loại bỏ theo yêu cầu của GV, chỉ còn chức năng kiểm tra đáp án
         const POINTS_PER_CORRECT = 10;
         const PENALTY_PER_SKIP = 20;
         const BONUS_POINTS = 30;
@@ -455,31 +454,34 @@
             "Miễn 1 câu hỏi bài tập về nhà.",
             "1 lần đổi đội trong hoạt động sắp tới (nếu có)."
         ];
+        
+        // MẬT MÃ CUỐI CÙNG CHO RƯƠNG KHO BÁU (GV có thể thay đổi số này)
+        const FINAL_SECRET_CODE = '1432'; 
 
 
-        // DỮ LIỆU CÂU HỎI (ĐÃ SỬA LỖI VÀ GIỮ NGUYÊN)
+        // DỮ LIỆU CÂU HỎI MỚI (V20 FINAL) - Đáp án ngắn, số nguyên
         const ALL_TEAM_QUESTIONS = {
-            red: [{ q: 'Cho CSC có $u_1=1$ và công sai $d=2$. Tìm $u_4$.', correct: '7' }, { q: 'Cho CSC có $u_1=10$ và $d=-5$. Hỏi $u_3$ có giá trị bằng?', correct: '0' }, { q: 'Cho CSN có $u_1=1$ và công bội $q=3$. Tìm $u_2$.', correct: '3' }, { q: 'Tìm $x$ để 3 số $1, x, 36$ lập thành CSN dương. $x=$?', correct: '6' }, { q: 'Tìm tổng $S_3$ của CSC có $u_1=2$ và $u_3=4$.', correct: '9' }, { q: 'Cho CSN có $u_2=10$ và $u_3=20$. Tìm công bội $q$.', correct: '2' }, { q: 'Cho CSC có $u_5=9$ và $d=1$. Tìm $u_1$.', correct: '5' } ],
-            blue: [{ q: 'Cho CSC có $u_1=3$ và công sai $d=1$. Tìm $u_5$.', correct: '7' }, { q: 'Cho CSN có $u_1=4$ và $q=0$. Tìm $u_{10}$.', correct: '0' }, { q: 'Cho CSN có $u_1=9$ và $q=\\frac{1}{3}$. Tìm $u_2$.', correct: '3' }, { q: 'Cho CSC có $u_2=4, u_4=8$. Tìm $u_3$.', correct: '6' }, { q: 'Cho CSC có $u_1=1$ và $d=2$. Tìm $S_3$.', correct: '9' }, { q: 'Tìm $u_3$ của CSN có $u_1=8$ và $q=\\frac{1}{2}$.', correct: '2' }, { q: 'Tìm $u_1$ của CSC biết $u_4=8$ và $d=1$.', correct: '5' } ],
-            green: [{ q: 'Cho CSC có $u_1=10$ và $d=-1$. Tìm $u_4$.', correct: '7' }, { q: 'Cho CSC có $u_1=0$ và $d=5$. Tìm $u_{10}$.', correct: '0' }, { q: 'Tìm $x$ để $1, x, 9$ là CSN dương. $x=$?', correct: '3' }, { q: 'Cho CSN có $u_2=12$ và $u_3=72$. Tìm công bội $q$.', correct: '6' }, { q: 'Tìm tổng $S_3$ của CSC có $u_1=1$ và $u_3=5$.', correct: '9' }, { q: 'Cho CSC có $u_3=6$ và $u_4=8$. Tìm $d$.', correct: '2' }, { q: 'Tìm $u_3$ của CSN có $u_1=25$ và $q=\\frac{1}{5}$.', correct: '5' } ],
-            yellow: [{ q: 'Cho CSC có $u_1=7$ và $d=0$. Tìm $u_{100}$.', correct: '7' }, { q: 'Cho CSC có $u_1=5$ và $u_2=5$. Tìm $d$.', correct: '0' }, { q: 'Cho CSN có $u_1=1$ và $u_3=9$. Tìm $u_2$ dương.', correct: '3' }, { q: 'Tìm $u_4$ của CSC có $u_1=0$ và $d=2$.', correct: '6' }, { q: 'Tìm $u_2$ của CSC có $u_1=5$ và $u_3=13$.', correct: '9' }, { q: 'Tìm $q$ của CSN biết $u_1=5$ và $u_2=10$.', correct: '2' }, { q: 'Tìm $u_1$ của CSC có $u_3=9$ và $d=2$.', correct: '5' } ],
-            purple: [{ q: 'Cho CSN có $u_1=49$ và $q=\\frac{1}{7}$. Tìm $u_3$.', correct: '7' }, { q: 'Cho CSC có $u_1=2$ và $u_3=2$. Tìm $d$.', correct: '0' }, { q: 'Tìm $u_4$ của CSC biết $u_1=0$ và $d=1$.', correct: '3' }, { q: 'Tìm $x$ để 3 số $2, x, 18$ lập thành CSN dương. $x=$?', correct: '6' }, { q: 'Tìm $u_2$ của CSC có $u_1=20$ và $u_3=-2$.', correct: '9' }, { q: 'Cho CSN có $u_3=8$ và $u_4=16$. Tìm công bội $q$.', correct: '2' }, { q: 'Cho CSC có $u_2=7$ và $d=2$. Tìm $u_1$.', correct: '5' } ]
+            red: [{ q: 'Cho CSC có $u_1=3$ và công sai $d=2$. Tìm $u_{10}$.', correct: '21' }, { q: 'Cho CSN có $u_1=2$ và công bội $q=2$. Tìm $u_5$.', correct: '32' }, { q: 'Cho CSC có $u_1=2, u_5=18$. Tìm công sai $d$.', correct: '4' }, { q: 'Cho CSN có $u_1=2, u_3=18$. Tìm công bội $q$ dương.', correct: '3' }, { q: 'Cho CSC có $u_1=1, u_4=7$. Tìm tổng $S_4$.', correct: '16' }, { q: 'Cho CSN có $u_1=1, q=3$. Tìm tổng $S_3$.', correct: '13' }, { q: 'Cho CSC có $u_1=5, d=3$. Biết $u_n=32$. Tìm $n$.', correct: '10' } ],
+            blue: [{ q: 'Cho CSC có $u_1=10, d=3$. Tìm $u_8$.', correct: '31' }, { q: 'Cho CSN có $u_1=3, q=2$. Tìm $u_4$.', correct: '24' }, { q: 'Cho CSC có $u_2=5, u_4=11$. Tìm công sai $d$.', correct: '3' }, { q: 'Cho CSN có $u_2=12, u_4=48$. Tìm công bội $q$ dương.', correct: '2' }, { q: 'Cho CSC có $u_1=5, d=2$. Tìm tổng $S_5$.', correct: '45' }, { q: 'Cho CSN có $u_1=2, q=2$. Tìm tổng $S_4$.', correct: '30' }, { q: 'Cho CSN có $u_1=1, q=2$. Biết $u_n=64$. Tìm $n$.', correct: '7' } ],
+            green: [{ q: 'Cho CSC có $u_1=5, d=4$. Tìm $u_6$.', correct: '25' }, { q: 'Cho CSN có $u_1=4, q=3$. Tìm $u_3$.', correct: '36' }, { q: 'Cho CSC có $u_1=10, u_7=40$. Tìm công sai $d$.', correct: '5' }, { q: 'Cho CSN có $u_1=5, u_3=45$. Tìm công bội $q$ dương.', correct: '3' }, { q: 'Cho CSC có $u_1=2, u_6=12$. Tìm tổng $S_6$.', correct: '42' }, { q: 'Cho CSN có $u_1=4, q=2$. Tìm tổng $S_3$.', correct: '28' }, { q: 'Cho CSC có $u_1=1, d=4$. Biết $u_n=29$. Tìm $n$.', correct: '8' } ],
+            yellow: [{ q: 'Cho CSC có $u_1=1, d=5$. Tìm $u_7$.', correct: '31' }, { q: 'Cho CSN có $u_1=2, q=3$. Tìm $u_4$.', correct: '54' }, { q: 'Cho CSC có $u_3=7, u_6=16$. Tìm công sai $d$.', correct: '3' }, { q: 'Cho CSN có $u_3=20, u_4=100$. Tìm công bội $q$.', correct: '5' }, { q: 'Cho CSC có $u_1=1, d=3$. Tìm tổng $S_4$.', correct: '22' }, { q: 'Cho CSN có $u_1=5, q=-2$. Tìm tổng $S_3$.', correct: '15' }, { q: 'Cho CSN có $u_1=3, q=2$. Biết $u_n=48$. Tìm $n$.', correct: '5' } ],
+            purple: [{ q: 'Cho CSC có $u_1=2, d=4$. Tìm $u_5$.', correct: '18' }, { q: 'Cho CSN có $u_1=5, q=2$. Tìm $u_4$.', correct: '40' }, { q: 'Cho CSC có $u_4=15, u_6=25$. Tìm công sai $d$.', correct: '5' }, { q: 'Cho CSN có $u_2=10, u_5=80$. Tìm công bội $q$.', correct: '2' }, { q: 'Cho CSC có $u_1=10, d=-1$. Tìm tổng $S_5$.', correct: '40' }, { q: 'Cho CSN có $u_1=4, q=3$. Tìm tổng $S_3$.', correct: '52' }, { q: 'Cho CSC có $u_1=10, d=-2$. Biết $u_n=0$. Tìm $n$.', correct: '6' } ]
         };
         
         // Dữ liệu 5 ĐỘI CHƠI
         const teams = [
-            { id: 'red', name: 'Đội Đỏ', colorClass: 'team-red', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(SECRET_CODE_ARRAY.length).fill(false) },
-            { id: 'blue', name: 'Đội Xanh', colorClass: 'team-blue', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(SECRET_CODE_ARRAY.length).fill(false) },
-            { id: 'green', name: 'Đội Lá', colorClass: 'team-green', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(SECRET_CODE_ARRAY.length).fill(false) },
-            { id: 'yellow', name: 'Đội Vàng', colorClass: 'team-yellow', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(SECRET_CODE_ARRAY.length).fill(false) },
-            { id: 'purple', name: 'Đội Tím', colorClass: 'team-purple', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(SECRET_CODE_ARRAY.length).fill(false) }, 
+            { id: 'red', name: 'Đội Đỏ', colorClass: 'team-red', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(7).fill(false) },
+            { id: 'blue', name: 'Đội Xanh', colorClass: 'team-blue', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(7).fill(false) },
+            { id: 'green', name: 'Đội Lá', colorClass: 'team-green', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(7).fill(false) },
+            { id: 'yellow', name: 'Đội Vàng', colorClass: 'team-yellow', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(7).fill(false) },
+            { id: 'purple', name: 'Đội Tím', colorClass: 'team-purple', score: 0, currentManhMoiIndex: 0, manhMoiCompletedState: new Array(7).fill(false) }, 
         ];
         
         // BIẾN TOÀN CỤC MỚI CHO TRẠNG THÁI GAME
         let firstWinningTeam = null; 
         let timerInterval = null;
         let timeRemaining = GAME_DURATION_SECONDS;
-        let gameActive = false; // Trạng thái: FALSE khi đang chờ nút Start 2, TRUE khi đồng hồ chạy
+        let gameActive = false; 
         
         // DOM Elements
         const transitionButton = document.getElementById('transitionButton');
@@ -516,7 +518,7 @@
             if (timerInterval) clearInterval(timerInterval);
             timerElement.style.display = 'block';
             gameActive = true;
-            startGameButton.style.display = 'none'; // Ẩn nút start thứ 2
+            startGameButton.style.display = 'none'; 
 
             timerInterval = setInterval(() => {
                 if (!gameActive) {
@@ -573,7 +575,7 @@
             if (!gameActive) return;
             
             const team = teams.find(t => t.id === teamId);
-            if (!team || team.currentManhMoiIndex >= SECRET_CODE_ARRAY.length) return;
+            if (!team || team.currentManhMoiIndex >= ALL_TEAM_QUESTIONS.red.length) return;
             
             const qIndex = team.currentManhMoiIndex;
             const resultMessage = document.getElementById(`result-message-${teamId}`);
@@ -586,7 +588,6 @@
             resultMessage.innerHTML = msg;
             resultMessage.className = 'result-message skip-penalty';
             
-            // Cập nhật giao diện để hiện câu hỏi mới
             renderTeamRows();
         }
 
@@ -596,20 +597,30 @@
         
         function getTeamQuestion(teamId) {
             const team = teams.find(t => t.id === teamId);
-            // Vẫn cho phép truy cập câu hỏi cuối cùng nếu đã hoàn thành (isGameFinished)
-            if (!team || team.currentManhMoiIndex > SECRET_CODE_ARRAY.length) return null; 
+            if (!team || team.currentManhMoiIndex >= ALL_TEAM_QUESTIONS.red.length) return null; 
             
             const teamQuestions = ALL_TEAM_QUESTIONS[teamId];
             return teamQuestions ? teamQuestions[team.currentManhMoiIndex] : null;
         }
+        
+        function typesetMath() {
+            // Đảm bảo MathJax được gọi lại sau khi nội dung đã được render
+            if (window.MathJax) {
+                // Sử dụng MathJax.typesetPromise() để chỉ xử lý các phần tử cần thiết
+                const questionAreas = document.querySelectorAll('.team-question-area');
+                MathJax.typesetPromise(questionAreas).catch((err) => console.error("MathJax typeset failed: " + err.message));
+            }
+        }
+
 
         function renderTeamRows() {
             teamRowsContainer.innerHTML = ''; 
+            const totalQuestions = ALL_TEAM_QUESTIONS.red.length;
             
             teams.forEach(team => {
                 const qIndex = team.currentManhMoiIndex;
                 const questionData = getTeamQuestion(team.id); 
-                const isGameFinished = qIndex === SECRET_CODE_ARRAY.length;
+                const isGameFinished = qIndex === totalQuestions;
                 
                 const row = document.createElement('div');
                 row.className = `team-row ${team.colorClass}`;
@@ -620,10 +631,9 @@
                 
                 if (isGameFinished) {
                     row.classList.add('finished');
-                    questionHTML = `<div class="q-text">🎉 **HOÀN THÀNH 7/7 CÂU HỎI!** Đội ${team.name} đã giải mã xong.</div>`;
+                    questionHTML = `<div class="q-text">🎉 **HOÀN THÀNH ${totalQuestions}/${totalQuestions} CÂU HỎI!** Đội ${team.name} đã giải mã xong.</div>`;
                     inputHTML = `<div class="result-message correct-answer">Điểm chung cuộc: ${team.score}</div>`;
                 } else if (gameActive && questionData) {
-                    // Game đang chạy và có câu hỏi
                     row.classList.remove('finished');
                     questionHTML = `
                         <div class="q-number">Câu ${qIndex + 1}</div>
@@ -631,7 +641,7 @@
                     `;
                     inputHTML = `
                         <div class="input-group">
-                            <input type="number" id="answer-input-${team.id}" placeholder="Đáp án (1 chữ số)" min="0" max="9" step="1" maxlength="1" oninput="if(this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);">
+                            <input type="text" id="answer-input-${team.id}" placeholder="Nhập đáp án..." maxlength="4">
                             <button onclick="checkTeamAnswer('${team.id}')">KIỂM TRA</button>
                         </div>
                         <div class="result-message" id="result-message-${team.id}"></div>
@@ -659,40 +669,39 @@
                 `;
                 
                 teamRowsContainer.appendChild(row);
-                renderStatusBar(team);
-                
-                // Chỉ xử lý MathJax nếu game đã bắt đầu (gameActive = true) và có câu hỏi
-                if (gameActive && !isGameFinished && questionData && window.MathJax) {
-                    MathJax.typesetPromise([document.getElementById(`q-text-${team.id}`)]);
-                }
+                renderStatusBar(team, totalQuestions);
             });
+            
+            // Gọi MathJax sau khi tất cả các hàng đã được render
+            typesetMath(); 
         }
         
-        function renderStatusBar(team) {
+        function renderStatusBar(team, totalQuestions) {
             const statusBar = document.getElementById(`status-bar-${team.id}`);
             if (!statusBar) return;
             statusBar.innerHTML = '';
             
-            team.manhMoiCompletedState.forEach((isCompleted, index) => {
+            for (let index = 0; index < totalQuestions; index++) {
                 const status = document.createElement('div');
                 status.className = 'manh-moi-status';
                 status.textContent = 'C' + (index + 1); 
                 
-                if (isCompleted) {
+                if (team.manhMoiCompletedState[index]) {
                     status.classList.add('manh-moi-completed');
-                } else if (index === team.currentManhMoiIndex && gameActive) { // Active chỉ khi game đang chạy
+                } else if (index === team.currentManhMoiIndex && gameActive) { 
                     status.classList.add('manh-moi-active');
                 }
                 
                 statusBar.appendChild(status);
-            });
+            }
         }
         
         window.checkTeamAnswer = function(teamId) {
             if (!gameActive) return;
             
             const team = teams.find(t => t.id === teamId);
-            if (!team || team.currentManhMoiIndex >= SECRET_CODE_ARRAY.length) return;
+            const totalQuestions = ALL_TEAM_QUESTIONS.red.length;
+            if (!team || team.currentManhMoiIndex >= totalQuestions) return;
             
             const qIndex = team.currentManhMoiIndex;
             const questionData = getTeamQuestion(teamId); 
@@ -703,13 +712,13 @@
             const userAnswer = answerInput.value.trim();
             const correctAnswer = questionData.correct.trim(); 
             
-            if (userAnswer.length !== 1 || isNaN(parseInt(userAnswer))) {
-                resultMessage.innerHTML = 'Đáp án phải là **một chữ số** (0-9).';
+            if (userAnswer === "") {
+                resultMessage.innerHTML = 'Vui lòng nhập đáp án.';
                 resultMessage.className = 'result-message incorrect-answer';
-                answerInput.value = ''; 
                 return;
             }
 
+            // Chấp nhận số nguyên lớn hơn 9
             if (userAnswer === correctAnswer) {
                 team.manhMoiCompletedState[qIndex] = true;
                 team.currentManhMoiIndex++; 
@@ -717,9 +726,9 @@
                 
                 let msg = `<span class="correct-answer">CHÍNH XÁC!</span> +${POINTS_PER_CORRECT} điểm. Câu ${qIndex + 1} đã được mở khóa.`;
 
-                if (team.currentManhMoiIndex === SECRET_CODE_ARRAY.length) {
+                if (team.currentManhMoiIndex === totalQuestions) {
                      team.score += BONUS_POINTS;
-                     msg += `<br>🎉 **THƯỞNG LỚN!** Hoàn thành 7/7 Câu Hỏi. (+${BONUS_POINTS} điểm)`;
+                     msg += `<br>🎉 **THƯỞNG LỚN!** Hoàn thành ${totalQuestions}/${totalQuestions} Câu Hỏi. (+${BONUS_POINTS} điểm)`;
                      
                      if (!firstWinningTeam) {
                         firstWinningTeam = team;
@@ -733,7 +742,6 @@
                 answerInput.value = ''; 
                 
                 updateTeamScore(teamId, 0);
-                // Cập nhật giao diện để hiện câu hỏi mới
                 renderTeamRows(); 
 
             } else {
@@ -754,34 +762,33 @@
             
             let messageTitle, winningTeam;
             
+            // Sắp xếp lại danh sách các đội theo điểm để tìm người chiến thắng chung cuộc
+            const sortedTeams = [...teams].sort((a, b) => b.score - a.score);
+            winningTeam = sortedTeams[0]; // Đội có điểm cao nhất
+
             if (firstWinningTeam) {
-                winningTeam = firstWinningTeam;
-                messageTitle = `${winningTeam.name.toUpperCase()} CHIẾN THẮNG!`;
+                messageTitle = `${firstWinningTeam.name.toUpperCase()} CHIẾN THẮNG TRƯỚC!`;
                 
                 winningTeamDisplayElement.innerHTML = `
-                    MẬT MÃ KHO BÁU LÀ: 
-                    <div style="font-size: 2em; color: #fff176; margin-top: 10px; border: 3px solid #fff176; padding: 10px 30px; border-radius: 10px;">
-                        ${SECRET_CODE_ARRAY.join(' - ')}
+                    Đội đầu tiên hoàn thành 7 câu hỏi: **${firstWinningTeam.name}**
+                    <div style="font-size: 1.5em; color: #fff176; margin-top: 10px;">
+                        (TỔNG KẾT DỰA TRÊN THỜI GIAN HOÀN THÀNH)
                     </div>
                 `;
             } else if (isTimeout) {
                 messageTitle = "HẾT GIỜ!";
-                // Sắp xếp lại danh sách các đội theo điểm để tìm người chiến thắng
-                winningTeam = teams.reduce((max, team) => max.score >= team.score ? max : team, teams[0]);
-                
                 winningTeamDisplayElement.textContent = `TỔNG KẾT THEO ĐIỂM SỐ: Đội ${winningTeam.name} dẫn đầu.`;
                 winningTeamDisplayElement.style.color = '#f1c40f'; 
 
             } else { 
                  messageTitle = "TỔNG KẾT TRƯỚC HẠN!";
-                 winningTeam = teams.reduce((max, team) => max.score >= team.score ? max : team, teams[0]);
                  winningTeamDisplayElement.textContent = `Đội có điểm cao nhất: Đội ${winningTeam.name}.`;
                  winningTeamDisplayElement.style.color = '#f1c40f'; 
             }
             
             // Render điểm của tất cả các đội
             let scoreHTML = `<div style="max-width: 300px; margin: 0 auto;">`;
-            teams.sort((a, b) => b.score - a.score).forEach(team => {
+            sortedTeams.forEach(team => {
                 const teamRow = document.getElementById(`team-row-${team.id}`);
                 const teamColor = teamRow ? window.getComputedStyle(teamRow).borderColor : '#fff'; 
                 scoreHTML += `
@@ -808,7 +815,7 @@
             // Reset input và thông báo
             chestCodeInput.value = '';
             chestMessage.textContent = '';
-            prizeDisplay.textContent = 'Nhập Mật mã đã giải được để mở Rương.';
+            prizeDisplay.textContent = 'Nhập Mật mã đã chuẩn bị sẵn để mở Rương.';
             chestIcon.textContent = '🔒';
             chestIcon.classList.remove('chest-opened');
             chestIcon.classList.add('chest-closed');
@@ -824,7 +831,7 @@
 
             const inputCode = chestCodeInput.value.trim();
 
-            if (inputCode === SECRET_CODE_STRING) {
+            if (inputCode === FINAL_SECRET_CODE) {
                 chestOpened = true;
                 chestMessage.textContent = 'MẬT MÃ CHÍNH XÁC! Đang mở Rương...';
                 chestMessage.style.color = '#2ecc71';
@@ -847,7 +854,7 @@
                 }, 1500);
 
             } else {
-                chestMessage.textContent = 'MẬT MÃ CHƯA CHÍNH XÁC. Hãy kiểm tra lại chuỗi 7 chữ số.';
+                chestMessage.textContent = `MẬT MÃ CHƯA CHÍNH XÁC. Mã chỉ có ${FINAL_SECRET_CODE.length} chữ số.`;
                 chestMessage.style.color = '#e74c3c';
             }
         }
@@ -880,7 +887,7 @@
             firstWinningTeam = null;
             timeRemaining = GAME_DURATION_SECONDS; 
             chestOpened = false; 
-            gameActive = false; // Đảm bảo trạng thái chưa chạy
+            gameActive = false; 
 
             // Hiện đồng hồ nhưng chưa chạy
             timerElement.textContent = formatTime(GAME_DURATION_SECONDS);
