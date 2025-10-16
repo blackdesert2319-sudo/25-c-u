@@ -26,7 +26,8 @@
       padding: 10px 25px;
       border-radius: 10px;
     }
-    #answer-input {
+    /* Sửa đổi #answer-input để dùng cho cả game và rương báu */
+    #answer-input, #chest-input { 
       padding: 15px;
       font-size: 1.8em;
       width: 80%;
@@ -36,6 +37,9 @@
       border: 3px solid #f1c40f;
       border-radius: 8px;
       color: #333;
+    }
+    #chest-input { 
+      border: 3px solid #e67e22;
     }
     button {
       font-size: 1.4em;
@@ -53,22 +57,46 @@
     #submit-button:disabled { background-color: #95a5a6; cursor: not-allowed; }
     #skip-button { background-color: #e67e22; }
     #skip-button:hover { background-color: #d35400; }
+    #chest-submit-button { background-color: #e67e22; }
+    #chest-submit-button:hover:not(:disabled) { background-color: #d35400; }
+    #chest-submit-button:disabled { background-color: #95a5a6; cursor: not-allowed; }
+    
     #status-message { margin-top: 20px; font-style: italic; font-size: 1.2em; }
+
+    /* Thêm style cho giao diện rương báu */
+    #game-area { display: flex; flex-direction: column; align-items: center; width: 100%; }
+    #chest-area { display: none; flex-direction: column; align-items: center; width: 100%; }
+    #chest-area h1 { color: #e67e22; }
+    #chest-area p { font-size: 1.5em; margin-bottom: 20px; }
+    #prize-result { font-size: 2em; font-weight: bold; margin-top: 30px; }
+
   </style>
 </head>
 <body>
-  <h1>NHẬP ĐÁP ÁN</h1>
-  <div id="team-info">ĐANG KẾT NỐI...</div>
+  <div id="game-area">
+    <h1>NHẬP ĐÁP ÁN</h1>
+    <div id="team-info">ĐANG KẾT NỐI...</div>
 
-  <input type="text" id="answer-input" placeholder="Nhập đáp án..." maxlength="50">
-  <button id="submit-button" disabled>GỬI ĐÁP ÁN</button>
-  <button id="skip-button" disabled>❌ BỎ QUA (-10đ)</button>
+    <input type="text" id="answer-input" placeholder="Nhập đáp án..." maxlength="50">
+    <button id="submit-button" disabled>GỬI ĐÁP ÁN</button>
+    <button id="skip-button" disabled>❌ BỎ QUA (-10đ)</button>
 
-  <div id="status-message">Vui lòng quét mã QR của đội.</div>
+    <div id="status-message">Vui lòng quét mã QR của đội.</div>
+  </div>
+
+  <div id="chest-area">
+    <h1>🔑 MỞ RƯƠNG BÁU 🔑</h1>
+    <p>Nhập mã số bí ẩn (4 chữ số):</p>
+    <input type="number" id="chest-input" placeholder="Mã số (4 chữ số)" maxlength="4" disabled>
+    <button id="chest-submit-button" disabled>MỞ RƯƠNG!</button>
+    <div id="chest-status-message" style="margin-top: 20px; font-style: italic; font-size: 1.2em;"></div>
+    <div id="prize-result"></div>
+  </div>
 
   <script type="module">
+    // Cần thêm where để lắng nghe submissions riêng của đội này
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, doc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
     // === CẤU HÌNH FIREBASE (giữ nguyên như file GV) ===
     const firebaseConfig = {
@@ -84,80 +112,220 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // CẤU HÌNH GAME
+    const PRIZE_POOL = [
+        "+2 điểm vào 1 bài 15 phút.",
+        "+1 điểm vào 1 bài 15 phút.",
+        "1 tràng pháo tay lớn từ cả lớp!",
+        "1 lời khen ngợi đặc biệt từ giáo viên.",
+        "Miễn 1 câu hỏi bài tập về nhà.",
+        "1 lần đổi đội trong hoạt động sắp tới (nếu có)."
+    ];
+
     let teamId = null;
-    let currentQuestionIndex = 1;
+    let currentQuestionIndex = 0; // Bắt đầu từ 0
+    let gameStatus = 'waiting'; // 'waiting', 'playing', 'won', 'finished'
+    let secretCode = null;
+    let isInputLocked = false; // Khóa input khi có đáp án đang chờ duyệt
 
     document.addEventListener('DOMContentLoaded', () => {
       const params = new URLSearchParams(window.location.search);
       teamId = params.get('teamId');
       if (teamId) {
         document.getElementById('team-info').textContent = `ĐỘI: ${teamId.toUpperCase()}`;
-        document.getElementById('submit-button').disabled = false;
-        document.getElementById('skip-button').disabled = false;
         document.getElementById('submit-button').onclick = submitAnswer;
         document.getElementById('skip-button').onclick = skipQuestion;
-        document.getElementById('status-message').textContent = 'Sẵn sàng gửi đáp án hoặc bỏ qua.';
+        document.getElementById('chest-submit-button').onclick = submitChestCode;
+        listenToTeamStatus(); // Bắt đầu lắng nghe trạng thái của đội
+        document.getElementById('status-message').textContent = 'Đã kết nối. Chờ GV bắt đầu trò chơi.';
       } else {
         document.getElementById('status-message').textContent = 'Không tìm thấy mã đội. Vui lòng quét lại QR.';
       }
     });
 
-    async function submitAnswer() {
-      const input = document.getElementById('answer-input');
-      const status = document.getElementById('status-message');
-      const btn = document.getElementById('submit-button');
-      const answer = input.value.trim();
-      if (!answer) {
-        status.textContent = "Vui lòng nhập đáp án!";
-        status.style.color = "#e74c3c";
-        return;
-      }
-      btn.disabled = true;
-      status.textContent = "Đang gửi đáp án...";
-      status.style.color = "#f1c40f";
-      try {
-        await addDoc(collection(db, "submissions"), {
-          teamId,
-          answer,
-          questionIndex: currentQuestionIndex,
-          timestamp: serverTimestamp(),
-          status: "pending"
+    // === HÀM LẮNG NGHE TRẠNG THÁI CỦA ĐỘI TỪ FIRESTORE ===
+    function listenToTeamStatus() {
+        if (!teamId) return;
+
+        const teamDocRef = doc(db, "teams", teamId);
+        const submissionsCollectionRef = collection(db, "submissions");
+
+        // 1. Lắng nghe trạng thái đội
+        onSnapshot(teamDocRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const teamData = docSnap.data();
+                gameStatus = teamData.gameStatus || 'waiting'; 
+                currentQuestionIndex = teamData.currentQuestionIndex || 0;
+                secretCode = teamData.secretCode || null;
+
+                updateUIBasedOnStatus();
+            } else {
+                document.getElementById('status-message').textContent = 'Đội chưa được GV khởi tạo.';
+            }
         });
-        status.textContent = `Đã gửi đáp án '${answer}'. Chờ GV duyệt.`;
-        status.style.color = "#2ecc71";
-        input.value = "";
-      } catch {
-        status.textContent = "Gửi thất bại. Kiểm tra mạng.";
-        status.style.color = "#e74c3c";
-      } finally {
-        setTimeout(() => (btn.disabled = false), 4000);
-      }
+
+        // 2. Lắng nghe submissions của đội này để khóa input khi đang chờ duyệt
+        const q = query(submissionsCollectionRef, where("teamId", "==", teamId));
+        onSnapshot(q, (snapshot) => {
+            // Nếu có bất kỳ submission nào của đội này, khóa input
+            isInputLocked = !snapshot.empty; 
+            updateUIBasedOnStatus();
+        });
     }
 
+    // HÀM CẬP NHẬT GIAO DIỆN DỰA TRÊN TRẠNG THÁI GAME VÀ ĐỘI
+    function updateUIBasedOnStatus() {
+        const input = document.getElementById('answer-input');
+        const submitBtn = document.getElementById('submit-button');
+        const skipBtn = document.getElementById('skip-button');
+        const statusDiv = document.getElementById('status-message');
+        const gameArea = document.getElementById('game-area');
+        const chestArea = document.getElementById('chest-area');
+
+        input.disabled = true;
+        submitBtn.disabled = true;
+        skipBtn.disabled = true;
+
+        if (gameStatus === 'playing') {
+            gameArea.style.display = 'flex';
+            chestArea.style.display = 'none';
+
+            if (currentQuestionIndex >= 7) {
+                statusDiv.textContent = 'HOÀN THÀNH! Chờ GV trao mã rương báu.';
+            } else if (isInputLocked) {
+                statusDiv.textContent = `Đã gửi đáp án cho Câu ${currentQuestionIndex + 1}. Chờ GV duyệt...`;
+                statusDiv.style.color = '#f1c40f';
+            } else {
+                input.disabled = false;
+                submitBtn.disabled = false;
+                skipBtn.disabled = false;
+                statusDiv.textContent = `Sẵn sàng trả lời Câu ${currentQuestionIndex + 1}.`;
+                statusDiv.style.color = '#2ecc71';
+            }
+        } else if (gameStatus === 'won') {
+            gameArea.style.display = 'none';
+            chestArea.style.display = 'flex';
+            
+            document.getElementById('chest-input').disabled = false;
+            document.getElementById('chest-submit-button').disabled = false;
+            document.getElementById('chest-status-message').textContent = 'Chúc mừng! Nhập mã số bí mật để mở rương.';
+
+        } else if (gameStatus === 'finished') {
+            gameArea.style.display = 'flex';
+            chestArea.style.display = 'none';
+            statusDiv.textContent = 'TRÒ CHƠI ĐÃ KẾT THÚC!';
+            statusDiv.style.color = '#e74c3c';
+        } else { // 'waiting'
+            gameArea.style.display = 'flex';
+            chestArea.style.display = 'none';
+            statusDiv.textContent = 'Đã kết nối. Chờ GV bắt đầu trò chơi.';
+            statusDiv.style.color = 'white';
+        }
+    }
+
+
+    // === HÀM XỬ LÝ GỬI ĐÁP ÁN (ĐÃ CHỈNH SỬA) ===
+    async function submitAnswer() {
+        const input = document.getElementById('answer-input');
+        const status = document.getElementById('status-message');
+        const answer = input.value.trim();
+        
+        if (!answer) {
+            status.textContent = "Vui lòng nhập đáp án!";
+            status.style.color = "#e74c3c";
+            return;
+        }
+        if (isInputLocked) {
+            status.textContent = "Đang chờ đáp án trước được duyệt!";
+            status.style.color = "#e67e22";
+            return;
+        }
+        
+        // Tạm khóa input (listener sẽ mở lại)
+        isInputLocked = true; 
+        updateUIBasedOnStatus();
+
+        try {
+            await addDoc(collection(db, "submissions"), {
+                teamId,
+                answer,
+                questionIndex: currentQuestionIndex,
+                timestamp: serverTimestamp(),
+                status: "pending"
+            });
+            
+            status.textContent = `Đã gửi đáp án '${answer}'. Chờ GV duyệt.`;
+            status.style.color = "#f1c40f";
+            input.value = "";
+        } catch {
+            status.textContent = "Gửi thất bại. Kiểm tra mạng.";
+            status.style.color = "#e74c3c";
+            isInputLocked = false; 
+            updateUIBasedOnStatus();
+        }
+    }
+
+    // === HÀM XỬ LÝ BỎ QUA CÂU (ĐÃ CHỈNH SỬA) ===
     async function skipQuestion() {
-      const status = document.getElementById('status-message');
-      const skipBtn = document.getElementById('skip-button');
-      skipBtn.disabled = true;
-      status.textContent = "Đang gửi yêu cầu bỏ qua...";
-      status.style.color = "#f1c40f";
-      try {
-        await addDoc(collection(db, "submissions"), {
-          teamId,
-          questionIndex: currentQuestionIndex,
-          action: "skip",
-          timestamp: serverTimestamp(),
-          status: "pending"
-        });
-        currentQuestionIndex++;
-        status.textContent = `Đã bỏ qua câu trước. Chuyển sang câu ${currentQuestionIndex}.`;
-        status.style.color = "#e67e22";
-        document.getElementById('answer-input').value = "";
-      } catch {
-        status.textContent = "Không gửi được yêu cầu bỏ qua.";
-        status.style.color = "#e74c3c";
-      } finally {
-        setTimeout(() => (skipBtn.disabled = false), 3000);
-      }
+        const status = document.getElementById('status-message');
+        
+        if (isInputLocked) {
+            status.textContent = "Đang chờ đáp án trước được duyệt!";
+            status.style.color = "#e67e22";
+            return;
+        }
+        
+        if (!confirm("Bạn có chắc chắn muốn BỎ QUA câu này? Đội sẽ bị trừ 10 điểm.")) {
+            return;
+        }
+
+        // Tạm khóa input
+        isInputLocked = true; 
+        updateUIBasedOnStatus();
+
+        try {
+            await addDoc(collection(db, "submissions"), {
+                teamId,
+                questionIndex: currentQuestionIndex,
+                action: "skip",
+                timestamp: serverTimestamp(),
+                status: "pending"
+            });
+
+            status.textContent = "Đã gửi yêu cầu BỎ QUA. Chờ GV duyệt...";
+            status.style.color = "#e67e22";
+
+        } catch {
+            status.textContent = "Không gửi được yêu cầu bỏ qua.";
+            status.style.color = "#e74c3c";
+            isInputLocked = false; 
+            updateUIBasedOnStatus();
+        }
+    }
+
+    // === HÀM XỬ LÝ MỞ RƯƠNG BÁU (MỚI) ===
+    function submitChestCode() {
+        const inputCode = document.getElementById('chest-input').value.trim();
+        const prizeResult = document.getElementById('prize-result');
+        const statusMessage = document.getElementById('chest-status-message');
+        
+        if (inputCode === secretCode) {
+            const prizeIndex = Math.floor(Math.random() * PRIZE_POOL.length);
+            const prize = PRIZE_POOL[prizeIndex];
+            
+            prizeResult.innerHTML = `
+                <div style="font-size: 0.8em; color: #f1c40f;">PHẦN QUÀ BÍ MẬT LÀ:</div>
+                <div style="font-size: 1.5em; color: #2ecc71; margin-top: 10px;">"${prize}"</div>
+            `;
+            statusMessage.textContent = '🎉 CHÚC MỪNG! MÃ ĐÚNG! 🎉';
+            statusMessage.style.color = '#2ecc71';
+
+        } else {
+            prizeResult.textContent = 'MÃ SỐ KHÔNG CHÍNH XÁC. Vui lòng hỏi lại GV.';
+            prizeResult.style.color = '#e74c3c';
+            statusMessage.textContent = 'Mã bị sai!';
+            statusMessage.style.color = '#e74c3c';
+        }
     }
   </script>
 </body>
