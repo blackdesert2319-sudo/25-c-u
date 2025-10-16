@@ -9,167 +9,165 @@
 <!-- Firebase SDK (non-module) -->
 <script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore-compat.js"></script>
-
 <style>
 body {
-  font-family:'Arial',sans-serif;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  background:#282c34;
-  color:#fff;
-  padding:10px;
-  min-height:100vh;
-  overflow-x:hidden;
+  font-family: 'Arial', sans-serif;
+  background: #1e1e1e;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 h1 {
-  color:#f1c40f;
-  margin-bottom:10px;
+  color: #f1c40f;
+  margin: 12px 0;
+  text-align: center;
 }
 
 #timer {
-  position:fixed;
-  top:10px;
-  right:10px;
-  font-size:2.3em;
-  font-weight:bold;
-  color:#e74c3c;
-  background:#f1c40f;
-  padding:4px 14px;
-  border-radius:10px;
-  display:none;
+  position: fixed;
+  top: 8px;
+  right: 12px;
+  font-size: 2.2em;
+  font-weight: bold;
+  color: #e74c3c;
+  background: #f1c40f;
+  padding: 4px 12px;
+  border-radius: 8px;
+  display: none;
 }
 
-/* QR ở màn đầu */
+/* --- QR đầu trang --- */
 .qr-item {
-  width:180px;
-  margin:10px;
-  padding:10px;
-  border-radius:8px;
-  background:white;
-  color:#333;
-  text-align:center;
-  font-weight:bold;
+  width: 180px;
+  margin: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  background: white;
+  color: #333;
+  text-align: center;
+  font-weight: bold;
 }
 .qr-item img {
-  width:150px;
-  height:150px;
-  border:2px solid #333;
-  margin-bottom:5px;
+  width: 150px;
+  height: 150px;
+  border: 2px solid #333;
+  margin-bottom: 5px;
 }
 #qr-list {
-  display:flex;
-  justify-content:space-around;
-  flex-wrap:wrap;
-  margin-top:15px;
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  margin-top: 15px;
 }
 
-button { cursor:pointer; }
-
-/* === Giao diện mỗi đội === */
+/* --- TEAM CARD mới (chiều ngang full, chiều cao thấp) --- */
 .team-row {
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  background:#3498db;
-  border-radius:8px;
-  box-shadow:0 3px 6px rgba(0,0,0,0.4);
-  margin:5px 0;
-  padding:6px 15px;
-  min-height:95px; /* Giảm chiều cao */
-  width:95%; /* Tăng chiều ngang gần full màn hình */
-  border:2px solid rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 98%;
+  margin: 4px 0;
+  padding: 8px 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+  min-height: 85px; /* thấp hơn nhiều */
 }
 
-/* Màu đội */
-.team-red{background:#e74c3c;}
-.team-blue{background:#3498db;}
-.team-green{background:#2ecc71;}
-.team-yellow{background:#f1c40f;color:#333;}
-.team-purple{background:#9b59b6;}
+/* màu đội */
+.team-red    { background: #e74c3c; }
+.team-blue   { background: #3498db; }
+.team-green  { background: #2ecc71; }
+.team-yellow { background: #f1c40f; color: #333; }
+.team-purple { background: #9b59b6; }
 
-/* Khu hiển thị điểm và tên đội */
+/* cột trái: điểm + tên đội */
 .team-score-control {
-  font-weight:bold;
-  font-size:1.2em;
-  display:flex;
-  align-items:center;
-  gap:12px;
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .team-score-value {
-  font-size:2em;
-  font-weight:900;
-  min-width:55px;
-  text-align:center;
-  background:rgba(255,255,255,0.2);
-  padding:4px 8px;
-  border-radius:6px;
+  font-size: 2.4em;
+  font-weight: 900;
+  background: rgba(255,255,255,0.25);
+  padding: 2px 12px;
+  border-radius: 8px;
+  margin-bottom: 3px;
 }
 
-/* Khu câu hỏi */
+/* cột giữa: câu hỏi */
 .team-question-area {
-  margin-top:4px;
+  flex: 1;
+  padding: 0 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .q-number {
-  font-weight:bold;
-  font-size:1.05em;
-  margin-bottom:2px;
+  font-weight: bold;
+  font-size: 1.05em;
+  margin-bottom: 3px;
 }
 .q-text {
-  font-size:1.5em; /* chữ to, vừa đủ */
-  font-weight:700;
-  line-height:1.3;
+  font-size: 1.7em;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
-/* Thanh trạng thái 7 câu – hàng ngang dưới câu hỏi */
+/* cột phải: các chấm trạng thái nằm hàng ngang */
 .team-status-area {
-  display:flex;
-  justify-content:center;
-  gap:8px;
-  margin-top:6px;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: nowrap;
 }
 .q-status-item {
-  width:24px;
-  height:24px;
-  border-radius:50%;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  font-size:0.85em;
-  font-weight:bold;
-  color:white;
-  background:#7f8c8d;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.85em;
+  font-weight: bold;
+  color: white;
+  background: #7f8c8d;
 }
-.status-ready { background:#2980b9; }
-.status-correct { background:#2ecc71; }
+.status-ready   { background: #2980b9; }
+.status-correct { background: #2ecc71; }
 
-/* Khu hàng đợi duyệt đáp án */
+/* khu hàng đợi duyệt đáp án */
 .submission-item {
-  padding:10px;
-  margin-bottom:6px;
-  background:#2c3e50;
-  border-radius:5px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  border-left:5px solid #f1c40f;
+  padding: 10px;
+  margin-bottom: 6px;
+  background: #2c3e50;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 5px solid #f1c40f;
 }
 .submission-item button {
-  padding:6px 12px;
-  background:#e67e22;
-  color:white;
-  border:none;
-  border-radius:5px;
-  font-weight:bold;
+  padding: 6px 12px;
+  background: #e67e22;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
 }
 #submission-queue-area {
-  width:100%;
-  max-width:1000px;
-  background:#34495e;
-  border-radius:10px;
-  margin-top:15px;
-  padding:12px;
+  width: 100%;
+  max-width: 1200px;
+  background: #34495e;
+  border-radius: 10px;
+  margin-top: 18px;
+  padding: 12px;
 }
 </style>
 
@@ -337,6 +335,7 @@ function renderTeams(){
 
 </body>
 </html>
+
 
 
 
