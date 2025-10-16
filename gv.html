@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mật Mã Rương Báu - GV (Ẩn QR + Xóa "Câu")</title>
+<title>Mật Mã Rương Báu - GV (Hoàn Chỉnh)</title>
 
 <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
 <script>
@@ -73,24 +73,18 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   border:2px solid transparent;
   margin-bottom:5px;
 }
-
-/* THÊM KHỐI NÀY VÀO PHẦN <style> */
 .qr-item.team-red {
     border-color: #e74c3c; /* Đỏ */
 }
-
 .qr-item.team-blue {
     border-color: #3498db; /* Xanh Lam */
 }
-
 .qr-item.team-green {
     border-color: #2ecc71; /* Xanh Lục */
 }
-
 .qr-item.team-yellow {
     border-color: #f1c40f; /* Vàng */
 }
-
 .qr-item.team-purple {
     border-color: #9b59b6; /* Tím */
 }
@@ -136,6 +130,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   color: #f1c40f;
   margin-bottom: 10px;
 }
+/* CSS cho Bộ đếm */
 #queue-count {
   background: #e74c3c; /* Đỏ */
   padding: 2px 8px;
@@ -313,7 +308,6 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 <script type="module">
   // B. Thêm Imports và Config Firebase
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-  // IMPORT CẦN THIẾT: getDocs và collection
   import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
   // === CẤU HÌNH FIREBASE (giữ nguyên như file HS) ===
@@ -342,13 +336,16 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 
   // Ánh xạ các class màu CSS sang mã màu Hex cho nền QR
   const teamColorMap = {
-      'team-red': '#f8d7da',        // Màu đỏ rất nhạt
-      'team-blue': '#d0e0f0',       // Màu xanh lam rất nhạt
-      'team-yellow': '#fff3cd',      // Màu vàng rất nhạt
-      'team-green': '#d4edda',       // Màu xanh lục rất nhạt
-      'team-purple': '#e8d9ef'       // Màu tím rất nhạt
+      'team-red': '#f8d7da',        
+      'team-blue': '#d0e0f0',       
+      'team-yellow': '#fff3cd',      
+      'team-green': '#d4edda',       
+      'team-purple': '#e8d9ef'       
   };
 
+  // HẰNG SỐ GAME
+  const TREASURE_BONUS = 30; 
+  const WINNING_QUESTION = 7; 
   let timerInterval;
   let totalSeconds = 600; // 10 phút
 
@@ -369,9 +366,8 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     });
   };
 
-  // C. Cập nhật showGame để gọi listenForSubmissions
+  // C. Cập nhật showGame
   function showGame(){
-    // Xóa hoàn toàn phần mã QR để giải phóng không gian
     const qrList = document.getElementById("qr-list");
     if (qrList) qrList.remove();
 
@@ -383,7 +379,6 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     renderTeams();
     document.getElementById("startGameBtn").style.display="block";
     
-    // BẮT ĐẦU LẮNG NGHE YÊU CẦU DUYỆT
     listenForSubmissions();
   }
 
@@ -430,13 +425,41 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     totalSeconds--;
   }
 
+  // HÀM MỚI: Xử lý giao diện thắng Rương Báu
+  function winGame(winningTeam) {
+    clearInterval(timerInterval); 
+    document.getElementById("timer").style.display = "none";
+    document.getElementById("endEarlyBtn").style.display = "none";
+    
+    const overlay = document.getElementById("endOverlay");
+    overlay.style.display = "flex";
+    
+    overlay.style.backgroundColor = 'rgba(255, 215, 0, 0.9)'; 
+    overlay.style.color = '#e74c3c'; 
+    
+    document.getElementById("endOverlay").innerHTML = `
+      <h1>🏆 ${winningTeam.name} ĐÃ GIÀNH CHIẾN THẮNG 🏆</h1>
+      <h2>🎉 ĐƯỢC THƯỞNG THÊM ${TREASURE_BONUS} ĐIỂM RƯƠNG BÁU! 🎉</h2>
+      <div class="scoreboard" id="finalScores" style="color: #333;">
+        Điểm cuối cùng: ${winningTeam.score}
+      </div>
+    `;
+  }
+  
+  // Cập nhật lại hàm endGame (gọi khi hết giờ hoặc bấm nút KẾT THÚC SỚM)
   function endGame(){
     clearInterval(timerInterval);
     document.getElementById("timer").style.display="none";
     document.getElementById("endEarlyBtn").style.display="none";
     const overlay=document.getElementById("endOverlay");
+    
+    // Đảm bảo overlay về trạng thái mặc định (vàng nhạt)
+    overlay.style.backgroundColor = 'rgba(241,196,15,0.9)';
+    overlay.style.color = '#000';
+    
     overlay.style.display="flex";
-    let scoreHTML="";
+    
+    let scoreHTML="Kết quả chung cuộc:<br>";
     teams.forEach(t=>{
       const score = document.getElementById(`score-${t.id}`).textContent;
       scoreHTML += `${t.name}: ${score} điểm<br>`;
@@ -444,23 +467,27 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     document.getElementById("finalScores").innerHTML=scoreHTML;
   }
   
-  // D3. Logic cập nhật đội
+  // D3. Logic cập nhật đội (ĐÃ THÊM LOGIC THẮNG VÀ THƯỞNG 30 ĐIỂM)
   function updateTeam(teamId, points) {
     const team = teams.find(t => t.id === teamId);
     if (team) {
       team.score += points;
-      team.currentQ++;
+      
+      // Nếu đáp án đúng (points > 0), thì tăng số câu hỏi hiện tại lên
+      if (points > 0) {
+        team.currentQ++;
+      }
       
       // Cập nhật giao diện
       document.getElementById(`score-${teamId}`).textContent = team.score;
       document.getElementById(`status-${teamId}`).textContent = team.currentQ;
       
       // Kiểm tra thắng cuộc (7 câu)
-      if (team.currentQ > 7) {
-        alert(`${team.name} ĐÃ CHIẾN THẮNG!`);
-        endGame();
+      if (team.currentQ > WINNING_QUESTION) {
+        team.score += TREASURE_BONUS; // THƯỞNG 30 ĐIỂM
+        document.getElementById(`score-${teamId}`).textContent = team.score; // Cập nhật lại điểm thưởng
+        winGame(team); // Chuyển sang giao diện RƯƠNG BÁU
       }
-      // Bạn có thể thêm logic cập nhật câu hỏi mới ở đây
     }
   }
 
@@ -562,16 +589,13 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       resetBtn.textContent = "ĐANG XÓA...";
 
       try {
-          // Lấy tất cả các document trong collection 'submissions'
           const querySnapshot = await getDocs(collection(db, "submissions"));
           
-          // Tạo mảng các promise xóa
           const deletePromises = [];
           querySnapshot.forEach((doc) => {
               deletePromises.push(deleteDoc(doc.ref));
           });
           
-          // Chờ tất cả các thao tác xóa hoàn thành
           await Promise.all(deletePromises);
           
           alert("✅ Đã xóa toàn bộ dữ liệu duyệt đáp án. Tải lại trang để bắt đầu lại.");
@@ -587,7 +611,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   }
 
 
-  // === SỬA LỖI GẮN SỰ KIỆN CHO CÁC NÚT TRONG MODULE SCRIPT ===
+  // === GẮN SỰ KIỆN CHO TẤT CẢ CÁC NÚT (Sửa lỗi onclick) ===
   document.addEventListener('DOMContentLoaded', () => {
     // 1. Nút BẮT ĐẦU VÒNG 3!
     const startBtn = document.getElementById("startBtn");
@@ -606,7 +630,8 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     if (resetBtn) {
         resetBtn.addEventListener('click', resetGameData);
     }
-    // 4. BỔ SUNG: Nút KẾT THÚC SỚM <--- CHÈN THÊM KHỐI NÀY
+
+    // 4. Nút KẾT THÚC SỚM
     const endEarlyBtn = document.getElementById("endEarlyBtn");
     if (endEarlyBtn) {
         endEarlyBtn.addEventListener('click', endGame);
@@ -616,4 +641,3 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 </script>
 </body>
 </html>
-
