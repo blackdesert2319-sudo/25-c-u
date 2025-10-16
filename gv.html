@@ -332,23 +332,23 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 
   // D1. Mảng đội
   const teams = [
-    { name: "Đội Đỏ", color: "team-red", id: "red", score: 0, currentQ: 1 },
-    { name: "Đội Xanh", color: "team-blue", id: "blue", score: 0, currentQ: 1 },
-    { name: "Đội Lục", color: "team-green", id: "green", score: 0, currentQ: 1 },
-    { name: "Đội Vàng", color: "team-yellow", id: "yellow", score: 0, currentQ: 1 },
-    { name: "Đội Tím", color: "team-purple", id: "purple", score: 0, currentQ: 1 }
+    { name: "Đội Đỏ", color: "team-red", id: "red", score: 0, currentQ: 1, questionOrder: [] },
+    { name: "Đội Xanh", color: "team-blue", id: "blue", score: 0, currentQ: 1, questionOrder: [] },
+    { name: "Đội Lục", color: "team-green", id: "green", score: 0, currentQ: 1, questionOrder: [] },
+    { name: "Đội Vàng", color: "team-yellow", id: "yellow", score: 0, currentQ: 1, questionOrder: [] },
+    { name: "Đội Tím", color: "team-purple", id: "purple", score: 0, currentQ: 1, questionOrder: [] }
   ];
 
   // ==========================================================
-  // MẢNG CÂU HỎI VÀ ĐÁP ÁN ĐÚNG MẪU
+  // MẢNG CÂU HỎI VÀ ĐÁP ÁN ĐÚNG MẪU (INDEX BẮT ĐẦU TỪ 1)
   const QUESTIONS = [
-    { text: "C1: Cho CSC có $u_1=3$, $d=2$. Tìm $u_{10}$", answer: "21" }, 
-    { text: "C2: Tính tổng 1 + 2 + ... + 10", answer: "55" }, 
-    { text: "C3: Kết quả phép tính 15 x 3", answer: "45" }, 
-    { text: "C4: Năm sinh của Hồ Chí Minh", answer: "1890" }, 
-    { text: "C5: Số ngày trong 3 tháng liên tiếp không có tháng 2", answer: "92" }, 
-    { text: "C6: Số nguyên tố nhỏ nhất", answer: "2" }, 
-    { text: "C7: Kết quả của 5! (5 giai thừa)", answer: "120" }
+    { text: "Cho CSC có $u_1=3$, $d=2$. Tìm $u_{10}$", answer: "21" }, 
+    { text: "Tính tổng 1 + 2 + ... + 10", answer: "55" }, 
+    { text: "Kết quả phép tính 15 x 3", answer: "45" }, 
+    { text: "Năm sinh của Hồ Chí Minh", answer: "1890" }, 
+    { text: "Số ngày trong 3 tháng liên tiếp không có tháng 2", answer: "92" }, 
+    { text: "Số nguyên tố nhỏ nhất", answer: "2" }, 
+    { text: "Kết quả của 5! (5 giai thừa)", answer: "120" }
   ];
   // ==========================================================
 
@@ -366,6 +366,26 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   const WINNING_QUESTION = QUESTIONS.length; 
   let timerInterval;
   let totalSeconds = 600; // 10 phút
+
+  // Hàm tiện ích: Xáo trộn mảng (Fisher-Yates)
+  function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+      }
+  }
+
+  // Hàm mới: Thiết lập thứ tự câu hỏi ngẫu nhiên cho mỗi đội
+  function setupQuestionOrder() {
+      // Tạo mảng chỉ số câu hỏi từ 1 đến 7
+      const questionIndices = Array.from({length: QUESTIONS.length}, (_, i) => i + 1); 
+      teams.forEach(team => {
+          const shuffledOrder = [...questionIndices]; // Copy mảng
+          shuffleArray(shuffledOrder);
+          team.questionOrder = shuffledOrder; // Lưu mảng thứ tự ngẫu nhiên
+      });
+      console.log("Question orders randomized:", teams.map(t => ({ id: t.id, order: t.questionOrder })));
+  }
 
   window.onload = function() {
     const qrList = document.getElementById("qr-list");
@@ -390,7 +410,8 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
           return setDoc(doc(db, TEAM_STATUS_COLLECTION, team.id), {
               score: team.score,
               currentQ: team.currentQ,
-              name: team.name
+              name: team.name,
+              questionOrder: team.questionOrder // THÊM: Lưu thứ tự câu hỏi ngẫu nhiên
           });
       });
       await Promise.all(promises);
@@ -398,11 +419,12 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   }
 
   // Hàm mới: Cập nhật trạng thái đội trên Firebase (để HS cập nhật theo)
-  async function updateTeamStatusOnFirebase(teamId, newScore, newQ) {
+  async function updateTeamStatusOnFirebase(teamId, newScore, newQ, newOrder) {
       try {
           await setDoc(doc(db, TEAM_STATUS_COLLECTION, teamId), {
               score: newScore,
               currentQ: newQ,
+              questionOrder: newOrder // Cập nhật cả thứ tự (nếu có)
           }, { merge: true });
       } catch (e) {
           console.error("Error updating team status on Firebase:", e);
@@ -418,7 +440,10 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 
     document.getElementById("game-wrapper").style.display="block";
     
-    // Khởi tạo trạng thái trên Firebase trước khi bắt đầu
+    // THÊM: Tạo thứ tự câu hỏi ngẫu nhiên trước khi khởi tạo
+    setupQuestionOrder();
+
+    // Khởi tạo trạng thái trên Firebase 
     initializeTeamStatusOnFirebase().then(() => {
         renderTeams();
         document.getElementById("startGameBtn").style.display="block";
@@ -433,19 +458,23 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     const container = document.getElementById("team-rows-container");
     container.innerHTML = "";
     teams.forEach(team=>{
-      const row=document.createElement("div");
-      row.className=`team-row ${team.color}`;
-      
-      const questionData = QUESTIONS[team.currentQ - 1];
+      // THAY ĐỔI: Lấy index thực tế (Q Index) từ mảng ngẫu nhiên
+      const actualQIndex = team.questionOrder[team.currentQ - 1]; 
+      const questionData = QUESTIONS[actualQIndex - 1]; 
       const questionText = questionData ? questionData.text : "HOÀN THÀNH!";
       
+      row=document.createElement("div");
+      row.className=`team-row ${team.color}`;
+
       row.innerHTML=`
         <div class="team-score-control">
           <div class="team-score-value" id="score-${team.id}">${team.score}</div>
           <div class="q-status-item" id="status-${team.id}">${team.currentQ}</div>
         </div>
         <div class="team-question-area" id="qarea-${team.id}">
-            <div class="question-title" id="q-title-${team.id}">${questionText}</div>
+            <div class="question-title" id="q-title-${team.id}">
+                (Q${actualQIndex}): ${questionText}
+            </div>
         </div>
       `;
       container.appendChild(row);
@@ -457,10 +486,11 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       const qTitleElement = document.getElementById(`q-title-${team.id}`);
       
       if (qTitleElement) {
-          // Lấy câu hỏi của câu hỏi MỚI (currentQ)
-          const questionData = QUESTIONS[team.currentQ - 1];
+          // Lấy index thực tế (Q Index) từ mảng ngẫu nhiên
+          const actualQIndex = team.questionOrder[team.currentQ - 1];
+          const questionData = QUESTIONS[actualQIndex - 1]; 
           const questionText = questionData ? questionData.text : "HOÀN THÀNH!";
-          qTitleElement.textContent = questionText;
+          qTitleElement.innerHTML = `(Q${actualQIndex}): ${questionText}`;
       }
       MathJax.typeset();
   }
@@ -553,25 +583,27 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       document.getElementById(`status-${teamId}`).textContent = team.currentQ;
       
       // 3. ĐỒNG BỘ LÊN FIREBASE (HS sẽ đọc)
-      updateTeamStatusOnFirebase(teamId, team.score, team.currentQ); // Dùng team.currentQ sau khi đã update
+      updateTeamStatusOnFirebase(teamId, team.score, team.currentQ, team.questionOrder);
 
       // 4. Kiểm tra thắng cuộc
       if (team.currentQ > WINNING_QUESTION) {
         team.score += TREASURE_BONUS; 
         document.getElementById(`score-${teamId}`).textContent = team.score; 
-        updateTeamStatusOnFirebase(teamId, team.score, team.currentQ); // Cập nhật lại lần cuối
+        updateTeamStatusOnFirebase(teamId, team.score, team.currentQ, team.questionOrder); 
         winGame(team); 
       }
     }
   }
 
   // ===================================================
-  // HÀM: DUYỆT TỰ ĐỘNG VÀ ĐỐI CHIẾU ĐÁP ÁN
+  // HÀM: DUYỆT TỰ ĐỘNG VÀ ĐỐI CHIẾU ĐÁP ÁN (Sử dụng ActualQIndex)
   // ===================================================
-  window.autoApproveSubmission = async (docId, teamId, qIndex, studentAnswer) => {
+  // THAY ĐỔI tham số: Giờ đây HS gửi lên 'actualQuestionIndex'
+  window.autoApproveSubmission = async (docId, teamId, qIndexInOrder, actualQIndex, studentAnswer) => {
       try {
           const docRef = doc(db, "submissions", docId);
-          const questionData = QUESTIONS[parseInt(qIndex) - 1]; 
+          // Dùng actualQIndex để lấy câu hỏi từ mảng QUESTIONS
+          const questionData = QUESTIONS[parseInt(actualQIndex) - 1]; 
           
           if (!questionData) {
               await deleteDoc(docRef);
@@ -598,7 +630,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
           // Xóa document khỏi Firestore sau khi xử lý
           await deleteDoc(docRef);
           
-          console.log(`Duyệt tự động: Đội ${teamId}, Câu ${qIndex}. Kết quả: ${resultMessage}.`);
+          console.log(`Duyệt tự động: Đội ${teamId}, Câu thực tế Q${actualQIndex}. Kết quả: ${resultMessage}.`);
 
       } catch(e) {
           console.error("Lỗi khi duyệt yêu cầu tự động:", e);
@@ -609,7 +641,8 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   // ===================================================
   // HÀM: DUYỆT BỎ QUA 
   // ===================================================
-  window.approveSkip = async (docId, teamId) => {
+  // THAY ĐỔI tham số: Cần thêm actualQIndex để thống nhất cách gọi từ renderSubmissionItem
+  window.approveSkip = async (docId, teamId, actualQIndex) => {
       try {
           const docRef = doc(db, "submissions", docId);
           
@@ -619,7 +652,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
           // Xóa document khỏi Firestore sau khi xử lý
           await deleteDoc(docRef);
           
-          console.log(`Duyệt bỏ qua: Đội ${teamId}. Kết quả: Bỏ qua (-10) và chuyển câu.`);
+          console.log(`Duyệt bỏ qua: Đội ${teamId}. Câu thực tế Q${actualQIndex}. Kết quả: Bỏ qua (-10) và chuyển câu.`);
 
       } catch(e) {
           console.error("Lỗi khi duyệt yêu cầu bỏ qua:", e);
@@ -638,15 +671,18 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     let label = '';
     let buttonsHTML = ''; 
 
+    // Lấy index thực tế của câu hỏi từ data (HS đã gửi lên)
+    const actualQIndex = data.actualQuestionIndex;
+
     if (data.action === 'skip') {
       label = `${teamName}: BỎ QUA`;
-      // Nút cho hành động BỎ QUA
-      buttonsHTML = `<button style="background:#e67e22;" onclick="approveSkip('${docId}', '${data.teamId}')">DUYỆT BỎ QUA (-10)</button>`;
+      // Nút cho hành động BỎ QUA (truyền actualQIndex)
+      buttonsHTML = `<button style="background:#e67e22;" onclick="approveSkip('${docId}', '${data.teamId}', '${actualQIndex}')">DUYỆT BỎ QUA (-10)</button>`;
     } else {
       label = `${teamName}: ${data.answer}`;
-      // Nút cho hành động TRẢ LỜI (Duyệt tự động)
+      // Nút cho hành động TRẢ LỜI (Duyệt tự động) (truyền actualQIndex)
       buttonsHTML = `
-          <button style="background:#3498db;" onclick="autoApproveSubmission('${docId}', '${data.teamId}', '${data.questionIndex}', '${data.answer}')">DUYỆT TỰ ĐỘNG</button>
+          <button style="background:#3498db;" onclick="autoApproveSubmission('${docId}', '${data.teamId}', '${data.questionIndex}', '${actualQIndex}', '${data.answer}')">DUYỆT TỰ ĐỘNG</button>
       `;
     }
 
@@ -659,8 +695,9 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     div.style.color = '#fff';
     div.style.textAlign = 'center';
 
+    // HIỂN THỊ CẢ 2 INDEX: Vị trí trong chuỗi đã giải (C) và Index thực tế (Q)
     div.innerHTML = `
-      <div style="font-size:1.4em; font-weight:bold; margin-bottom: 5px;">${label} (C${data.questionIndex})</div>
+      <div style="font-size:1.2em; font-weight:bold; margin-bottom: 5px;">${label} (C${data.questionIndex} | Q${actualQIndex})</div>
       ${buttonsHTML}
     `;
     
