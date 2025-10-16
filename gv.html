@@ -7,8 +7,8 @@
 <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
 <script>
 window.MathJax = {
-    tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']] },
-    startup: { typeset: false }
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']] },
+  startup: { typeset: false }
 };
 </script>
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -41,22 +41,27 @@ h1{color:#f1c40f;margin-bottom:10px;}
 button{cursor:pointer;}
 </style>
 </head>
+
 <body>
 <div id="timer">10:00</div>
 <h1>MẬT MÃ RƯƠNG BÁU: 5 ĐỘI TRANH TÀI</h1>
-<button id="transitionButton" style="padding:12px 25px;font-size:1.2em;background:#f39c12;color:white;border:none;border-radius:10px;font-weight:bold;">BẮT ĐẦU PHI VỤ!</button>
 
+<!-- GIAO DIỆN BAN ĐẦU -->
+<div id="intro-wrapper">
+  <h2 style="color:#f1c40f;">QUÉT MÃ QR CODE ĐỂ NHẬP ĐÁP ÁN</h2>
+  <div id="qr-list"></div>
+  <button id="transitionButton" style="padding:12px 25px;font-size:1.2em;background:#f39c12;color:white;border:none;border-radius:10px;font-weight:bold;margin-top:20px;">
+    BẮT ĐẦU PHI VỤ!
+  </button>
+</div>
+
+<!-- GIAO DIỆN THI ĐẤU -->
 <div id="game-wrapper" style="display:none;">
-    <div id="control-area">
-        <button id="startGameButton" onclick="startGame()" style="padding:10px 20px;font-size:1.1em;background:#27ae60;color:white;border:none;border-radius:8px;margin-bottom:10px;">BẮT ĐẦU ĐẾM GIỜ</button>
-        <div id="qr-code-area">
-            <h2 style="color:#f1c40f;">QUÉT MÃ QR CODE ĐỂ NHẬP ĐÁP ÁN</h2>
-            <div id="qr-list"></div>
-            <button onclick="generateQRCodes()" style="padding:10px 20px;font-size:1.1em;background:#e67e22;color:white;border:none;border-radius:5px;margin-top:10px;">TẠO/CẬP NHẬT MÃ QR</button>
-        </div>
-        <div id="submission-queue-area"><h2>HÀNG ĐỢI DUYỆT ĐÁP ÁN</h2></div>
-    </div>
-    <div id="team-rows-container"></div>
+  <div id="control-area">
+      <button id="startGameButton" onclick="startGame()" style="padding:10px 20px;font-size:1.1em;background:#27ae60;color:white;border:none;border-radius:8px;margin-bottom:10px;">BẮT ĐẦU ĐẾM GIỜ</button>
+      <div id="submission-queue-area"><h2>HÀNG ĐỢI DUYỆT ĐÁP ÁN</h2></div>
+  </div>
+  <div id="team-rows-container"></div>
 </div>
 
 <script type="module">
@@ -84,12 +89,14 @@ const teams = [
 {id:'purple',name:'Đội Tím',colorClass:'team-purple',score:0,currentManhMoiIndex:0,manhMoiCompletedState:new Array(7).fill(false)}
 ];
 
-// 👉 Xử lý nút chuyển giao diện
+// 👉 Khi trang load xong, tạo sẵn QR
+document.addEventListener('DOMContentLoaded', generateQRCodes);
+
+// 👉 Nút chuyển sang màn hình thi đấu
 window.transitionToGame = function() {
-  document.getElementById('transitionButton').style.display = 'none';
+  document.getElementById('intro-wrapper').style.display = 'none';
   document.getElementById('game-wrapper').style.display = 'block';
   renderTeamRows();
-  generateQRCodes();
 };
 document.getElementById('transitionButton').onclick = transitionToGame;
 
@@ -155,7 +162,7 @@ window.handleReviewSubmission = async function(id, teamId, answer) {
 };
 
 const ALL_TEAM_QUESTIONS = {
-  red: [{q:'Cho CSC có $u_1=3$, $d=2$. Tìm $u_{10}$.',correct:'21'}],
+  red:[{q:'Cho CSC có $u_1=3$, $d=2$. Tìm $u_{10}$.',correct:'21'}],
   blue:[{q:'Cho CSN có $u_1=3$, $q=2$. Tìm $u_4$.',correct:'24'}],
   green:[{q:'Cho CSC có $u_1=5$, $d=4$. Tìm $u_6$.',correct:'25'}],
   yellow:[{q:'Cho CSC có $u_1=2$, $d=5$. Tìm $u_7$.',correct:'32'}],
