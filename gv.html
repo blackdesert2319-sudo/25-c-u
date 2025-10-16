@@ -374,60 +374,101 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   ];
 
   // ==========================================================
-  // MẢNG 35 CÂU HỎI VÀ ĐÁP ÁN ĐÚNG MẪU (Nhóm theo đội)
-  // Mỗi đội có 7 câu hỏi riêng biệt.
-  const QUESTIONS = {
-    // ĐỘI ĐỎ (Q1.1 -> Q1.7)
+  // ==========================================================
+// MẢNG CÂU HỎI MỚI (Cập nhật 2025-10-17: 7 câu hỏi về CSC/CSN cho mỗi đội)
+// ==========================================================
+const QUESTIONS = {
+    // ĐỘI ĐỎ (Q1.1 -> Q1.7) - Dữ liệu cũ (Đã tạo trước)
     'red': [
-        { qIndex: 'Q1.1', text: "Cho CSC có $u_1=3$, $d=2$. Tìm $u_{10}$", answer: "21" }, 
-        { qIndex: 'Q1.2', text: "Tính tổng 1 + 2 + ... + 10", answer: "55" }, 
-        { qIndex: 'Q1.3', text: "Kết quả phép tính 15 x 3", answer: "45" }, 
-        { qIndex: 'Q1.4', text: "Năm sinh của Hồ Chí Minh", answer: "1890" }, 
-        { qIndex: 'Q1.5', text: "Số ngày trong 3 tháng liên tiếp không có tháng 2", answer: "92" }, 
-        { qIndex: 'Q1.6', text: "Số nguyên tố nhỏ nhất", answer: "2" }, 
-        { qIndex: 'Q1.7', text: "Kết quả của 5! (5 giai thừa)", answer: "120" }
+        // 1. CSC: Tìm u10 (u1=3, u2=7) -> 39
+        { qIndex: 'Q1.1', text: "Cho CSC có $u_1 = 3$ và $u_2 = 7$. Tìm $u_{10}$", answer: "39" }, 
+        // 2. CSN: Tìm u10 (u1=2, u2=4) -> 1024
+        { qIndex: 'Q1.2', text: "Cho CSN có $u_1 = 2$ và $u_2 = 4$. Tìm $u_{10}$", answer: "1024" }, 
+        // 3. CSC: Tìm d (u1=5, u11=55) -> 5
+        { qIndex: 'Q1.3', text: "Tìm công sai $d$ của CSC, biết $u_1 = 5$ và $u_{11} = 55$", answer: "5" }, 
+        // 4. CSN: Tìm q (u1=3, u11=3072) -> 2
+        { qIndex: 'Q1.4', text: "Tìm công bội $q$ (nguyên dương) của CSN, biết $u_1 = 3$ và $u_{11} = 3072$", answer: "2" }, 
+        // 5. CSC: Tìm S8 (u1=10, d=-2) -> 24
+        { qIndex: 'Q1.5', text: "Tìm tổng $S_8$ của CSC, biết $u_1 = 10$ và công sai $d = -2$", answer: "24" }, 
+        // 6. CSN: Tìm S8 (u1=1, q=3) -> 3280
+        { qIndex: 'Q1.6', text: "Tìm tổng $S_8$ của CSN, biết $u_1 = 1$ và công bội $q = 3$", answer: "3280" }, 
+        // 7. CSC: Tìm n (u1=5, d=3, un=53) -> 17
+        { qIndex: 'Q1.7', text: "Cho CSC có $u_1 = 5$ và công sai $d = 3$. Hỏi $u_n = 53$ là số hạng thứ mấy ($n$)?", answer: "17" }
     ],
-    // ĐỘI XANH (Q2.1 -> Q2.7)
+    
+    // ĐỘI XANH (Q2.1 -> Q2.7) - Đã thay số
     'blue': [
-        { qIndex: 'Q2.1', text: "Tính $\\log_2 8$", answer: "3" }, 
-        { qIndex: 'Q2.2', text: "Diện tích hình tròn có bán kính r=1", answer: "pi" }, 
-        { qIndex: 'Q2.3', text: "Số chẵn lớn nhất có 2 chữ số", answer: "98" }, 
-        { qIndex: 'Q2.4', text: "Tổng các góc trong một tam giác", answer: "180" }, 
-        { qIndex: 'Q2.5', text: "$3^3 + 1$", answer: "28" }, 
-        { qIndex: 'Q2.6', text: "Số lượng hành tinh trong Hệ Mặt Trời", answer: "8" }, 
-        { qIndex: 'Q2.7', text: "$\\int_{0}^{1} x dx$", answer: "0.5" }
+        // 1. CSC: Tìm u10 (u1=5, u2=10) -> 50
+        { qIndex: 'Q2.1', text: "Cho CSC có $u_1 = 5$ và $u_2 = 10$. Tìm $u_{10}$", answer: "50" }, 
+        // 2. CSN: Tìm u10 (u1=3, u2=9) -> 59049
+        { qIndex: 'Q2.2', text: "Cho CSN có $u_1 = 3$ và $u_2 = 9$. Tìm $u_{10}$", answer: "59049" }, 
+        // 3. CSC: Tìm d (u1=10, u11=70) -> 6
+        { qIndex: 'Q2.3', text: "Tìm công sai $d$ của CSC, biết $u_1 = 10$ và $u_{11} = 70$", answer: "6" }, 
+        // 4. CSN: Tìm q (u1=2, u11=1024) -> 2
+        { qIndex: 'Q2.4', text: "Tìm công bội $q$ (nguyên dương) của CSN, biết $u_1 = 2$ và $u_{11} = 1024$", answer: "2" }, 
+        // 5. CSC: Tìm S8 (u1=5, d=3) -> 140
+        { qIndex: 'Q2.5', text: "Tìm tổng $S_8$ của CSC, biết $u_1 = 5$ và công sai $d = 3$", answer: "140" }, 
+        // 6. CSN: Tìm S8 (u1=2, q=2) -> 510
+        { qIndex: 'Q2.6', text: "Tìm tổng $S_8$ của CSN, biết $u_1 = 2$ và công bội $q = 2$", answer: "510" }, 
+        // 7. CSC: Tìm n (u1=10, d=4, un=50) -> 11
+        { qIndex: 'Q2.7', text: "Cho CSC có $u_1 = 10$ và công sai $d = 4$. Hỏi $u_n = 50$ là số hạng thứ mấy ($n$)?", answer: "11" }
     ],
-    // ĐỘI LỤC (Q3.1 -> Q3.7)
+    
+    // ĐỘI LỤC (Q3.1 -> Q3.7) - Đã thay số
     'green': [
-        { qIndex: 'Q3.1', text: "$2 \\times 2 \\times 2 + 10$", answer: "18" }, 
-        { qIndex: 'Q3.2', text: "Số Ả Rập (Arabic) tương đương với số La Mã 'IX'", answer: "9" }, 
-        { qIndex: 'Q3.3', text: "Thủ đô của Việt Nam", answer: "Hanoi" }, 
-        { qIndex: 'Q3.4', text: "$12 \\times 12$", answer: "144" }, 
-        { qIndex: 'Q3.5', text: "Giai thừa của 4 (4!)", answer: "24" }, 
-        { qIndex: 'Q3.6', text: "$1 + 1/2 + 1/4 + 1/8 + ...$ (tổng vô hạn)", answer: "2" }, 
-        { qIndex: 'Q3.7', text: "$e^0$", answer: "1" }
+        // 1. CSC: Tìm u10 (u1=1, u2=5) -> 37
+        { qIndex: 'Q3.1', text: "Cho CSC có $u_1 = 1$ và $u_2 = 5$. Tìm $u_{10}$", answer: "37" }, 
+        // 2. CSN: Tìm u10 (u1=1, u2=4) -> 262144
+        { qIndex: 'Q3.2', text: "Cho CSN có $u_1 = 1$ và $u_2 = 4$. Tìm $u_{10}$", answer: "262144" }, 
+        // 3. CSC: Tìm d (u1=2, u11=82) -> 8
+        { qIndex: 'Q3.3', text: "Tìm công sai $d$ của CSC, biết $u_1 = 2$ và $u_{11} = 82$", answer: "8" }, 
+        // 4. CSN: Tìm q (u1=5, u11=5120) -> 2
+        { qIndex: 'Q3.4', text: "Tìm công bội $q$ (nguyên dương) của CSN, biết $u_1 = 5$ và $u_{11} = 5120$", answer: "2" }, 
+        // 5. CSC: Tìm S8 (u1=20, d=-3) -> 134
+        { qIndex: 'Q3.5', text: "Tìm tổng $S_8$ của CSC, biết $u_1 = 20$ và công sai $d = -3$", answer: "134" }, 
+        // 6. CSN: Tìm S8 (u1=3, q=3) -> 9840
+        { qIndex: 'Q3.6', text: "Tìm tổng $S_8$ của CSN, biết $u_1 = 3$ và công bội $q = 3$", answer: "9840" }, 
+        // 7. CSC: Tìm n (u1=8, d=5, un=63) -> 12
+        { qIndex: 'Q3.7', text: "Cho CSC có $u_1 = 8$ và công sai $d = 5$. Hỏi $u_n = 63$ là số hạng thứ mấy ($n$)?", answer: "12" }
     ],
-    // ĐỘI VÀNG (Q4.1 -> Q4.7)
+    
+    // ĐỘI VÀNG (Q4.1 -> Q4.7) - Đã thay số
     'yellow': [
-        { qIndex: 'Q4.1', text: "Tìm nghiệm của $x+5=12$", answer: "7" }, 
-        { qIndex: 'Q4.2', text: "Tên đại dương lớn nhất thế giới", answer: "Thái Bình Dương" }, 
-        { qIndex: 'Q4.3', text: "$100 \\div 4$", answer: "25" }, 
-        { qIndex: 'Q4.4', text: "Số thập phân của $1/4$", answer: "0.25" }, 
-        { qIndex: 'Q4.5', text: "$9^2 - 1$", answer: "80" }, 
-        { qIndex: 'Q4.6', text: "Số lượng múi giờ tiêu chuẩn trên thế giới", answer: "24" }, 
-        { qIndex: 'Q4.7', text: "$\\cos(90^\\circ)$", answer: "0" }
+        // 1. CSC: Tìm u10 (u1=0, u2=8) -> 72
+        { qIndex: 'Q4.1', text: "Cho CSC có $u_1 = 0$ và $u_2 = 8$. Tìm $u_{10}$", answer: "72" }, 
+        // 2. CSN: Tìm u10 (u1=1, u2=5) -> 1953125
+        { qIndex: 'Q4.2', text: "Cho CSN có $u_1 = 1$ và $u_2 = 5$. Tìm $u_{10}$", answer: "1953125" }, 
+        // 3. CSC: Tìm d (u1=1, u11=91) -> 9
+        { qIndex: 'Q4.3', text: "Tìm công sai $d$ của CSC, biết $u_1 = 1$ và $u_{11} = 91$", answer: "9" }, 
+        // 4. CSN: Tìm q (u1=1, u11=59049) -> 3
+        { qIndex: 'Q4.4', text: "Tìm công bội $q$ (nguyên dương) của CSN, biết $u_1 = 1$ và $u_{11} = 59049$", answer: "3" }, 
+        // 5. CSC: Tìm S8 (u1=15, d=-4) -> 40
+        { qIndex: 'Q4.5', text: "Tìm tổng $S_8$ của CSC, biết $u_1 = 15$ và công sai $d = -4$", answer: "40" }, 
+        // 6. CSN: Tìm S8 (u1=4, q=2) -> 1020
+        { qIndex: 'Q4.6', text: "Tìm tổng $S_8$ của CSN, biết $u_1 = 4$ và công bội $q = 2$", answer: "1020" }, 
+        // 7. CSC: Tìm n (u1=2, d=7, un=72) -> 11
+        { qIndex: 'Q4.7', text: "Cho CSC có $u_1 = 2$ và công sai $d = 7$. Hỏi $u_n = 72$ là số hạng thứ mấy ($n$)?", answer: "11" }
     ],
-    // ĐỘI TÍM (Q5.1 -> Q5.7)
+    
+    // ĐỘI TÍM (Q5.1 -> Q5.7) - Đã thay số
     'purple': [
-        { qIndex: 'Q5.1', text: "Số lớn nhất có 3 chữ số", answer: "999" }, 
-        { qIndex: 'Q5.2', text: "Khối lượng riêng của nước tinh khiết ($kg/m^3$)", answer: "1000" }, 
-        { qIndex: 'Q5.3', text: "Chu vi hình vuông có cạnh là 5", answer: "20" }, 
-        { qIndex: 'Q5.4', text: "Nước có bao nhiêu màu?", answer: "0" }, 
-        { qIndex: 'Q5.5', text: "Tính $\\sqrt{49}$", answer: "7" }, 
-        { qIndex: 'Q5.6', text: "$\\lim_{n \\to \\infty} \\frac{1}{n}$", answer: "0" }, 
-        { qIndex: 'Q5.7', text: "Năm được xem là kết thúc Chiến tranh thế giới thứ hai", answer: "1945" }
+        // 1. CSC: Tìm u10 (u1=4, u2=9) -> 49
+        { qIndex: 'Q5.1', text: "Cho CSC có $u_1 = 4$ và $u_2 = 9$. Tìm $u_{10}$", answer: "49" }, 
+        // 2. CSN: Tìm u10 (u1=1, u2=3) -> 19683
+        { qIndex: 'Q5.2', text: "Cho CSN có $u_1 = 1$ và $u_2 = 3$. Tìm $u_{10}$", answer: "19683" }, 
+        // 3. CSC: Tìm d (u1=3, u11=73) -> 7
+        { qIndex: 'Q5.3', text: "Tìm công sai $d$ của CSC, biết $u_1 = 3$ và $u_{11} = 73$", answer: "7" }, 
+        // 4. CSN: Tìm q (u1=4, u11=4096) -> 2
+        { qIndex: 'Q5.4', text: "Tìm công bội $q$ (nguyên dương) của CSN, biết $u_1 = 4$ và $u_{11} = 4096$", answer: "2" }, 
+        // 5. CSC: Tìm S8 (u1=12, d=-5) -> -20
+        { qIndex: 'Q5.5', text: "Tìm tổng $S_8$ của CSC, biết $u_1 = 12$ và công sai $d = -5$", answer: "-20" }, 
+        // 6. CSN: Tìm S8 (u1=5, q=2) -> 1275
+        { qIndex: 'Q5.6', text: "Tìm tổng $S_8$ của CSN, biết $u_1 = 5$ và công bội $q = 2$", answer: "1275" }, 
+        // 7. CSC: Tìm n (u1=1, d=6, un=67) -> 12
+        { qIndex: 'Q5.7', text: "Cho CSC có $u_1 = 1$ và công sai $d = 6$. Hỏi $u_n = 67$ là số hạng thứ mấy ($n$)?", answer: "12" }
     ]
-  };
+};
+// ==========================================================
   // ==========================================================
 
   // Ánh xạ các class màu CSS sang mã màu Hex cho nền QR và cột duyệt
@@ -1054,6 +1095,7 @@ function handleOpenTreasure() {
 </script>
 </body>
 </html>
+
 
 
 
