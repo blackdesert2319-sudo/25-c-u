@@ -76,11 +76,12 @@
     <button id="submit-button" disabled>GỬI ĐÁP ÁN</button>
     <button id="skip-button" disabled>❌ GỬI YÊU CẦU BỎ QUA</button>
   </div>
+
   <div id="status-message">Vui lòng quét mã QR của đội.</div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
     // === CẤU HÌNH FIREBASE ===
     const firebaseConfig = {
@@ -95,6 +96,8 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    
+    const TEAM_STATUS_COLLECTION = "team_status"; // PHẢI GIỐNG VỚI FILE GV
 
     let teamId = null;
     let currentQuestionIndex = 1;
@@ -108,18 +111,53 @@
         document.getElementById('skip-button').disabled = false;
         document.getElementById('submit-button').onclick = submitAnswer;
         document.getElementById('skip-button').onclick = skipQuestion;
-        document.getElementById('status-message').textContent = 'Sẵn sàng gửi đáp án hoặc yêu cầu bỏ qua.';
+        
         updateQuestionDisplay();
+        listenToTeamStatus(); // BẮT ĐẦU LẮNG NGHE TRẠNG THÁI TỪ GV
+        
+        document.getElementById('status-message').textContent = 'Đang đồng bộ trạng thái...';
       } else {
         document.getElementById('status-message').textContent = 'Không tìm thấy mã đội. Vui lòng quét lại QR.';
       }
     });
     
+    // HÀM MỚI: Lắng nghe trạng thái từ GV
+    function listenToTeamStatus() {
+        if (!teamId) return;
+        const docRef = doc(db, TEAM_STATUS_COLLECTION, teamId);
+
+        onSnapshot(docRef, (docSnapshot) => {
+            if (docSnapshot.exists()) {
+                const data = docSnapshot.data();
+                const newQ = data.currentQ;
+                
+                if (newQ > currentQuestionIndex) {
+                    currentQuestionIndex = newQ;
+                    updateQuestionDisplay();
+                    document.getElementById('status-message').textContent = `GV đã duyệt. Chuyển sang C${currentQuestionIndex}. Nhập đáp án mới.`;
+                    document.getElementById('status-message').style.color = "#2ecc71";
+                    document.getElementById('answer-input').value = ""; // Xóa đáp án cũ
+                } else if (newQ === currentQuestionIndex) {
+                    document.getElementById('status-message').textContent = `Sẵn sàng gửi đáp án hoặc yêu cầu bỏ qua cho C${currentQuestionIndex}.`;
+                    document.getElementById('status-message').style.color = "white";
+                }
+            } else {
+                document.getElementById('status-message').textContent = 'GV chưa bắt đầu game hoặc trạng thái bị lỗi.';
+                document.getElementById('status-message').style.color = "#e74c3c";
+            }
+        }, (error) => {
+            console.error("Error listening to team status:", error);
+            document.getElementById('status-message').textContent = 'Lỗi kết nối Firebase.';
+            document.getElementById('status-message').style.color = "#e74c3c";
+        });
+    }
+
     function updateQuestionDisplay() {
         document.getElementById('question-display').textContent = `Câu hiện tại: C${currentQuestionIndex}`;
     }
 
     async function submitAnswer() {
+      // ... (Giữ nguyên logic gửi)
       const input = document.getElementById('answer-input');
       const status = document.getElementById('status-message');
       const btn = document.getElementById('submit-button');
@@ -143,7 +181,7 @@
         status.textContent = `Đã gửi đáp án '${answer}'. Chờ GV duyệt. (Câu C${currentQuestionIndex})`;
         status.style.color = "#2ecc71";
         // KHÔNG TỰ ĐỘNG CẬP NHẬT CÂU HỎI Ở ĐÂY
-        input.value = "";
+        // input.value = ""; // Giữ lại đáp án để sửa nếu sai
       } catch {
         status.textContent = "Gửi thất bại. Kiểm tra mạng.";
         status.style.color = "#e74c3c";
@@ -153,6 +191,7 @@
     }
 
     async function skipQuestion() {
+      // ... (Giữ nguyên logic gửi)
       const status = document.getElementById('status-message');
       const skipBtn = document.getElementById('skip-button');
       skipBtn.disabled = true;
