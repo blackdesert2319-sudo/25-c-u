@@ -544,16 +544,17 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     showGameLayout();
   }
 
-  // HÀM SỬA: Chỉ hiển thị giao diện chơi và ẩn main-controls
-  function showGameLayout(){
-    // ẨN CẢ KHỐI QR VÀ KHỐI NÚT ĐIỀU KHIỂN CHÍNH
-    document.getElementById("qr-list").style.display="none";
+ // HÀM SỬA: Chỉ hiển thị giao diện chơi và ẩn main-controls
+function showGameLayout(){
+    // Ẩn khối QR và khối điều khiển chính
+    document.getElementById("qr-list").style.display="none"; 
     document.getElementById("main-controls").style.display="none"; 
 
     document.getElementById("game-wrapper").style.display="block";
     renderTeams(); // VẼ LẠI GIAO DIỆN CÁC ĐỘI
     listenForSubmissions();
-    document.getElementById("startGameBtn").style.display="block"; 
+    document.getElementById("startGameBtn").style.display="block";
+  
     // CÂU HỎI VẪN ĐANG ẨN, CHỈ HIỂN THỊ KHI BẤM START
   }
   
@@ -1011,3 +1012,4 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 </script>
 </body>
 </html>
+
