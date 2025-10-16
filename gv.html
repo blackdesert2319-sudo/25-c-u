@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mật Mã Rương Báu - GV (Hoàn Chỉnh)</title>
+<title>Mật Mã Rương Báu - GV (Tự Động Duyệt Tối ưu cho Số)</title>
 
 <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
 <script>
@@ -114,7 +114,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 
 /* Cột phải: hàng đợi */
 #submission-queue-area {
-  width: 120px;
+  width: 140px; /* Tăng chiều rộng để vừa nút */
   background: #34495e;
   border-radius: 10px;
   padding: 8px;
@@ -184,15 +184,17 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   align-items:center;
 }
 
-.team-question-area {
+/* KHU VỰC HIỂN THỊ ĐÁP ÁN MẪU */
+.team-answer-area {
   flex:1;
   padding-left:20px;
   display:none; /* ẩn trước khi start */
 }
-.q-text {
+.answer-text {
   font-size:2.3em;
   font-weight:700;
   line-height:1.3;
+  color: #f1c40f; /* Màu vàng nổi bật cho đáp án mẫu */
 }
 
 /* Hàng đợi duyệt đáp án (CSS cho mục rút gọn) */
@@ -205,25 +207,24 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   flex-direction:column;
   align-items:center;
   border-left:4px solid #f1c40f;
-  /* Thay đổi để phù hợp với hiển thị rút gọn */
   text-align:center;
 }
 .submission-item button {
   padding:5px 10px;
-  /* background sẽ được set inline */
   color:white;
   border:none;
   border-radius:5px;
   font-weight:bold;
-  /* margin-top:5px; được chuyển vào inline style để kiểm soát tốt hơn */
   font-size:0.9em;
   cursor:pointer;
+  width: 90%;
+  margin-top: 5px;
 }
 
 /* START BUTTON */
 #startGameBtn {
   position:absolute;
-  top:0px; /* Đặt cách đáy 10 pixel */
+  top:0px; 
   left:100px;
   transform:translate(-50%, -50%);
   font-size:2em;
@@ -265,11 +266,11 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 #resetBtn {
     font-size: 1.2em;
     padding: 12px 22px;
-    background: #e74c3c; /* Đỏ */
+    background: #e74c3c; 
     color: #fff;
     border: none;
     border-radius: 8px;
-    margin: 20px 5px; /* Điều chỉnh margin để nằm cạnh nút BẮT ĐẦU */
+    margin: 20px 5px; 
     font-weight: bold;
     cursor: pointer;
 }
@@ -277,7 +278,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 </head>
 
 <body>
-  <h1>CHIẾN THẮNG KHI HOÀN THÀNH 7 CÂU HỎI NHANH NHẤT</h1>
+  <h1>CHIẾN THẮNG KHI HOÀN THÀNH 07 CÂU HỎI NHANH NHẤT</h1>
   <div id="qr-list"></div>
 
   <div style="text-align:center;">
@@ -308,7 +309,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 <script type="module">
   // B. Thêm Imports và Config Firebase
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-  import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+  import { getFirestore, collection, query, where, onSnapshot, doc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
   // === CẤU HÌNH FIREBASE ===
   const firebaseConfig = {
@@ -325,7 +326,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   const db = getFirestore(app);
 
 
-  // D1. Sửa mảng teams để thêm currentQ
+  // D1. Mảng đội
   const teams = [
     { name: "Đội Đỏ", color: "team-red", id: "red", score: 0, currentQ: 1 },
     { name: "Đội Xanh", color: "team-blue", id: "blue", score: 0, currentQ: 1 },
@@ -333,6 +334,21 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     { name: "Đội Vàng", color: "team-yellow", id: "yellow", score: 0, currentQ: 1 },
     { name: "Đội Tím", color: "team-purple", id: "purple", score: 0, currentQ: 1 }
   ];
+
+  // ==========================================================
+  // MẢNG ĐÁP ÁN ĐÚNG MẪU (Hệ thống sẽ tự đối chiếu với đáp án này)
+  // LƯU Ý: Đáp án phải là CHUỖI SỐ (String of Number) và KHÔNG CHỨA bất kỳ ký tự nào khác.
+  const ANSWERS = [
+    "21",    // Đáp án Câu 1
+    "100",   // Đáp án Câu 2
+    "45",    // Đáp án Câu 3 (ĐIỀN SỐ NGUYÊN CỦA BẠN VÀO ĐÂY)
+    "1905",  // Đáp án Câu 4
+    "88",    // Đáp án Câu 5 (ĐIỀN SỐ NGUYÊN CỦA BẠN VÀO ĐÂY)
+    "3",     // Đáp án Câu 6 (ĐIỀN SỐ NGUYÊN CỦA BẠN VÀO ĐÂY)
+    "123"    // Đáp án Câu 7 (ĐIỀN SỐ NGUYÊN CỦA BẠN VÀO ĐÂY)
+  ];
+  // ==========================================================
+
 
   // Ánh xạ các class màu CSS sang mã màu Hex cho nền QR
   const teamColorMap = {
@@ -387,24 +403,45 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     teams.forEach(team=>{
       const row=document.createElement("div");
       row.className=`team-row ${team.color}`;
+      // Lấy đáp án mẫu cho câu hỏi hiện tại
+      const answerText = ANSWERS[team.currentQ - 1] || "HOÀN THÀNH";
+      
       row.innerHTML=`
         <div class="team-score-control">
           <div class="team-score-value" id="score-${team.id}">${team.score}</div>
           <div class="q-status-item" id="status-${team.id}">${team.currentQ}</div>
         </div>
-        <div class="team-question-area" id="qarea-${team.id}">
-          <div class="q-text">Cho CSC có $u_1=3$, $d=2$. Tìm $u_{10}$.</div>
+        <div class="team-answer-area" id="qarea-${team.id}">
+            <div style="font-size: 1.1em; font-weight: bold;">Đ.Á C${team.currentQ}:</div>
+            <div class="answer-text" id="answer-${team.id}">${answerText}</div>
         </div>
       `;
       container.appendChild(row);
     });
   }
 
+  // HÀM: Cập nhật chỉ hiển thị đáp án mẫu
+  function updateAnswerDisplay(team) {
+      const answerElement = document.getElementById(`answer-${team.id}`);
+      if (answerElement) {
+          // Lấy đáp án của câu hỏi MỚI (currentQ)
+          const answerText = ANSWERS[team.currentQ - 1] || "HOÀN THÀNH";
+          answerElement.textContent = answerText;
+          // Cập nhật tiêu đề câu hỏi
+          const qArea = document.getElementById(`qarea-${team.id}`);
+          if(qArea) {
+             qArea.querySelector('div').textContent = `Đ.Á C${team.currentQ}:`;
+          }
+      }
+      MathJax.typeset();
+  }
+
+
   function startCountdown(){
     document.getElementById("startGameBtn").style.display="none";
     document.getElementById("timer").style.display="block";
     document.getElementById("endEarlyBtn").style.display="block";
-    document.querySelectorAll('.team-question-area').forEach(el=>el.style.display='block');
+    document.querySelectorAll('.team-answer-area').forEach(el=>el.style.display='block'); 
     MathJax.typeset();
     timerInterval = setInterval(updateTimer,1000);
   }
@@ -423,7 +460,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     totalSeconds--;
   }
 
-  // HÀM: Xử lý giao diện thắng Rương Báu (ĐÃ SỬA LỖI HIỂN THỊ)
+  // HÀM: Xử lý giao diện thắng Rương Báu
   function winGame(winningTeam) {
     clearInterval(timerInterval); 
     document.getElementById("timer").style.display = "none";
@@ -431,12 +468,10 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     
     const overlay = document.getElementById("endOverlay");
     
-    // Đảm bảo overlay hiện và được tùy chỉnh
     overlay.style.display = "flex";
-    overlay.style.backgroundColor = 'rgba(255, 215, 0, 0.95)'; // Màu vàng rực
-    overlay.style.color = '#e74c3c'; // Chữ đỏ
+    overlay.style.backgroundColor = 'rgba(255, 215, 0, 0.95)'; 
+    overlay.style.color = '#e74c3c'; 
     
-    // Cập nhật nội dung toàn bộ overlay
     overlay.innerHTML = `
       <h1>🏆 ${winningTeam.name} ĐÃ GIÀNH CHIẾN THẮNG 🏆</h1>
       <h2>🎉 ĐƯỢC THƯỞNG THÊM ${TREASURE_BONUS} ĐIỂM RƯƠNG BÁU! 🎉</h2>
@@ -453,11 +488,10 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     document.getElementById("endEarlyBtn").style.display="none";
     const overlay=document.getElementById("endOverlay");
     
-    overlay.style.backgroundColor = 'rgba(241,196,15,0.9)'; // Quay lại màu mặc định
+    overlay.style.backgroundColor = 'rgba(241,196,15,0.9)'; 
     overlay.style.color = '#000';
     overlay.style.display="flex";
     
-    // Đặt lại nội dung mặc định của endGame
     overlay.innerHTML = `
       <h1>🏆 TRÒ CHƠI KẾT THÚC 🏆</h1>
       <div class="scoreboard" id="finalScores"></div>
@@ -471,7 +505,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     document.getElementById("finalScores").innerHTML=scoreHTML;
   }
   
-  // D3. Logic cập nhật đội
+  // Logic cập nhật đội
   function updateTeam(teamId, points) {
     const team = teams.find(t => t.id === teamId);
     if (team) {
@@ -480,6 +514,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       // Nếu đáp án đúng (points > 0), thì tăng số câu hỏi hiện tại lên
       if (points > 0) {
         team.currentQ++;
+        updateAnswerDisplay(team); 
       }
       
       // Cập nhật giao diện
@@ -490,32 +525,71 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       if (team.currentQ > WINNING_QUESTION) {
         team.score += TREASURE_BONUS; 
         document.getElementById(`score-${teamId}`).textContent = team.score; 
-        winGame(team); // Chuyển sang giao diện RƯƠNG BÁU
+        winGame(team); 
       }
     }
   }
 
-  // D3. Logic duyệt yêu cầu (ĐÃ SỬA LỖI CHẤM ĐIỂM SAI)
-  window.approveSubmission = async (docId, teamId, actionType) => {
+  // ===================================================
+  // HÀM: DUYỆT TỰ ĐỘNG VÀ ĐỐI CHIẾU ĐÁP ÁN (Tối ưu cho SỐ NGUYÊN)
+  // ===================================================
+  window.autoApproveSubmission = async (docId, teamId, qIndex, studentAnswer) => {
+      try {
+          const docRef = doc(db, "submissions", docId);
+          const correctText = ANSWERS[parseInt(qIndex) - 1];
+          
+          // Chuẩn hóa đáp án (chỉ loại bỏ khoảng trắng - áp dụng cho số)
+          const normalizedStudentAnswer = studentAnswer.trim().replace(/\s/g, ''); 
+          const normalizedCorrectAnswer = correctText.trim().replace(/\s/g, ''); 
+          
+          let points = 0;
+          let resultMessage = "SAI (-10)";
+
+          // So sánh chuỗi đã chuẩn hóa
+          if (normalizedStudentAnswer === normalizedCorrectAnswer) {
+              points = 10;
+              resultMessage = "ĐÚNG (+10)";
+          } else {
+              points = -10; 
+          }
+
+          // Cập nhật điểm cho đội
+          updateTeam(teamId, points);
+
+          // Xóa document khỏi Firestore sau khi xử lý
+          await deleteDoc(docRef);
+          
+          // Tùy chọn: Log kết quả ra console để GV theo dõi
+          console.log(`Duyệt tự động: Đội ${teamId}, Đáp án HS: "${studentAnswer}", Đáp án đúng: "${correctText}". Kết quả: ${resultMessage}.`);
+
+      } catch(e) {
+          console.error("Lỗi khi duyệt yêu cầu tự động:", e);
+          alert("Lỗi khi xử lý yêu cầu duyệt tự động. Xem console.");
+      }
+  };
+  
+  // ===================================================
+  // HÀM: DUYỆT BỎ QUA (Trừ điểm và chuyển câu)
+  // ===================================================
+  window.approveSkip = async (docId, teamId) => {
       try {
           const docRef = doc(db, "submissions", docId);
           
-          if (actionType === 'skip' || actionType === 'incorrect') {
-              updateTeam(teamId, -10); // Bỏ qua hoặc Sai đều bị -10 điểm
-          } else if (actionType === 'correct') {
-              updateTeam(teamId, 10); // Đáp án đúng +10 điểm và tăng currentQ
-          }
+          // Bỏ qua: -10 điểm và chuyển câu
+          // Lưu ý: Bỏ qua sẽ khiến currentQ tăng lên 1 (hàm updateTeam)
+          updateTeam(teamId, -10); 
 
           // Xóa document khỏi Firestore sau khi xử lý
           await deleteDoc(docRef);
           
       } catch(e) {
-          console.error("Lỗi khi duyệt yêu cầu:", e);
-          alert("Lỗi khi xử lý yêu cầu duyệt. Xem console.");
+          console.error("Lỗi khi duyệt yêu cầu bỏ qua:", e);
+          alert("Lỗi khi xử lý yêu cầu duyệt bỏ qua. Xem console.");
       }
   };
 
-  // D3. Hàm tạo HTML cho yêu cầu duyệt rút gọn (ĐÃ SỬA: Thêm nút ĐÚNG/SAI)
+
+  // Hàm tạo HTML cho yêu cầu duyệt rút gọn
   function renderSubmissionItem(doc) {
     const data = doc.data();
     const docId = doc.id;
@@ -523,30 +597,23 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     const teamName = team ? team.name.split(' ')[1] : '???'; 
     
     let label = '';
-    let bgColor = '#3498db'; // Màu trung tính cho đáp án chờ duyệt
     let buttonsHTML = ''; 
 
     if (data.action === 'skip') {
       label = `${teamName}: BỎ QUA`;
-      bgColor = '#e67e22'; // Màu cam cho yêu cầu bỏ qua
-      // Skip action: One button to approve the skip (-10 points)
-      buttonsHTML = `<button style="background:#e67e22; margin-top:5px;" onclick="approveSubmission('${docId}', '${data.teamId}', 'skip')">DUYỆT BỎ QUA (-10)</button>`;
+      // Nút cho hành động BỎ QUA
+      buttonsHTML = `<button style="background:#e67e22;" onclick="approveSkip('${docId}', '${data.teamId}')">DUYỆT BỎ QUA (-10)</button>`;
     } else {
-      label = `${teamName}: ${data.answer.toUpperCase()}`;
-      
-      // Answer submission: Two buttons (Correct +10, Incorrect -10)
+      label = `${teamName}: ${data.answer}`;
+      // Nút cho hành động TRẢ LỜI (Duyệt tự động)
       buttonsHTML = `
-          <div style="display:flex; gap: 8px; margin-top:5px; width: 100%; justify-content:center;">
-              <button style="background:#27ae60;" onclick="approveSubmission('${docId}', '${data.teamId}', 'correct')">ĐÚNG (+10)</button>
-              <button style="background:#c0392b;" onclick="approveSubmission('${docId}', '${data.teamId}', 'incorrect')">SAI (-10)</button>
-          </div>
+          <button style="background:#3498db;" onclick="autoApproveSubmission('${docId}', '${data.teamId}', '${data.questionIndex}', '${data.answer}')">DUYỆT TỰ ĐỘNG</button>
       `;
     }
 
     const div = document.createElement('div');
     div.className = 'submission-item';
     div.id = `sub-${docId}`;
-    div.style.backgroundColor = bgColor;
     div.style.borderLeftColor = team ? teamColorMap[team.color] : '#f1c40f';
     div.style.alignItems = 'center';
     div.style.padding = '10px 8px';
@@ -562,7 +629,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   }
 
 
-  // D3. Hàm lắng nghe submissions từ Firestore (ĐÃ THÊM BỘ ĐẾM)
+  // Hàm lắng nghe submissions từ Firestore
   function listenForSubmissions() {
     const queueContainer = document.getElementById('submission-queue-area');
     const queueCountElement = document.getElementById('queue-count');
@@ -624,7 +691,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   }
 
 
-  // === GẮN SỰ KIỆN CHO TẤT CẢ CÁC NÚT (Sửa lỗi onclick) ===
+  // === GẮN SỰ KIỆN CHO TẤT CẢ CÁC NÚT ===
   document.addEventListener('DOMContentLoaded', () => {
     // 1. Nút BẮT ĐẦU VÒNG 3!
     const startBtn = document.getElementById("startBtn");
