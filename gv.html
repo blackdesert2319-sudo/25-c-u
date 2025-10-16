@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mật Mã Rương Báu - GV (Tự Động Duyệt Tối ưu cho Số)</title>
+<title>Mật Mã Rương Báu - GV (Sửa Logic Điểm)</title>
 
 <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
 <script>
@@ -114,7 +114,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 
 /* Cột phải: hàng đợi */
 #submission-queue-area {
-  width: 140px; /* Tăng chiều rộng để vừa nút */
+  width: 140px; 
   background: #34495e;
   border-radius: 10px;
   padding: 8px;
@@ -184,17 +184,20 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   align-items:center;
 }
 
-/* KHU VỰC HIỂN THỊ ĐÁP ÁN MẪU */
-.team-answer-area {
+/* KHU VỰC HIỂN THỊ CÂU HỎI HIỆN TẠI */
+.team-question-area {
   flex:1;
   padding-left:20px;
   display:none; /* ẩn trước khi start */
 }
+.question-title {
+  font-size: 1.8em; /* Tăng cỡ chữ để hiển thị nội dung câu hỏi */
+  font-weight: 700;
+  line-height: 1.3;
+  color: #f1c40f; 
+}
 .answer-text {
-  font-size:2.3em;
-  font-weight:700;
-  line-height:1.3;
-  color: #f1c40f; /* Màu vàng nổi bật cho đáp án mẫu */
+  display:none; /* Ẩn đáp án mẫu */
 }
 
 /* Hàng đợi duyệt đáp án (CSS cho mục rút gọn) */
@@ -278,7 +281,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 </head>
 
 <body>
-  <h1>CHIẾN THẮNG KHI HOÀN THÀNH 07 CÂU HỎI NHANH NHẤT</h1>
+  <h1>CHIẾN THẮNG KHI HOÀN THÀNH 7 CÂU HỎI NHANH NHẤT</h1>
   <div id="qr-list"></div>
 
   <div style="text-align:center;">
@@ -336,19 +339,18 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   ];
 
   // ==========================================================
-  // MẢNG ĐÁP ÁN ĐÚNG MẪU (Hệ thống sẽ tự đối chiếu với đáp án này)
+  // MẢNG CÂU HỎI VÀ ĐÁP ÁN ĐÚNG MẪU
   // LƯU Ý: Đáp án phải là CHUỖI SỐ (String of Number) và KHÔNG CHỨA bất kỳ ký tự nào khác.
-  const ANSWERS = [
-    "21",    // Đáp án Câu 1
-    "100",   // Đáp án Câu 2
-    "45",    // Đáp án Câu 3 (ĐIỀN SỐ NGUYÊN CỦA BẠN VÀO ĐÂY)
-    "1905",  // Đáp án Câu 4
-    "88",    // Đáp án Câu 5 (ĐIỀN SỐ NGUYÊN CỦA BẠN VÀO ĐÂY)
-    "3",     // Đáp án Câu 6 (ĐIỀN SỐ NGUYÊN CỦA BẠN VÀO ĐÂY)
-    "123"    // Đáp án Câu 7 (ĐIỀN SỐ NGUYÊN CỦA BẠN VÀO ĐÂY)
+  const QUESTIONS = [
+    { text: "C1: Cho CSC có $u_1=3$, $d=2$. Tìm $u_{10}$", answer: "21" }, 
+    { text: "C2: Tính tổng 1 + 2 + ... + 10", answer: "55" }, 
+    { text: "C3: Kết quả phép tính 15 x 3", answer: "45" }, 
+    { text: "C4: Năm sinh của Hồ Chí Minh", answer: "1890" }, 
+    { text: "C5: Số ngày trong 3 tháng liên tiếp không có tháng 2", answer: "92" }, 
+    { text: "C6: Số nguyên tố nhỏ nhất", answer: "2" }, 
+    { text: "C7: Kết quả của 5! (5 giai thừa)", answer: "120" }
   ];
   // ==========================================================
-
 
   // Ánh xạ các class màu CSS sang mã màu Hex cho nền QR
   const teamColorMap = {
@@ -361,7 +363,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 
   // HẰNG SỐ GAME
   const TREASURE_BONUS = 30; 
-  const WINNING_QUESTION = 7; 
+  const WINNING_QUESTION = QUESTIONS.length; 
   let timerInterval;
   let totalSeconds = 600; // 10 phút
 
@@ -403,35 +405,32 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     teams.forEach(team=>{
       const row=document.createElement("div");
       row.className=`team-row ${team.color}`;
-      // Lấy đáp án mẫu cho câu hỏi hiện tại
-      const answerText = ANSWERS[team.currentQ - 1] || "HOÀN THÀNH";
+      
+      const questionData = QUESTIONS[team.currentQ - 1];
+      const questionText = questionData ? questionData.text : "HOÀN THÀNH!";
       
       row.innerHTML=`
         <div class="team-score-control">
           <div class="team-score-value" id="score-${team.id}">${team.score}</div>
           <div class="q-status-item" id="status-${team.id}">${team.currentQ}</div>
         </div>
-        <div class="team-answer-area" id="qarea-${team.id}">
-            <div style="font-size: 1.1em; font-weight: bold;">Đ.Á C${team.currentQ}:</div>
-            <div class="answer-text" id="answer-${team.id}">${answerText}</div>
+        <div class="team-question-area" id="qarea-${team.id}">
+            <div class="question-title" id="q-title-${team.id}">${questionText}</div>
         </div>
       `;
       container.appendChild(row);
     });
   }
 
-  // HÀM: Cập nhật chỉ hiển thị đáp án mẫu
-  function updateAnswerDisplay(team) {
-      const answerElement = document.getElementById(`answer-${team.id}`);
-      if (answerElement) {
-          // Lấy đáp án của câu hỏi MỚI (currentQ)
-          const answerText = ANSWERS[team.currentQ - 1] || "HOÀN THÀNH";
-          answerElement.textContent = answerText;
-          // Cập nhật tiêu đề câu hỏi
-          const qArea = document.getElementById(`qarea-${team.id}`);
-          if(qArea) {
-             qArea.querySelector('div').textContent = `Đ.Á C${team.currentQ}:`;
-          }
+  // HÀM: Cập nhật chỉ hiển thị câu hỏi
+  function updateQuestionDisplay(team) {
+      const qTitleElement = document.getElementById(`q-title-${team.id}`);
+      
+      if (qTitleElement) {
+          // Lấy câu hỏi của câu hỏi MỚI (currentQ)
+          const questionData = QUESTIONS[team.currentQ - 1];
+          const questionText = questionData ? questionData.text : "HOÀN THÀNH!";
+          qTitleElement.textContent = questionText;
       }
       MathJax.typeset();
   }
@@ -441,7 +440,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     document.getElementById("startGameBtn").style.display="none";
     document.getElementById("timer").style.display="block";
     document.getElementById("endEarlyBtn").style.display="block";
-    document.querySelectorAll('.team-answer-area').forEach(el=>el.style.display='block'); 
+    document.querySelectorAll('.team-question-area').forEach(el=>el.style.display='block'); 
     MathJax.typeset();
     timerInterval = setInterval(updateTimer,1000);
   }
@@ -506,15 +505,15 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   }
   
   // Logic cập nhật đội
-  function updateTeam(teamId, points) {
+  function updateTeam(teamId, points, advanceQ = false) {
     const team = teams.find(t => t.id === teamId);
     if (team) {
       team.score += points;
       
-      // Nếu đáp án đúng (points > 0), thì tăng số câu hỏi hiện tại lên
-      if (points > 0) {
+      // Nếu đáp án đúng HOẶC yêu cầu chuyển câu (advanceQ = true)
+      if (advanceQ) {
         team.currentQ++;
-        updateAnswerDisplay(team); 
+        updateQuestionDisplay(team); 
       }
       
       // Cập nhật giao diện
@@ -532,35 +531,42 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 
   // ===================================================
   // HÀM: DUYỆT TỰ ĐỘNG VÀ ĐỐI CHIẾU ĐÁP ÁN (Tối ưu cho SỐ NGUYÊN)
+  // Logic: ĐÚNG -> +10, chuyển câu. SAI -> 0 điểm, KHÔNG chuyển câu.
   // ===================================================
   window.autoApproveSubmission = async (docId, teamId, qIndex, studentAnswer) => {
       try {
           const docRef = doc(db, "submissions", docId);
-          const correctText = ANSWERS[parseInt(qIndex) - 1];
+          const questionData = QUESTIONS[parseInt(qIndex) - 1];
+          if (!questionData) {
+              console.error("Lỗi: Không tìm thấy đáp án cho câu hỏi này.");
+              await deleteDoc(docRef);
+              return;
+          }
+          const correctText = questionData.answer;
           
           // Chuẩn hóa đáp án (chỉ loại bỏ khoảng trắng - áp dụng cho số)
           const normalizedStudentAnswer = studentAnswer.trim().replace(/\s/g, ''); 
           const normalizedCorrectAnswer = correctText.trim().replace(/\s/g, ''); 
           
-          let points = 0;
-          let resultMessage = "SAI (-10)";
+          let points = 0; // Mặc định là SAI, KHÔNG TRỪ ĐIỂM
+          let advanceQ = false;
+          let resultMessage = "SAI (0 điểm)";
 
           // So sánh chuỗi đã chuẩn hóa
           if (normalizedStudentAnswer === normalizedCorrectAnswer) {
               points = 10;
+              advanceQ = true; // Đáp án đúng thì chuyển câu
               resultMessage = "ĐÚNG (+10)";
-          } else {
-              points = -10; 
-          }
+          } 
+          // Nếu sai, points vẫn là 0 và advanceQ vẫn là false.
 
-          // Cập nhật điểm cho đội
-          updateTeam(teamId, points);
+          // Cập nhật điểm cho đội và quyết định chuyển câu
+          updateTeam(teamId, points, advanceQ);
 
           // Xóa document khỏi Firestore sau khi xử lý
           await deleteDoc(docRef);
           
-          // Tùy chọn: Log kết quả ra console để GV theo dõi
-          console.log(`Duyệt tự động: Đội ${teamId}, Đáp án HS: "${studentAnswer}", Đáp án đúng: "${correctText}". Kết quả: ${resultMessage}.`);
+          console.log(`Duyệt tự động: Đội ${teamId}, Câu ${qIndex}. Đáp án HS: "${studentAnswer}". Kết quả: ${resultMessage}.`);
 
       } catch(e) {
           console.error("Lỗi khi duyệt yêu cầu tự động:", e);
@@ -569,19 +575,21 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   };
   
   // ===================================================
-  // HÀM: DUYỆT BỎ QUA (Trừ điểm và chuyển câu)
+  // HÀM: DUYỆT BỎ QUA 
+  // Logic: BỎ QUA -> -10, chuyển câu.
   // ===================================================
   window.approveSkip = async (docId, teamId) => {
       try {
           const docRef = doc(db, "submissions", docId);
           
-          // Bỏ qua: -10 điểm và chuyển câu
-          // Lưu ý: Bỏ qua sẽ khiến currentQ tăng lên 1 (hàm updateTeam)
-          updateTeam(teamId, -10); 
+          // Bỏ qua: -10 điểm VÀ chuyển câu (advanceQ = true)
+          updateTeam(teamId, -10, true); 
 
           // Xóa document khỏi Firestore sau khi xử lý
           await deleteDoc(docRef);
           
+          console.log(`Duyệt bỏ qua: Đội ${teamId}. Kết quả: Bỏ qua (-10) và chuyển câu.`);
+
       } catch(e) {
           console.error("Lỗi khi duyệt yêu cầu bỏ qua:", e);
           alert("Lỗi khi xử lý yêu cầu duyệt bỏ qua. Xem console.");
@@ -621,7 +629,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     div.style.textAlign = 'center';
 
     div.innerHTML = `
-      <div style="font-size:1.4em; font-weight:bold; margin-bottom: 5px;">${label}</div>
+      <div style="font-size:1.4em; font-weight:bold; margin-bottom: 5px;">${label} (C${data.questionIndex})</div>
       ${buttonsHTML}
     `;
     
