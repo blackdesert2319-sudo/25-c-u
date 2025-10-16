@@ -340,16 +340,60 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   ];
 
   // ==========================================================
-  // MẢNG CÂU HỎI VÀ ĐÁP ÁN ĐÚNG MẪU (INDEX BẮT ĐẦU TỪ 1)
-  const QUESTIONS = [
-    { text: "C1: Cho CSC có $u_1=3$, $d=2$. Tìm $u_{10}$", answer: "21" }, 
-    { text: "C2: Tính tổng 1 + 2 + ... + 10", answer: "55" }, 
-    { text: "C3: Kết quả phép tính 15 x 3", answer: "45" }, 
-    { text: "C4: Năm sinh của Hồ Chí Minh", answer: "1890" }, 
-    { text: "C5: Số ngày trong 3 tháng liên tiếp không có tháng 2", answer: "92" }, 
-    { text: "C6: Số nguyên tố nhỏ nhất", answer: "2" }, 
-    { text: "C7: Kết quả của 5! (5 giai thừa)", answer: "120" }
-  ];
+  // MẢNG 35 CÂU HỎI VÀ ĐÁP ÁN ĐÚNG MẪU (Nhóm theo đội)
+  // Mỗi đội có 7 câu hỏi riêng biệt.
+  const QUESTIONS = {
+    // ĐỘI ĐỎ (Q1.1 -> Q1.7)
+    'red': [
+        { qIndex: 'Q1.1', text: "Q1.1: Cho CSC có $u_1=3$, $d=2$. Tìm $u_{10}$", answer: "21" }, 
+        { qIndex: 'Q1.2', text: "Q1.2: Tính tổng 1 + 2 + ... + 10", answer: "55" }, 
+        { qIndex: 'Q1.3', text: "Q1.3: Kết quả phép tính 15 x 3", answer: "45" }, 
+        { qIndex: 'Q1.4', text: "Q1.4: Năm sinh của Hồ Chí Minh", answer: "1890" }, 
+        { qIndex: 'Q1.5', text: "Q1.5: Số ngày trong 3 tháng liên tiếp không có tháng 2", answer: "92" }, 
+        { qIndex: 'Q1.6', text: "Q1.6: Số nguyên tố nhỏ nhất", answer: "2" }, 
+        { qIndex: 'Q1.7', text: "Q1.7: Kết quả của 5! (5 giai thừa)", answer: "120" }
+    ],
+    // ĐỘI XANH (Q2.1 -> Q2.7)
+    'blue': [
+        { qIndex: 'Q2.1', text: "Q2.1: Tính $\\log_2 8$", answer: "3" }, 
+        { qIndex: 'Q2.2', text: "Q2.2: Diện tích hình tròn có bán kính r=1", answer: "pi" }, 
+        { qIndex: 'Q2.3', text: "Q2.3: Số chẵn lớn nhất có 2 chữ số", answer: "98" }, 
+        { qIndex: 'Q2.4', text: "Q2.4: Tổng các góc trong một tam giác", answer: "180" }, 
+        { qIndex: 'Q2.5', text: "Q2.5: $3^3 + 1$", answer: "28" }, 
+        { qIndex: 'Q2.6', text: "Q2.6: Số lượng hành tinh trong Hệ Mặt Trời", answer: "8" }, 
+        { qIndex: 'Q2.7', text: "Q2.7: $\\int_{0}^{1} x dx$", answer: "0.5" }
+    ],
+    // ĐỘI LỤC (Q3.1 -> Q3.7)
+    'green': [
+        { qIndex: 'Q3.1', text: "Q3.1: $2 \\times 2 \\times 2 + 10$", answer: "18" }, 
+        { qIndex: 'Q3.2', text: "Q3.2: Số Ả Rập (Arabic) tương đương với số La Mã 'IX'", answer: "9" }, 
+        { qIndex: 'Q3.3', text: "Q3.3: Thủ đô của Việt Nam", answer: "Hanoi" }, 
+        { qIndex: 'Q3.4', text: "Q3.4: $12 \\times 12$", answer: "144" }, 
+        { qIndex: 'Q3.5', text: "Q3.5: Giai thừa của 4 (4!)", answer: "24" }, 
+        { qIndex: 'Q3.6', text: "Q3.6: $1 + 1/2 + 1/4 + 1/8 + ...$ (tổng vô hạn)", answer: "2" }, 
+        { qIndex: 'Q3.7', text: "Q3.7: $e^0$", answer: "1" }
+    ],
+    // ĐỘI VÀNG (Q4.1 -> Q4.7)
+    'yellow': [
+        { qIndex: 'Q4.1', text: "Q4.1: Tìm nghiệm của $x+5=12$", answer: "7" }, 
+        { qIndex: 'Q4.2', text: "Q4.2: Tên đại dương lớn nhất thế giới", answer: "Thái Bình Dương" }, 
+        { qIndex: 'Q4.3', text: "Q4.3: $100 \\div 4$", answer: "25" }, 
+        { qIndex: 'Q4.4', text: "Q4.4: Số thập phân của $1/4$", answer: "0.25" }, 
+        { qIndex: 'Q4.5', text: "Q4.5: $9^2 - 1$", answer: "80" }, 
+        { qIndex: 'Q4.6', text: "Q4.6: Số lượng múi giờ tiêu chuẩn trên thế giới", answer: "24" }, 
+        { qIndex: 'Q4.7', text: "Q4.7: $\\cos(90^\\circ)$", answer: "0" }
+    ],
+    // ĐỘI TÍM (Q5.1 -> Q5.7)
+    'purple': [
+        { qIndex: 'Q5.1', text: "Q5.1: Số lớn nhất có 3 chữ số", answer: "999" }, 
+        { qIndex: 'Q5.2', text: "Q5.2: Khối lượng riêng của nước tinh khiết ($kg/m^3$)", answer: "1000" }, 
+        { qIndex: 'Q5.3', text: "Q5.3: Chu vi hình vuông có cạnh là 5", answer: "20" }, 
+        { qIndex: 'Q5.4', text: "Q5.4: Nước có bao nhiêu màu?", answer: "0" }, 
+        { qIndex: 'Q5.5', text: "Q5.5: Tính $\\sqrt{49}$", answer: "7" }, 
+        { qIndex: 'Q5.6', text: "Q5.6: $\\lim_{n \\to \\infty} \\frac{1}{n}$", answer: "0" }, 
+        { qIndex: 'Q5.7', text: "Q5.7: Năm được xem là kết thúc Chiến tranh thế giới thứ hai", answer: "1945" }
+    ]
+  };
   // ==========================================================
 
   // Ánh xạ các class màu CSS sang mã màu Hex cho nền QR
@@ -363,7 +407,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 
   // HẰNG SỐ GAME
   const TREASURE_BONUS = 30; 
-  const WINNING_QUESTION = QUESTIONS.length; 
+  const WINNING_QUESTION = 7; // Số câu hỏi mỗi đội
   let timerInterval;
   let totalSeconds = 600; // 10 phút
 
@@ -377,11 +421,12 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 
   // Hàm mới: Thiết lập thứ tự câu hỏi ngẫu nhiên cho mỗi đội
   function setupQuestionOrder() {
-      const questionIndices = Array.from({length: QUESTIONS.length}, (_, i) => i + 1); 
+      // Mảng chỉ số câu hỏi thuộc nhóm của đội đó (từ 0 đến 6)
+      const questionIndices = Array.from({length: WINNING_QUESTION}, (_, i) => i); 
       teams.forEach(team => {
-          const shuffledOrder = [...questionIndices]; 
+          const shuffledOrder = [...questionIndices]; // Copy mảng
           shuffleArray(shuffledOrder);
-          team.questionOrder = shuffledOrder; 
+          team.questionOrder = shuffledOrder; // Lưu mảng thứ tự ngẫu nhiên (chỉ số 0-6)
       });
       console.log("Question orders randomized:", teams.map(t => ({ id: t.id, order: t.questionOrder })));
   }
@@ -401,19 +446,16 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
         height: 150
       });
     });
-    // KHI TẢI LẠI TRANG, LUÔN CỐ GẮNG HIỂN THỊ GIAO DIỆN CHƠI NẾU ĐÃ CÓ DỮ LIỆU
     checkIfGameStarted();
   };
   
-  // HÀM MỚI: Kiểm tra trạng thái game và hiển thị lại giao diện
+  // HÀM: Kiểm tra trạng thái game và hiển thị lại giao diện
   async function checkIfGameStarted() {
       try {
-          // Lấy trạng thái của đội đầu tiên (đỏ) để kiểm tra xem game đã được khởi tạo chưa
           const docRef = doc(db, TEAM_STATUS_COLLECTION, 'red');
           const docSnap = await getDocs(docRef);
 
           if (docSnap.exists() && docSnap.data().questionOrder && docSnap.data().questionOrder.length > 0) {
-              // Nếu đã có dữ liệu khởi tạo, tải lại toàn bộ trạng thái đội
               const snapshot = await getDocs(collection(db, TEAM_STATUS_COLLECTION));
               snapshot.docs.forEach(doc => {
                   const data = doc.data();
@@ -425,7 +467,6 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
                   }
               });
               
-              // Hiển thị giao diện chơi
               showGameLayout();
           }
       } catch (e) {
@@ -433,10 +474,8 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       }
   }
 
-
   // Hàm mới: Khởi tạo trạng thái đội trên Firebase
   async function initializeTeamStatusOnFirebase() {
-      // 1. Tạo thứ tự câu hỏi ngẫu nhiên trước
       setupQuestionOrder();
       
       const promises = teams.map(team => {
@@ -464,7 +503,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       }
   }
 
-  // HÀM MỚI: Chỉ hiển thị giao diện chơi
+  // HÀM: Chỉ hiển thị giao diện chơi
   function showGameLayout(){
     const qrList = document.getElementById("qr-list");
     if (qrList) qrList.remove();
@@ -475,9 +514,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     document.getElementById("game-wrapper").style.display="block";
     renderTeams(); // VẼ LẠI GIAO DIỆN CÁC ĐỘI
     listenForSubmissions();
-    // Ẩn nút START nếu game đã được khởi tạo
     document.getElementById("startGameBtn").style.display="none"; 
-    // Hiện thị khu vực câu hỏi nếu game đã bắt đầu (sau khi START được bấm)
     document.querySelectorAll('.team-question-area').forEach(el=>el.style.display='block'); 
   }
   
@@ -488,14 +525,26 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     document.getElementById("startGameBtn").style.display="block"; // Hiện nút START để bấm giờ
   }
 
+  // Hàm tiện ích: Lấy dữ liệu câu hỏi thực tế dựa trên teamId và index trong mảng xáo trộn
+  function getQuestionData(teamId, qIndexInOrder) {
+      const team = teams.find(t => t.id === teamId);
+      if (!team || !QUESTIONS[teamId]) return null;
+      
+      // Lấy index THỰC TẾ (0-6) từ mảng xáo trộn
+      const actualQIndex = team.questionOrder[qIndexInOrder - 1]; 
+      
+      // Trả về dữ liệu câu hỏi từ mảng QUESTIONS của đội đó
+      return QUESTIONS[teamId][actualQIndex];
+  }
+
 
   function renderTeams(){
     const container = document.getElementById("team-rows-container");
     container.innerHTML = "";
     teams.forEach(team=>{
-      // Lấy index thực tế (Q Index) từ mảng ngẫu nhiên
-      const actualQIndex = team.questionOrder[team.currentQ - 1]; 
-      const questionData = QUESTIONS[actualQIndex - 1]; 
+      // Lấy dữ liệu câu hỏi thực tế (đã xáo trộn)
+      const questionData = getQuestionData(team.id, team.currentQ);
+      const actualQIndex = questionData ? questionData.qIndex : "ĐÃ XONG"; 
       const questionText = questionData ? questionData.text : "HOÀN THÀNH!";
       
       const row=document.createElement("div");
@@ -508,7 +557,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
         </div>
         <div class="team-question-area" id="qarea-${team.id}" style="display:${totalSeconds < 600 ? 'block' : 'none'};">
             <div class="question-title" id="q-title-${team.id}">
-                (Q${actualQIndex}): ${questionText}
+                (${actualQIndex}): ${questionText}
             </div>
         </div>
       `;
@@ -522,10 +571,10 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       const qTitleElement = document.getElementById(`q-title-${team.id}`);
       
       if (qTitleElement) {
-          const actualQIndex = team.questionOrder[team.currentQ - 1];
-          const questionData = QUESTIONS[actualQIndex - 1]; 
+          const questionData = getQuestionData(team.id, team.currentQ);
+          const actualQIndex = questionData ? questionData.qIndex : "ĐÃ XONG";
           const questionText = questionData ? questionData.text : "HOÀN THÀNH!";
-          qTitleElement.innerHTML = `(Q${actualQIndex}): ${questionText}`;
+          qTitleElement.innerHTML = `(${actualQIndex}): ${questionText}`;
       }
       MathJax.typeset();
   }
@@ -631,13 +680,15 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   }
 
   // ===================================================
-  // HÀM: DUYỆT TỰ ĐỘNG VÀ ĐỐI CHIẾU ĐÁP ÁN (Sử dụng ActualQIndex)
+  // HÀM: DUYỆT TỰ ĐỘNG VÀ ĐỐI CHIẾU ĐÁP ÁN 
   // ===================================================
+  // actualQuestionIndex ở đây là mã Q Index đã xáo trộn (ví dụ: Q1.5)
   window.autoApproveSubmission = async (docId, teamId, qIndexInOrder, actualQIndex, studentAnswer) => {
       try {
           const docRef = doc(db, "submissions", docId);
-          // Dùng actualQIndex để lấy câu hỏi từ mảng QUESTIONS
-          const questionData = QUESTIONS[parseInt(actualQIndex) - 1]; 
+          
+          // Dùng teamId và actualQIndex để lấy đáp án chính xác
+          const questionData = QUESTIONS[teamId].find(q => q.qIndex === actualQIndex);
           
           if (!questionData) {
               await deleteDoc(docRef);
@@ -645,8 +696,8 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
           }
           const correctText = questionData.answer;
           
-          const normalizedStudentAnswer = studentAnswer.trim().replace(/\s/g, ''); 
-          const normalizedCorrectAnswer = correctText.trim().replace(/\s/g, ''); 
+          const normalizedStudentAnswer = studentAnswer.trim().replace(/\s/g, '').toLowerCase(); 
+          const normalizedCorrectAnswer = correctText.trim().replace(/\s/g, '').toLowerCase(); 
           
           let points = 0; 
           let advanceQ = false;
@@ -654,17 +705,15 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 
           if (normalizedStudentAnswer === normalizedCorrectAnswer) {
               points = 10;
-              advanceQ = true; // Đáp án đúng thì chuyển câu
+              advanceQ = true; 
               resultMessage = "ĐÚNG (+10)";
           } 
 
-          // Cập nhật điểm cho đội và quyết định chuyển câu
           updateTeam(teamId, points, advanceQ);
 
-          // Xóa document khỏi Firestore sau khi xử lý
           await deleteDoc(docRef);
           
-          console.log(`Duyệt tự động: Đội ${teamId}, Câu thực tế Q${actualQIndex}. Kết quả: ${resultMessage}.`);
+          console.log(`Duyệt tự động: Đội ${teamId}, Câu thực tế ${actualQIndex}. Kết quả: ${resultMessage}.`);
 
       } catch(e) {
           console.error("Lỗi khi duyệt yêu cầu tự động:", e);
@@ -679,13 +728,11 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       try {
           const docRef = doc(db, "submissions", docId);
           
-          // Bỏ qua: -10 điểm VÀ chuyển câu (advanceQ = true)
           updateTeam(teamId, -10, true); 
 
-          // Xóa document khỏi Firestore sau khi xử lý
           await deleteDoc(docRef);
           
-          console.log(`Duyệt bỏ qua: Đội ${teamId}. Câu thực tế Q${actualQIndex}. Kết quả: Bỏ qua (-10) và chuyển câu.`);
+          console.log(`Duyệt bỏ qua: Đội ${teamId}. Câu thực tế ${actualQIndex}. Kết quả: Bỏ qua (-10) và chuyển câu.`);
 
       } catch(e) {
           console.error("Lỗi khi duyệt yêu cầu bỏ qua:", e);
@@ -704,16 +751,13 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     let label = '';
     let buttonsHTML = ''; 
 
-    // Lấy index thực tế của câu hỏi từ data (HS đã gửi lên)
     const actualQIndex = data.actualQuestionIndex;
 
     if (data.action === 'skip') {
       label = `${teamName}: BỎ QUA`;
-      // Nút cho hành động BỎ QUA (truyền actualQIndex)
       buttonsHTML = `<button style="background:#e67e22;" onclick="approveSkip('${docId}', '${data.teamId}', '${actualQIndex}')">DUYỆT BỎ QUA (-10)</button>`;
     } else {
       label = `${teamName}: ${data.answer}`;
-      // Nút cho hành động TRẢ LỜI (Duyệt tự động) (truyền actualQIndex)
       buttonsHTML = `
           <button style="background:#3498db;" onclick="autoApproveSubmission('${docId}', '${data.teamId}', '${data.questionIndex}', '${actualQIndex}', '${data.answer}')">DUYỆT TỰ ĐỘNG</button>
       `;
@@ -730,7 +774,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 
     // HIỂN THỊ CẢ 2 INDEX: Vị trí trong chuỗi đã giải (C) và Index thực tế (Q)
     div.innerHTML = `
-      <div style="font-size:1.2em; font-weight:bold; margin-bottom: 5px;">${label} (C${data.questionIndex} | Q${actualQIndex})</div>
+      <div style="font-size:1.2em; font-weight:bold; margin-bottom: 5px;">${label} (C${data.questionIndex} | ${actualQIndex})</div>
       ${buttonsHTML}
     `;
     
@@ -753,7 +797,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 
       snapshot.docChanges().forEach((change) => {
         const doc = change.doc;
-        const docId = doc.id;
+        const docId = change.doc.id;
         const existingItem = document.getElementById(`sub-${docId}`);
 
         if (change.type === "added" && !existingItem) {
@@ -831,4 +875,3 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 </script>
 </body>
 </html>
-
