@@ -116,7 +116,7 @@
     // ===== XÁC ĐỊNH ĐỘI =====
     const urlParams = new URLSearchParams(window.location.search);
     const teamId = urlParams.get("teamId") || "unknown";
-    const teams = [ // Cần trùng với GV để lấy màu và tên
+    const teams = [ 
       { id: "red", name: "Đội Đỏ", color: "#e63946" },
       { id: "blue", name: "Đội Xanh", color: "#1d3557" },
       { id: "green", name: "Đội Lá", color: "#2a9d8f" },
@@ -129,17 +129,18 @@
     
     document.getElementById("teamName").textContent = teamName;
     document.getElementById("teamName").style.color = teamColor;
-    document.body.style.background = teamData ? `color-mix(in srgb, ${teamColor} 10%, #0d1b2a)` : '#0d1b2a'; // Nền nhạt hơn màu đội
+    // Thêm màu nền nhạt hơn màu đội theo yêu cầu
+    document.body.style.background = teamData ? `color-mix(in srgb, ${teamColor} 10%, #0d1b2a)` : '#0d1b2a'; 
 
     // ===== DANH SÁCH CÂU HỎI VÀ THỨ TỰ (Phải trùng với GV) =====
     const questions = [
-      "Cho cấp số cộng có u₁ = 2, công sai d = 3. Tìm u₅?",
-      "Cho cấp số cộng 5, 8, 11, ... Tính số hạng thứ 10?",
-      "Cho cấp số nhân có u₁ = 3, q = 2. Tìm u₅?",
-      "Cho cấp số nhân 2, 6, 18, ... Tìm công bội q?",
-      "Cho cấp số cộng có 7 số hạng, tổng là 35, u₁ = 2. Tìm công sai d?",
-      "Cho cấp số nhân có 5 số hạng, u₁ = 2, u₅ = 32. Tìm q?",
-      "Cho cấp số cộng 4, 7, 10, ... Tìm số hạng thứ 12?"
+      "Cho cấp số cộng có u₁ = 2, công sai d = 3. Tìm u₅.",
+      "Cho cấp số cộng 5, 8, 11, ... Tính số hạng thứ 10.",
+      "Cho cấp số nhân có u₁ = 3, q = 2. Tìm u₅.",
+      "Cho cấp số nhân 2, 6, 18, ... Tìm công bội q.",
+      "Cho cấp số cộng có 7 số hạng, tổng là 35, u₁ = 2. Tìm công sai d.",
+      "Cho cấp số nhân có 5 số hạng, u₁ = 2, u₅ = 32. Tìm q.",
+      "Cho cấp số cộng 4, 7, 10, ... Tìm số hạng thứ 12."
     ];
     
     const questionOrder = {
@@ -176,17 +177,18 @@
       }
     });
     
-    // ===== NGHE VỊ TRÍ CÂU HỎI HIỆN TẠI TỪ GV (Team State) =====
+    // ===== NEW: NGHE VỊ TRÍ CÂU HỎI HIỆN TẠI TỪ GV (Team State) =====
     const teamStateRef = db.collection("teamState").doc(teamId);
     teamStateRef.onSnapshot((doc) => {
         const data = doc.data();
         if(data && data.currentQIndex !== undefined) {
+            // Lắng nghe và cập nhật index từ GV
             if (data.currentQIndex !== currentQuestionIndex) {
-                // Chỉ số câu hỏi đã được GV cập nhật (do trả lời đúng/bỏ qua)
                 currentQuestionIndex = data.currentQIndex;
                 if(gameStarted) {
                     showQuestion();
                     statusMsg.textContent = ""; // Xóa thông báo cũ khi chuyển câu
+                    disableInputs(false); // Mở lại input khi chuyển câu
                 }
             }
         }
@@ -201,8 +203,8 @@
         const globalIndex = qOrder[currentQuestionIndex];
         const questionText = questions[globalIndex];
         
-        // Thêm số thứ tự câu hỏi trong dãy riêng của đội (Câu 1, Câu 2, ...)
-        questionBox.textContent = `Câu ${currentQuestionIndex + 1}: ${questionText.substring(questionText.indexOf(':') + 2)}`;
+        // Hiển thị câu hỏi theo thứ tự riêng của đội (Câu 1, Câu 2, ...)
+        questionBox.textContent = `Câu ${currentQuestionIndex + 1}: ${questionText}`;
         disableInputs(false);
       } else {
         questionBox.textContent = "🎉 Bạn đã hoàn thành toàn bộ câu hỏi!";
@@ -223,7 +225,7 @@
       }
     }
 
-    // ===== GỬI ĐÁP ÁN =====
+    // ===== GỬI ĐÁP ÁN (ĐÃ SỬA: KHÓA INPUT TẠM THỜI) =====
     submitBtn.addEventListener("click", async () => {
       if (!gameStarted || currentQuestionIndex >= questions.length || submitBtn.disabled) return;
       
@@ -237,7 +239,7 @@
       
       await db.collection("submissions").add({
         teamId: teamId,
-        questionIndex: currentQuestionIndex, // Gửi chỉ số câu hỏi hiện tại để GV so sánh
+        questionIndex: currentQuestionIndex, 
         answer: answer,
         timestamp: new Date()
       });
@@ -245,14 +247,17 @@
       statusMsg.textContent = `✅ Đã gửi đáp án: ${answer}. Đợi GV duyệt...`;
       answerInput.value = "";
       
-      setTimeout(() => { // Mở lại input sau 2 giây nếu không có cập nhật từ GV
+      // Sau khi gửi, input sẽ được mở lại khi GV cập nhật teamState (chuyển câu) 
+      // hoặc sau một khoảng thời gian nếu đáp án sai (GV không chuyển câu)
+      setTimeout(() => { 
           if (currentQuestionIndex < questions.length && gameStarted) {
               disableInputs(false);
+              statusMsg.textContent = `⚠️ GV chưa duyệt. Vui lòng đợi hoặc thử lại.`;
           }
-      }, 2000);
+      }, 5000); // Mở lại input sau 5s nếu GV không làm gì (giả sử đáp án sai)
     });
 
-    // ===== BỎ QUA =====
+    // ===== BỎ QUA (ĐÃ SỬA: KHÔNG TỰ CHUYỂN CÂU) =====
     skipBtn.addEventListener("click", async () => {
       if (!gameStarted || currentQuestionIndex >= questions.length || skipBtn.disabled) return;
 
@@ -260,7 +265,7 @@
 
       await db.collection("submissions").add({
         teamId: teamId,
-        questionIndex: currentQuestionIndex, // Gửi chỉ số câu hỏi hiện tại
+        questionIndex: currentQuestionIndex, 
         answer: "SKIP", // Signal để GV xử lý BỎ QUA
         timestamp: new Date()
       });
@@ -269,7 +274,7 @@
       answerInput.value = "";
       
       // KHÔNG tự tăng currentQuestionIndex ở đây. 
-      // Việc chuyển câu sẽ do logic đồng bộ từ GV (Team State) đảm nhiệm.
+      // Việc chuyển câu hỏi sẽ do logic đồng bộ từ GV (Team State) đảm nhận.
     });
   </script>
 </body>
