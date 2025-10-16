@@ -53,14 +53,6 @@
     #submit-button:disabled { background-color: #95a5a6; cursor: not-allowed; }
     #skip-button { background-color: #e67e22; }
     #skip-button:hover { background-color: #d35400; }
-    
-    /* Nút Cập nhật Câu hỏi */
-    #advance-button { 
-        background-color: #3498db; 
-        font-size: 1em;
-        padding: 10px 20px;
-    }
-    #advance-button:hover { background-color: #2980b9; }
 
     #status-message { margin-top: 20px; font-style: italic; font-size: 1.2em; }
     
@@ -82,17 +74,15 @@
   
   <div style="display:flex; flex-wrap: wrap; justify-content: center;">
     <button id="submit-button" disabled>GỬI ĐÁP ÁN</button>
-    <button id="skip-button" disabled>❌ BỎ QUA (-10đ)</button>
-    <button id="advance-button" disabled>✔️ CẬP NHẬT CÂU HỎI (+1)</button>
+    <button id="skip-button" disabled>❌ GỬI YÊU CẦU BỎ QUA</button>
   </div>
-
   <div id="status-message">Vui lòng quét mã QR của đội.</div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
     import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-    // === CẤU HÌNH FIREBASE (giữ nguyên như file GV) ===
+    // === CẤU HÌNH FIREBASE ===
     const firebaseConfig = {
       apiKey: "AIzaSyDfcMrblRonAS9Q7BSfD9ZZYeOmSy4UjfQ",
       authDomain: "nutnhap.firebaseapp.com",
@@ -116,11 +106,9 @@
         document.getElementById('team-info').textContent = `ĐỘI: ${teamId.toUpperCase()}`;
         document.getElementById('submit-button').disabled = false;
         document.getElementById('skip-button').disabled = false;
-        document.getElementById('advance-button').disabled = false; // Bật nút cập nhật
         document.getElementById('submit-button').onclick = submitAnswer;
         document.getElementById('skip-button').onclick = skipQuestion;
-        document.getElementById('advance-button').onclick = advanceQuestionManual; // Gắn sự kiện
-        document.getElementById('status-message').textContent = 'Sẵn sàng gửi đáp án hoặc bỏ qua.';
+        document.getElementById('status-message').textContent = 'Sẵn sàng gửi đáp án hoặc yêu cầu bỏ qua.';
         updateQuestionDisplay();
       } else {
         document.getElementById('status-message').textContent = 'Không tìm thấy mã đội. Vui lòng quét lại QR.';
@@ -154,6 +142,7 @@
         });
         status.textContent = `Đã gửi đáp án '${answer}'. Chờ GV duyệt. (Câu C${currentQuestionIndex})`;
         status.style.color = "#2ecc71";
+        // KHÔNG TỰ ĐỘNG CẬP NHẬT CÂU HỎI Ở ĐÂY
         input.value = "";
       } catch {
         status.textContent = "Gửi thất bại. Kiểm tra mạng.";
@@ -161,15 +150,6 @@
       } finally {
         setTimeout(() => (btn.disabled = false), 4000);
       }
-    }
-
-    // Học sinh tự chủ động tăng câu hỏi sau khi thấy GV đã cộng điểm/chuyển câu
-    function advanceQuestionManual() {
-        currentQuestionIndex++;
-        updateQuestionDisplay();
-        document.getElementById('status-message').textContent = `Đã chuyển sang C${currentQuestionIndex}. Nhập đáp án mới.`;
-        document.getElementById('status-message').style.color = "#3498db";
-        document.getElementById('answer-input').value = ""; // Xóa đáp án cũ
     }
 
     async function skipQuestion() {
@@ -187,13 +167,10 @@
           status: "pending"
         });
         
-        // CHỈ TĂNG VÀ CẬP NHẬT KHI BỎ QUA (theo logic cũ)
-        currentQuestionIndex++;
-        updateQuestionDisplay(); 
-        
-        status.textContent = `Đã gửi yêu cầu bỏ qua. Chuyển sang C${currentQuestionIndex}.`;
+        status.textContent = `Đã gửi yêu cầu bỏ qua cho C${currentQuestionIndex}. Chờ GV duyệt.`;
         status.style.color = "#e67e22";
         document.getElementById('answer-input').value = "";
+        // KHÔNG TỰ ĐỘNG CẬP NHẬT CÂU HỎI Ở ĐÂY
       } catch {
         status.textContent = "Không gửi được yêu cầu bỏ qua.";
         status.style.color = "#e74c3c";
