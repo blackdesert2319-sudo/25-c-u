@@ -1,248 +1,154 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Học sinh - Mật Mã Rương Báu</title>
-  <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background: #0d1b2a;
-      color: #fff;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      text-align: center;
-    }
-
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 10px;
-    }
-
-    .team-name {
-      font-weight: bold;
-      font-size: 1.5rem;
-      margin-bottom: 20px;
-    }
-
-    .question-box {
-      background: #1b263b;
-      padding: 20px;
-      border-radius: 15px;
-      width: 90%;
-      max-width: 600px;
-      min-height: 120px;
-      box-shadow: 0 0 10px rgba(255,255,255,0.2);
-      font-size: 1.4rem;
-      line-height: 1.5;
-    }
-
-    .answer-input {
-      margin-top: 20px;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-    }
-
-    input[type="text"] {
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      width: 60%;
-      font-size: 1rem;
-    }
-
-    button {
-      background: #ffd166;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 20px;
-      cursor: pointer;
-      font-size: 1rem;
-      font-weight: bold;
-    }
-
-    button:hover:not(.disabled) {
-      background: #ffca3a;
-    }
-
-    .disabled {
-      background: #aaa !important;
-      cursor: not-allowed;
-    }
-
-    .message {
-      margin-top: 15px;
-      color: #ffca3a;
-      font-weight: bold;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mật Mã Thám Tử - Nhập Đáp Án</title>
+    <style>
+        body { 
+            font-family: 'Arial', sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 20px; 
+            background-color: #34495e; 
+            color: white; 
+            min-height: 100vh;
+            text-align: center;
+        }
+        h1 { color: #f1c40f; margin-bottom: 5px; }
+        #team-info {
+            font-size: 2.5em; 
+            font-weight: bold; 
+            margin-bottom: 30px;
+            padding: 10px 20px;
+            background-color: #2c3e50;
+            border-radius: 10px;
+        }
+        #answer-input {
+            padding: 15px; 
+            font-size: 1.8em; 
+            width: 80%; 
+            max-width: 300px; 
+            margin-bottom: 20px; 
+            text-align: center;
+            border: 3px solid #f1c40f;
+            border-radius: 5px;
+            color: #333;
+        }
+        #submit-button {
+            padding: 15px 30px; 
+            font-size: 1.5em; 
+            background-color: #2ecc71; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        #submit-button:hover:not(:disabled) { background-color: #27ae60; }
+        #submit-button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        #status-message {
+            margin-top: 20px; 
+            font-style: italic;
+            font-size: 1.2em;
+        }
+    </style>
 </head>
-
 <body>
-  <h1>MẬT MÃ RƯƠNG BÁU</h1>
-  <div class="team-name" id="teamName">Tên đội</div>
-  <div class="question-box" id="questionBox">Đợi giáo viên bắt đầu phi vụ...</div>
-
-  <div class="answer-input">
-    <input type="text" id="answerInput" placeholder="Nhập đáp án...">
-    <button id="submitBtn">GỬI</button>
-    <button id="skipBtn">BỎ QUA</button>
-  </div>
-
-  <div class="message" id="statusMsg"></div>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
-
-  <script>
-    // === Firebase giữ nguyên cấu hình của bạn ===
-    const firebaseConfig = {
-      apiKey: "AIzaSyC9SRP8hEhtJ8bY2n1mTuPhtvpgMyZbktY",
-      authDomain: "blackdesert2319-sudo.firebaseapp.com",
-      projectId: "blackdesert2319-sudo",
-      storageBucket: "blackdesert2319-sudo.appspot.com",
-      messagingSenderId: "628771580196",
-      appId: "1:628771580196:web:1e95f7f3c9de7e3e6cb36d"
-    };
-
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    // ===== XÁC ĐỊNH ĐỘI =====
-    const urlParams = new URLSearchParams(window.location.search);
-    const teamId = urlParams.get("teamId") || "unknown";
-    const teamNames = {
-      red: "Đội Đỏ",
-      blue: "Đội Xanh",
-      green: "Đội Lá",
-      yellow: "Đội Vàng",
-      purple: "Đội Tím"
-    };
-    const teamName = teamNames[teamId] || "Đội không xác định";
-    document.getElementById("teamName").textContent = teamName;
-
-    // ===== DANH SÁCH CÂU HỎI (phải trùng GV) =====
-    const questions = [
-      "Câu 1: Cho cấp số cộng có u₁ = 2, công sai d = 3. Tìm u₅?",
-      "Câu 2: Cho cấp số cộng 5, 8, 11, ... Tính số hạng thứ 10?",
-      "Câu 3: Cho cấp số nhân có u₁ = 3, q = 2. Tìm u₅?",
-      "Câu 4: Cho cấp số nhân 2, 6, 18, ... Tìm công bội q?",
-      "Câu 5: Cho cấp số cộng có 7 số hạng, tổng là 35, u₁ = 2. Tìm công sai d?",
-      "Câu 6: Cho cấp số nhân có 5 số hạng, u₁ = 2, u₅ = 32. Tìm q?",
-      "Câu 7: Cho cấp số cộng 4, 7, 10, ... Tìm số hạng thứ 12?"
-    ];
-
-    let currentQuestionIndex = 0;
-    let gameStarted = false;
-
-    const questionBox = document.getElementById("questionBox");
-    const answerInput = document.getElementById("answerInput");
-    const submitBtn = document.getElementById("submitBtn");
-    const skipBtn = document.getElementById("skipBtn");
-    const statusMsg = document.getElementById("statusMsg");
-
-    // ===== NGHE TRẠNG THÁI STARTGAME TỪ GV (Được sử dụng để bật/tắt trò chơi) =====
-    const ctrlRef = db.collection("control").doc("state");
-    ctrlRef.onSnapshot((doc) => {
-      const data = doc.data();
-      if (data && data.startGame) {
-        if (!gameStarted) {
-          gameStarted = true;
-          // Sau khi game bắt đầu, đợi teamState listener cập nhật câu hỏi
-        }
-      } else {
-        gameStarted = false;
-        currentQuestionIndex = 0; // Reset index khi game kết thúc
-        questionBox.textContent = "Đợi giáo viên bắt đầu phi vụ...";
-        disableInputs(true);
-      }
-    });
+    <h1>NHẬP ĐÁP ÁN</h1>
+    <div id="team-info">ĐỘI CHỜ KẾT NỐI...</div>
     
-    // ===== CRITICAL NEW LISTENER: NGHE TRẠNG THÁI CÂU HỎI HIỆN TẠI TỪ GV =====
-    const teamStateRef = db.collection("teamState").doc(teamId);
-    teamStateRef.onSnapshot((doc) => {
-        const data = doc.data();
-        if (data && gameStarted) {
-            // Cập nhật chỉ số câu hỏi từ GV, nếu có
-            const newIndex = data.currentQIndex !== undefined ? data.currentQIndex : 0;
-            
-            // Chỉ cập nhật nếu index mới lớn hơn index hiện tại (hoặc bằng 0 khi reset)
-            if (newIndex >= currentQuestionIndex) { 
-                currentQuestionIndex = newIndex;
-                showQuestion();
+    <input type="text" id="answer-input" placeholder="Nhập đáp án..." maxlength="50">
+    <button id="submit-button" disabled>GỬI ĐÁP ÁN</button>
+    <div id="status-message">Vui lòng quét mã QR code của đội.</div>
+
+    <script type="module">
+        // 1. IMPORT CÁC CHỨC NĂNG CẦN THIẾT (App và Firestore)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+        // 2. CẤU HÌNH FIREBASE CỦA BẠN
+        const firebaseConfig = {
+            apiKey: "AIzaSyDfcMrblRonAS9Q7BSfD9ZZYeOmSy4UjfQ",
+            authDomain: "nutnhap.firebaseapp.com",
+            projectId: "nutnhap",
+            storageBucket: "nutnhap.firebasestorage.app",
+            messagingSenderId: "359344838873",
+            appId: "1:359344838873:web:d1746d32920881091c86c8",
+            measurementId: "G-0VTTNLWDD9"
+        };
+
+        // 3. KHỞI TẠO
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let teamId = null;
+        let currentQuestionIndex = 1; // Giả định bắt đầu từ câu 1 (cần đồng bộ với GV)
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            teamId = urlParams.get('teamId');
+
+            if (teamId) {
+                // Hiển thị tên đội và kích hoạt nút gửi
+                document.getElementById('team-info').textContent = `ĐỘI: ${teamId.toUpperCase()}`;
+                document.getElementById('submit-button').disabled = false;
+                document.getElementById('submit-button').onclick = submitAnswer;
+                document.getElementById('status-message').textContent = 'Sẵn sàng gửi đáp án khi có lệnh của GV.';
+            } else {
+                document.getElementById('status-message').textContent = 'Lỗi: Không tìm thấy ID đội. Vui lòng quét lại mã QR code.';
             }
-            
-            // Cập nhật điểm
-            statusMsg.textContent = `Điểm hiện tại: ${data.score || 0}`;
-        }
-    });
-
-    function showQuestion() {
-      if (currentQuestionIndex < questions.length) {
-        questionBox.textContent = questions[currentQuestionIndex];
-        disableInputs(false);
-      } else {
-        questionBox.textContent = "🎉 Bạn đã hoàn thành toàn bộ câu hỏi!";
-        disableInputs(true);
-      }
-    }
-
-    function disableInputs(state) {
-      answerInput.disabled = state;
-      submitBtn.disabled = state;
-      skipBtn.disabled = state;
-      if (state) {
-        submitBtn.classList.add("disabled");
-        skipBtn.classList.add("disabled");
-      } else {
-        submitBtn.classList.remove("disabled");
-        skipBtn.classList.remove("disabled");
-      }
-    }
-
-    // ===== GỬI ĐÁP ÁN =====
-    submitBtn.addEventListener("click", async () => {
-      if (!gameStarted) {
-        statusMsg.textContent = "⚠️ Giáo viên chưa bắt đầu trò chơi!";
-        return;
-      }
-      const answer = answerInput.value.trim();
-      if (!answer) {
-        statusMsg.textContent = "⚠️ Vui lòng nhập đáp án!";
-        return;
-      }
-      await db.collection("submissions").add({
-        teamId: teamId,
-        questionIndex: currentQuestionIndex,
-        answer: answer,
-        timestamp: new Date()
-      });
-      statusMsg.textContent = `✅ Đã gửi đáp án: ${answer}`;
-      answerInput.value = "";
-    });
-
-    // ===== BỎ QUA =====
-    skipBtn.addEventListener("click", async () => {
-      if (!gameStarted) {
-        statusMsg.textContent = "⚠️ Giáo viên chưa bắt đầu trò chơi!";
-        return;
-      }
-      const confirmed = confirm("Bạn có chắc chắn muốn bỏ qua câu hỏi này? (sẽ bị trừ 10 điểm)");
-      if (confirmed) {
-        await db.collection("submissions").add({
-          teamId: teamId,
-          questionIndex: currentQuestionIndex,
-          answer: "SKIP", // Gửi tín hiệu SKIP
-          timestamp: new Date()
         });
-        statusMsg.textContent = `❌ Đã gửi yêu cầu BỎ QUA. Chờ GV xác nhận (-10 điểm).`;
-      }
-    });
-  </script>
+
+        // HÀM XỬ LÝ GỬI ĐÁP ÁN LÊN FIREBASE
+        async function submitAnswer() {
+            if (!teamId) return;
+
+            const answer = document.getElementById('answer-input').value.trim();
+            const submitButton = document.getElementById('submit-button');
+            const statusMessage = document.getElementById('status-message');
+
+            if (answer === "") {
+                statusMessage.textContent = "Vui lòng nhập đáp án!";
+                statusMessage.style.color = '#e74c3c';
+                return;
+            }
+
+            submitButton.disabled = true;
+            statusMessage.textContent = 'Đang gửi đáp án...';
+            statusMessage.style.color = '#f1c40f';
+
+            try {
+                // Thêm dữ liệu vào collection 'submissions' (Hàng đợi)
+                await addDoc(collection(db, "submissions"), {
+                    teamId: teamId,
+                    answer: answer,
+                    questionIndex: currentQuestionIndex, // Ghi lại câu hỏi hiện tại
+                    timestamp: serverTimestamp(), // Thời gian gửi chính xác
+                    status: 'pending' // Chờ GV duyệt
+                });
+
+                statusMessage.textContent = `Đã gửi đáp án '${answer}'. Chờ GV duyệt.`;
+                statusMessage.style.color = '#2ecc71';
+                document.getElementById('answer-input').value = ''; 
+                document.getElementById('answer-input').focus();
+                
+            } catch (error) {
+                statusMessage.textContent = 'Gửi thất bại. Kiểm tra kết nối mạng.';
+                statusMessage.style.color = '#e74c3c';
+                console.error("Lỗi khi gửi đáp án: ", error);
+            } finally {
+                // Cho phép gửi lại sau 5 giây (để đội sửa sai nếu muốn)
+                setTimeout(() => {
+                    submitButton.disabled = false;
+                }, 5000); 
+            }
+        }
+    </script>
 </body>
 </html>
