@@ -210,12 +210,12 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 }
 .submission-item button {
   padding:5px 10px;
-  background:#e67e22;
+  /* background sẽ được set inline */
   color:white;
   border:none;
   border-radius:5px;
   font-weight:bold;
-  margin-top:5px;
+  /* margin-top:5px; được chuyển vào inline style để kiểm soát tốt hơn */
   font-size:0.9em;
   cursor:pointer;
 }
@@ -310,7 +310,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
   import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-  // === CẤU HÌNH FIREBASE (giữ nguyên như file HS) ===
+  // === CẤU HÌNH FIREBASE ===
   const firebaseConfig = {
     apiKey: "AIzaSyDfcMrblRonAS9Q7BSfD9ZZYeOmSy4UjfQ",
     authDomain: "nutnhap.firebaseapp.com",
@@ -366,12 +366,10 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     });
   };
 
-  // C. Cập nhật showGame
   function showGame(){
     const qrList = document.getElementById("qr-list");
     if (qrList) qrList.remove();
 
-    // Ẩn khối chứa cả 2 nút (BẮT ĐẦU và RESET)
     const buttonContainer = document.querySelector('div[style="text-align:center;"]');
     if (buttonContainer) buttonContainer.style.display = "none";
 
@@ -425,19 +423,21 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     totalSeconds--;
   }
 
-  // HÀM MỚI: Xử lý giao diện thắng Rương Báu
+  // HÀM: Xử lý giao diện thắng Rương Báu (ĐÃ SỬA LỖI HIỂN THỊ)
   function winGame(winningTeam) {
     clearInterval(timerInterval); 
     document.getElementById("timer").style.display = "none";
     document.getElementById("endEarlyBtn").style.display = "none";
     
     const overlay = document.getElementById("endOverlay");
+    
+    // Đảm bảo overlay hiện và được tùy chỉnh
     overlay.style.display = "flex";
+    overlay.style.backgroundColor = 'rgba(255, 215, 0, 0.95)'; // Màu vàng rực
+    overlay.style.color = '#e74c3c'; // Chữ đỏ
     
-    overlay.style.backgroundColor = 'rgba(255, 215, 0, 0.9)'; 
-    overlay.style.color = '#e74c3c'; 
-    
-    document.getElementById("endOverlay").innerHTML = `
+    // Cập nhật nội dung toàn bộ overlay
+    overlay.innerHTML = `
       <h1>🏆 ${winningTeam.name} ĐÃ GIÀNH CHIẾN THẮNG 🏆</h1>
       <h2>🎉 ĐƯỢC THƯỞNG THÊM ${TREASURE_BONUS} ĐIỂM RƯƠNG BÁU! 🎉</h2>
       <div class="scoreboard" id="finalScores" style="color: #333;">
@@ -446,19 +446,23 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     `;
   }
   
-  // Cập nhật lại hàm endGame (gọi khi hết giờ hoặc bấm nút KẾT THÚC SỚM)
+  // HÀM: Kết thúc sớm/Hết giờ
   function endGame(){
     clearInterval(timerInterval);
     document.getElementById("timer").style.display="none";
     document.getElementById("endEarlyBtn").style.display="none";
     const overlay=document.getElementById("endOverlay");
     
-    // Đảm bảo overlay về trạng thái mặc định (vàng nhạt)
-    overlay.style.backgroundColor = 'rgba(241,196,15,0.9)';
+    overlay.style.backgroundColor = 'rgba(241,196,15,0.9)'; // Quay lại màu mặc định
     overlay.style.color = '#000';
-    
     overlay.style.display="flex";
     
+    // Đặt lại nội dung mặc định của endGame
+    overlay.innerHTML = `
+      <h1>🏆 TRÒ CHƠI KẾT THÚC 🏆</h1>
+      <div class="scoreboard" id="finalScores"></div>
+    `;
+
     let scoreHTML="Kết quả chung cuộc:<br>";
     teams.forEach(t=>{
       const score = document.getElementById(`score-${t.id}`).textContent;
@@ -467,7 +471,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     document.getElementById("finalScores").innerHTML=scoreHTML;
   }
   
-  // D3. Logic cập nhật đội (ĐÃ THÊM LOGIC THẮNG VÀ THƯỞNG 30 ĐIỂM)
+  // D3. Logic cập nhật đội
   function updateTeam(teamId, points) {
     const team = teams.find(t => t.id === teamId);
     if (team) {
@@ -484,23 +488,22 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       
       // Kiểm tra thắng cuộc (7 câu)
       if (team.currentQ > WINNING_QUESTION) {
-        team.score += TREASURE_BONUS; // THƯỞNG 30 ĐIỂM
-        document.getElementById(`score-${teamId}`).textContent = team.score; // Cập nhật lại điểm thưởng
+        team.score += TREASURE_BONUS; 
+        document.getElementById(`score-${teamId}`).textContent = team.score; 
         winGame(team); // Chuyển sang giao diện RƯƠNG BÁU
       }
     }
   }
 
-  // D3. Logic duyệt yêu cầu
+  // D3. Logic duyệt yêu cầu (ĐÃ SỬA LỖI CHẤM ĐIỂM SAI)
   window.approveSubmission = async (docId, teamId, actionType) => {
       try {
           const docRef = doc(db, "submissions", docId);
           
-          if (actionType === 'skip') {
-              updateTeam(teamId, -10); // Bỏ qua -10 điểm
-          } else {
-              // Giả định nếu duyệt thì đó là đáp án đúng
-              updateTeam(teamId, 10); // Đáp án đúng +10 điểm
+          if (actionType === 'skip' || actionType === 'incorrect') {
+              updateTeam(teamId, -10); // Bỏ qua hoặc Sai đều bị -10 điểm
+          } else if (actionType === 'correct') {
+              updateTeam(teamId, 10); // Đáp án đúng +10 điểm và tăng currentQ
           }
 
           // Xóa document khỏi Firestore sau khi xử lý
@@ -512,7 +515,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       }
   };
 
-  // D3. Hàm tạo HTML cho yêu cầu duyệt rút gọn
+  // D3. Hàm tạo HTML cho yêu cầu duyệt rút gọn (ĐÃ SỬA: Thêm nút ĐÚNG/SAI)
   function renderSubmissionItem(doc) {
     const data = doc.data();
     const docId = doc.id;
@@ -520,14 +523,24 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     const teamName = team ? team.name.split(' ')[1] : '???'; 
     
     let label = '';
-    let bgColor = '#2c3e50'; 
-    
+    let bgColor = '#3498db'; // Màu trung tính cho đáp án chờ duyệt
+    let buttonsHTML = ''; 
+
     if (data.action === 'skip') {
       label = `${teamName}: BỎ QUA`;
-      bgColor = '#e67e22'; 
+      bgColor = '#e67e22'; // Màu cam cho yêu cầu bỏ qua
+      // Skip action: One button to approve the skip (-10 points)
+      buttonsHTML = `<button style="background:#e67e22; margin-top:5px;" onclick="approveSubmission('${docId}', '${data.teamId}', 'skip')">DUYỆT BỎ QUA (-10)</button>`;
     } else {
       label = `${teamName}: ${data.answer.toUpperCase()}`;
-      bgColor = '#2ecc71'; 
+      
+      // Answer submission: Two buttons (Correct +10, Incorrect -10)
+      buttonsHTML = `
+          <div style="display:flex; gap: 8px; margin-top:5px; width: 100%; justify-content:center;">
+              <button style="background:#27ae60;" onclick="approveSubmission('${docId}', '${data.teamId}', 'correct')">ĐÚNG (+10)</button>
+              <button style="background:#c0392b;" onclick="approveSubmission('${docId}', '${data.teamId}', 'incorrect')">SAI (-10)</button>
+          </div>
+      `;
     }
 
     const div = document.createElement('div');
@@ -542,7 +555,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 
     div.innerHTML = `
       <div style="font-size:1.4em; font-weight:bold; margin-bottom: 5px;">${label}</div>
-      <button onclick="approveSubmission('${docId}', '${data.teamId}', '${data.action || 'answer'}')">DUYỆT</button>
+      ${buttonsHTML}
     `;
     
     return div;
@@ -599,7 +612,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
           await Promise.all(deletePromises);
           
           alert("✅ Đã xóa toàn bộ dữ liệu duyệt đáp án. Tải lại trang để bắt đầu lại.");
-          window.location.reload(); // Tải lại trang
+          window.location.reload(); 
           
       } catch (e) {
           console.error("Lỗi khi reset dữ liệu:", e);
