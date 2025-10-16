@@ -3,19 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mật Mã Thám Tử V-FIREBASE: Màn Hình GV</title>
+<title>Mật Mã Rương Báu - Màn Hình GV</title>
 <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
-<script>
-window.MathJax = {
-  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']] },
-  startup: { typeset: false }
-};
-</script>
-<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<!-- Firebase SDK (non-module) -->
+<script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore-compat.js"></script>
+
 <style>
 body { font-family:'Arial',sans-serif; display:flex; flex-direction:column; align-items:center; background:#282c34; color:#fff; padding:10px; min-height:100vh; }
 h1{color:#f1c40f;margin-bottom:10px;}
-#timer{position:fixed;top:10px;right:10px;font-size:2.5em;font-weight:bold;color:#e74c3c;background:#f1c40f;padding:5px 15px;border-radius:10px;box-shadow:0 0 15px rgba(255,255,255,0.5);display:none;}
+#timer{position:fixed;top:10px;right:10px;font-size:2.5em;font-weight:bold;color:#e74c3c;background:#f1c40f;padding:5px 15px;border-radius:10px;display:none;}
+.qr-item{width:180px;margin:10px;padding:10px;border-radius:8px;background:white;color:#333;text-align:center;font-weight:bold;}
+.qr-item img{width:150px;height:150px;border:2px solid #333;margin-bottom:5px;}
+#qr-list{display:flex;justify-content:space-around;flex-wrap:wrap;margin-top:15px;}
+button{cursor:pointer;}
 .team-row{display:flex;align-items:stretch;margin-bottom:10px;padding:0;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,0.4);border:2px solid transparent;min-height:100px;}
 .team-red{background:#e74c3c;border-color:#c0392b;}
 .team-blue{background:#3498db;border-color:#2980b9;}
@@ -32,21 +34,16 @@ h1{color:#f1c40f;margin-bottom:10px;}
 .team-question-area{flex-grow:1;padding:5px 15px;display:flex;flex-direction:column;justify-content:center;}
 .q-number{font-weight:bold;}
 .q-text{font-size:1.2em;font-weight:700;line-height:1.2;}
-#submission-queue-area,#qr-code-area{width:100%;max-width:1200px;background:#34495e;border-radius:10px;margin-top:20px;padding:15px;}
 .submission-item{padding:12px;margin-bottom:8px;background:#2c3e50;border-radius:5px;display:flex;justify-content:space-between;align-items:center;border-left:5px solid #f1c40f;}
-.submission-item button{padding:8px 15px;background:#e67e22;color:white;border:none;border-radius:5px;cursor:pointer;font-weight:bold;}
-#qr-list{display:flex;justify-content:space-around;flex-wrap:wrap;margin-top:15px;}
-.qr-item{width:180px;margin:10px;padding:10px;border-radius:8px;background:white;color:#333;text-align:center;font-weight:bold;}
-.qr-item img{width:150px;height:150px;border:2px solid #333;margin-bottom:5px;}
-button{cursor:pointer;}
+.submission-item button{padding:8px 15px;background:#e67e22;color:white;border:none;border-radius:5px;font-weight:bold;}
+#submission-queue-area{width:100%;max-width:1000px;background:#34495e;border-radius:10px;margin-top:20px;padding:15px;}
 </style>
 </head>
-
 <body>
-<div id="timer">10:00</div>
+
 <h1>MẬT MÃ RƯƠNG BÁU: 5 ĐỘI TRANH TÀI</h1>
 
-<!-- GIAO DIỆN BAN ĐẦU -->
+<!-- GIAO DIỆN 1 -->
 <div id="intro-wrapper">
   <h2 style="color:#f1c40f;">QUÉT MÃ QR CODE ĐỂ NHẬP ĐÁP ÁN</h2>
   <div id="qr-list"></div>
@@ -55,148 +52,132 @@ button{cursor:pointer;}
   </button>
 </div>
 
-<!-- GIAO DIỆN THI ĐẤU -->
+<!-- GIAO DIỆN 2 -->
 <div id="game-wrapper" style="display:none;">
-  <div id="control-area">
-      <button id="startGameButton" onclick="startGame()" style="padding:10px 20px;font-size:1.1em;background:#27ae60;color:white;border:none;border-radius:8px;margin-bottom:10px;">BẮT ĐẦU ĐẾM GIỜ</button>
-      <div id="submission-queue-area"><h2>HÀNG ĐỢI DUYỆT ĐÁP ÁN</h2></div>
-  </div>
+  <div id="timer">10:00</div>
+  <button onclick="startGame()" style="padding:10px 20px;font-size:1.1em;background:#27ae60;color:white;border:none;border-radius:8px;margin:15px;">BẮT ĐẦU ĐẾM GIỜ</button>
+  <div id="submission-queue-area"><h2>HÀNG ĐỢI DUYỆT ĐÁP ÁN</h2></div>
   <div id="team-rows-container"></div>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import { getFirestore, collection, query, orderBy, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
-
+<script>
+// ==== FIREBASE KHỞI TẠO ====
 const firebaseConfig = {
- apiKey:"AIzaSyDfcMrblRonAS9Q7BSfD9ZZYeOmSy4UjfQ",
- authDomain:"nutnhap.firebaseapp.com",
- projectId:"nutnhap",
- storageBucket:"nutnhap.firebasestorage.app",
- messagingSenderId:"359344838873",
- appId:"1:359344838873:web:d1746d32920881091c86c8",
- measurementId:"G-0VTTNLWDD9"
+  apiKey:"AIzaSyDfcMrblRonAS9Q7BSfD9ZZYeOmSy4UjfQ",
+  authDomain:"nutnhap.firebaseapp.com",
+  projectId:"nutnhap",
+  storageBucket:"nutnhap.firebasestorage.app",
+  messagingSenderId:"359344838873",
+  appId:"1:359344838873:web:d1746d32920881091c86c8",
+  measurementId:"G-0VTTNLWDD9"
 };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
+// ==== DỮ LIỆU ĐỘI ====
 const teams = [
-{id:'red',name:'Đội Đỏ',colorClass:'team-red',score:0,currentManhMoiIndex:0,manhMoiCompletedState:new Array(7).fill(false)},
-{id:'blue',name:'Đội Xanh',colorClass:'team-blue',score:0,currentManhMoiIndex:0,manhMoiCompletedState:new Array(7).fill(false)},
-{id:'green',name:'Đội Lá',colorClass:'team-green',score:0,currentManhMoiIndex:0,manhMoiCompletedState:new Array(7).fill(false)},
-{id:'yellow',name:'Đội Vàng',colorClass:'team-yellow',score:0,currentManhMoiIndex:0,manhMoiCompletedState:new Array(7).fill(false)},
-{id:'purple',name:'Đội Tím',colorClass:'team-purple',score:0,currentManhMoiIndex:0,manhMoiCompletedState:new Array(7).fill(false)}
+  {id:'red',name:'Đội Đỏ',colorClass:'team-red',score:0,current:0,state:new Array(7).fill(false)},
+  {id:'blue',name:'Đội Xanh',colorClass:'team-blue',score:0,current:0,state:new Array(7).fill(false)},
+  {id:'green',name:'Đội Lá',colorClass:'team-green',score:0,current:0,state:new Array(7).fill(false)},
+  {id:'yellow',name:'Đội Vàng',colorClass:'team-yellow',score:0,current:0,state:new Array(7).fill(false)},
+  {id:'purple',name:'Đội Tím',colorClass:'team-purple',score:0,current:0,state:new Array(7).fill(false)}
 ];
 
-// 👉 Khi trang load xong, tạo sẵn QR
-document.addEventListener('DOMContentLoaded', generateQRCodes);
-
-// 👉 Nút chuyển sang màn hình thi đấu
-window.transitionToGame = function() {
-  document.getElementById('intro-wrapper').style.display = 'none';
-  document.getElementById('game-wrapper').style.display = 'block';
-  renderTeamRows();
+// ==== CÂU HỎI MẪU ====
+const QUESTIONS = {
+ red:[{q:'Cho CSC có $u_1=3$, $d=2$. Tìm $u_{10}$.',correct:'21'}],
+ blue:[{q:'Cho CSN có $u_1=3$, $q=2$. Tìm $u_4$.',correct:'24'}],
+ green:[{q:'Cho CSC có $u_1=5$, $d=4$. Tìm $u_6$.',correct:'25'}],
+ yellow:[{q:'Cho CSC có $u_1=2$, $d=5$. Tìm $u_7$.',correct:'32'}],
+ purple:[{q:'Cho CSC có $u_1=3$, $d=4$. Tìm $u_5$.',correct:'19'}]
 };
-document.getElementById('transitionButton').onclick = transitionToGame;
 
-// ✅ QR code trỏ về GitHub Pages của bạn
-window.generateQRCodes = function() {
-  const BASE_CLIENT_URL = "https://blackdesert2319-sudo.github.io/25-c-u/hs.html?v=2";
+// ==== TẠO QR CODE NGAY KHI LOAD ====
+window.onload = function() {
+  generateQRCodes();
+  document.getElementById('transitionButton').onclick = transitionToGame;
+};
 
-  const qrList = document.getElementById('qr-list');
-  qrList.innerHTML = '';
-  teams.forEach(team => {
-    const link = `${BASE_CLIENT_URL}?teamId=${team.id}`;
+function generateQRCodes() {
+  const BASE = "https://blackdesert2319-sudo.github.io/25-c-u/hs.html";
+  const list = document.getElementById('qr-list');
+  list.innerHTML = '';
+  teams.forEach(t => {
+    const url = `${BASE}?teamId=${t.id}`;
     const div = document.createElement('div');
     div.className = 'qr-item';
-    div.innerHTML = `<p>${team.name}</p><div id="qr-${team.id}"></div><small>${link}</small>`;
-    qrList.appendChild(div);
-    new QRCode(document.getElementById(`qr-${team.id}`), {
-      text: link,
-      width: 150,
-      height: 150,
-      colorDark: "#000",
-      colorLight: "#fff",
-      correctLevel: QRCode.CorrectLevel.H
-    });
-  });
-};
-
-// 👉 Bắt đầu game
-window.startGame = function() {
-  document.getElementById('timer').style.display = 'block';
-  startTimer();
-  listenForSubmissions();
-};
-
-function listenForSubmissions() {
-  const q = query(collection(db, "submissions"), orderBy("timestamp", "asc"));
-  onSnapshot(q, snapshot => {
-    const area = document.getElementById('submission-queue-area');
-    let html = `<h2>HÀNG ĐỢI DUYỆT ĐÁP ÁN (${snapshot.size})</h2>`;
-    if (snapshot.empty) html += '<p>Chưa có đội nào gửi.</p>';
-    else snapshot.forEach(docSnap => {
-      const sub = docSnap.data();
-      html += `<div class="submission-item"><b>${sub.teamId.toUpperCase()}</b>: ${sub.answer}
-      <button onclick="handleReviewSubmission('${docSnap.id}','${sub.teamId}','${sub.answer}')">DUYỆT</button></div>`;
-    });
-    area.innerHTML = html;
+    div.innerHTML = `<p>${t.name}</p><div id="qr-${t.id}"></div><small>${url}</small>`;
+    list.appendChild(div);
+    new QRCode(document.getElementById(`qr-${t.id}`), {text:url,width:150,height:150});
   });
 }
 
-window.handleReviewSubmission = async function(id, teamId, answer) {
-  const team = teams.find(t => t.id === teamId);
-  if (!team) return;
-  const qIndex = team.currentManhMoiIndex;
-  const correct = ALL_TEAM_QUESTIONS[teamId][qIndex].correct;
-  const isCorrect = answer.trim().toLowerCase() === correct.toLowerCase();
-  if (isCorrect) {
-    team.score += 10;
-    team.currentManhMoiIndex++;
-    team.manhMoiCompletedState[qIndex] = true;
+// ==== CHUYỂN GIAO DIỆN ====
+function transitionToGame() {
+  document.getElementById('intro-wrapper').style.display='none';
+  document.getElementById('game-wrapper').style.display='block';
+  renderTeams();
+}
+
+// ==== BẮT ĐẦU GAME ====
+function startGame() {
+  document.getElementById('timer').style.display='block';
+  countdown();
+  listenSubmissions();
+}
+
+function countdown(){
+  let t=600;
+  const el=document.getElementById('timer');
+  setInterval(()=>{
+    t--;const m=Math.floor(t/60),s=t%60;
+    el.textContent=`${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+  },1000);
+}
+
+// ==== FIRESTORE LISTEN ====
+function listenSubmissions(){
+  db.collection("submissions").orderBy("timestamp","asc").onSnapshot(snap=>{
+    const area=document.getElementById('submission-queue-area');
+    let html=`<h2>HÀNG ĐỢI DUYỆT ĐÁP ÁN (${snap.size})</h2>`;
+    if(snap.empty) html+='<p>Chưa có đội nào gửi.</p>';
+    else snap.forEach(doc=>{
+      const d=doc.data();
+      html+=`<div class="submission-item"><b>${d.teamId.toUpperCase()}</b>: ${d.answer}
+      <button onclick="approve('${doc.id}','${d.teamId}','${d.answer}')">DUYỆT</button></div>`;
+    });
+    area.innerHTML=html;
+  });
+}
+
+// ==== DUYỆT ĐÁP ÁN ====
+async function approve(id,teamId,ans){
+  const team=teams.find(t=>t.id===teamId);
+  const q=team.current;
+  const correct=QUESTIONS[teamId][q].correct.toLowerCase();
+  if(ans.trim().toLowerCase()===correct){
+    team.score+=10;team.state[q]=true;team.current++;
     alert(`${team.name}: Chính xác! +10 điểm`);
-  } else alert(`${team.name}: Sai! Đáp án đúng là ${correct}`);
-  await deleteDoc(doc(db, "submissions", id));
-  renderTeamRows();
-};
-
-const ALL_TEAM_QUESTIONS = {
-  red:[{q:'Cho CSC có $u_1=3$, $d=2$. Tìm $u_{10}$.',correct:'21'}],
-  blue:[{q:'Cho CSN có $u_1=3$, $q=2$. Tìm $u_4$.',correct:'24'}],
-  green:[{q:'Cho CSC có $u_1=5$, $d=4$. Tìm $u_6$.',correct:'25'}],
-  yellow:[{q:'Cho CSC có $u_1=2$, $d=5$. Tìm $u_7$.',correct:'32'}],
-  purple:[{q:'Cho CSC có $u_1=3$, $d=4$. Tìm $u_5$.',correct:'19'}]
-};
-
-function renderTeamRows() {
-  const c = document.getElementById('team-rows-container');
-  let html = '';
-  teams.forEach(team => {
-    const i = team.currentManhMoiIndex;
-    const qText = i < ALL_TEAM_QUESTIONS[team.id].length
-      ? ALL_TEAM_QUESTIONS[team.id][i].q
-      : "ĐÃ HOÀN THÀNH";
-    html += `<div class="team-row ${team.colorClass}">
-      <div class="team-score-control"><div class="team-score-value">${team.score}</div>${team.name}</div>
-      <div class="team-status-area">
-        ${team.manhMoiCompletedState.map((done,idx)=>`<div class="q-status-item ${done?'status-correct':idx===i?'status-ready':''}">${idx+1}</div>`).join('')}
-      </div>
-      <div class="team-question-area"><div class="q-number">Câu ${i+1}</div><div class="q-text">${qText}</div></div>
-    </div>`;
-  });
-  c.innerHTML = html;
-  if (window.MathJax) window.MathJax.typesetPromise([c]);
+  }else alert(`${team.name}: Sai!`);
+  await db.collection("submissions").doc(id).delete();
+  renderTeams();
 }
 
-let timer = 600;
-function startTimer() {
-  const el = document.getElementById('timer');
-  setInterval(() => {
-    timer--;
-    const m = Math.floor(timer / 60), s = timer % 60;
-    el.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-  }, 1000);
+// ==== HIỂN THỊ BẢNG ĐỘI ====
+function renderTeams(){
+  const c=document.getElementById('team-rows-container');
+  c.innerHTML='';
+  teams.forEach(t=>{
+    const i=t.current;
+    const q=i<QUESTIONS[t.id].length?QUESTIONS[t.id][i].q:'ĐÃ HOÀN THÀNH';
+    const row=document.createElement('div');
+    row.className=`team-row ${t.colorClass}`;
+    row.innerHTML=`
+      <div class="team-score-control"><div class="team-score-value">${t.score}</div>${t.name}</div>
+      <div class="team-status-area">${t.state.map((d,idx)=>`<div class="q-status-item ${d?'status-correct':idx===i?'status-ready':''}">${idx+1}</div>`).join('')}</div>
+      <div class="team-question-area"><div class="q-number">Câu ${i+1}</div><div class="q-text">${q}</div></div>`;
+    c.appendChild(row);
+  });
 }
 </script>
 </body>
