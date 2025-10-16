@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mật Mã Rương Báu - GV (Sửa Lỗi Lớn + C4)</title>
+<title>Mật Mã Rương Báu - GV (Đồng Bộ Hóa Câu Hỏi)</title>
 
 <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
 <script>
@@ -127,7 +127,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 #submission-queue-area h2 {
   font-size: 1em;
   text-align: center;
-  color: #ffffff;
+  color: #f1c40f;
   margin-bottom: 10px;
 }
 /* CSS cho Bộ đếm */
@@ -310,9 +310,8 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   </div>
 
 <script type="module">
-  // B. Thêm Imports và Config Firebase
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-  import { getFirestore, collection, query, where, onSnapshot, doc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+  import { getFirestore, collection, query, where, onSnapshot, doc, deleteDoc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
   // === CẤU HÌNH FIREBASE ===
   const firebaseConfig = {
@@ -327,7 +326,9 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-
+  
+  // COLLECTION MỚI ĐỂ ĐỒNG BỘ HÓA TRẠNG THÁI (HS sẽ lắng nghe)
+  const TEAM_STATUS_COLLECTION = "team_status";
 
   // D1. Mảng đội
   const teams = [
@@ -340,7 +341,6 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 
   // ==========================================================
   // MẢNG CÂU HỎI VÀ ĐÁP ÁN ĐÚNG MẪU
-  // LƯU Ý: Đáp án phải là CHUỖI SỐ (String of Number) và KHÔNG CHỨA bất kỳ ký tự nào khác.
   const QUESTIONS = [
     { text: "C1: Cho CSC có $u_1=3$, $d=2$. Tìm $u_{10}$", answer: "21" }, 
     { text: "C2: Tính tổng 1 + 2 + ... + 10", answer: "55" }, 
@@ -384,6 +384,31 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     });
   };
 
+  // Hàm mới: Khởi tạo trạng thái đội trên Firebase
+  async function initializeTeamStatusOnFirebase() {
+      const promises = teams.map(team => {
+          return setDoc(doc(db, TEAM_STATUS_COLLECTION, team.id), {
+              score: team.score,
+              currentQ: team.currentQ,
+              name: team.name
+          });
+      });
+      await Promise.all(promises);
+      console.log("Team statuses initialized on Firebase.");
+  }
+
+  // Hàm mới: Cập nhật trạng thái đội trên Firebase (để HS cập nhật theo)
+  async function updateTeamStatusOnFirebase(teamId, newScore, newQ) {
+      try {
+          await setDoc(doc(db, TEAM_STATUS_COLLECTION, teamId), {
+              score: newScore,
+              currentQ: newQ,
+          }, { merge: true });
+      } catch (e) {
+          console.error("Error updating team status on Firebase:", e);
+      }
+  }
+
   function showGame(){
     const qrList = document.getElementById("qr-list");
     if (qrList) qrList.remove();
@@ -392,10 +417,15 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     if (buttonContainer) buttonContainer.style.display = "none";
 
     document.getElementById("game-wrapper").style.display="block";
-    renderTeams();
-    document.getElementById("startGameBtn").style.display="block";
     
-    listenForSubmissions();
+    // Khởi tạo trạng thái trên Firebase trước khi bắt đầu
+    initializeTeamStatusOnFirebase().then(() => {
+        renderTeams();
+        document.getElementById("startGameBtn").style.display="block";
+        listenForSubmissions();
+    }).catch(e => {
+        console.error("Failed to initialize game:", e);
+    });
   }
 
 
@@ -508,22 +538,28 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   function updateTeam(teamId, points, advanceQ = false) {
     const team = teams.find(t => t.id === teamId);
     if (team) {
+      // 1. Tính toán trạng thái mới
       team.score += points;
-      
-      // Nếu đáp án đúng HOẶC yêu cầu chuyển câu (advanceQ = true)
+      let newQ = team.currentQ;
+
       if (advanceQ) {
-        team.currentQ++;
+        newQ++;
+        team.currentQ = newQ; // Cập nhật trạng thái cục bộ của GV
         updateQuestionDisplay(team); 
       }
       
-      // Cập nhật giao diện
+      // 2. Cập nhật giao diện GV
       document.getElementById(`score-${teamId}`).textContent = team.score;
       document.getElementById(`status-${teamId}`).textContent = team.currentQ;
       
-      // Kiểm tra thắng cuộc (7 câu)
+      // 3. ĐỒNG BỘ LÊN FIREBASE (HS sẽ đọc)
+      updateTeamStatusOnFirebase(teamId, team.score, team.currentQ); // Dùng team.currentQ sau khi đã update
+
+      // 4. Kiểm tra thắng cuộc
       if (team.currentQ > WINNING_QUESTION) {
         team.score += TREASURE_BONUS; 
         document.getElementById(`score-${teamId}`).textContent = team.score; 
+        updateTeamStatusOnFirebase(teamId, team.score, team.currentQ); // Cập nhật lại lần cuối
         winGame(team); 
       }
     }
@@ -531,36 +567,30 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 
   // ===================================================
   // HÀM: DUYỆT TỰ ĐỘNG VÀ ĐỐI CHIẾU ĐÁP ÁN
-  // Logic: ĐÚNG -> +10, chuyển câu. SAI -> 0 điểm, KHÔNG chuyển câu.
   // ===================================================
   window.autoApproveSubmission = async (docId, teamId, qIndex, studentAnswer) => {
       try {
           const docRef = doc(db, "submissions", docId);
-          // Lỗi đã được sửa: Đảm bảo qIndex được parse và trừ 1 để lấy index 0-based
           const questionData = QUESTIONS[parseInt(qIndex) - 1]; 
           
           if (!questionData) {
-              console.error(`Lỗi: Không tìm thấy đáp án cho câu hỏi C${qIndex}. Có thể đã hết câu.`);
               await deleteDoc(docRef);
               return;
           }
           const correctText = questionData.answer;
           
-          // Chuẩn hóa đáp án (chỉ loại bỏ khoảng trắng - áp dụng cho số)
           const normalizedStudentAnswer = studentAnswer.trim().replace(/\s/g, ''); 
           const normalizedCorrectAnswer = correctText.trim().replace(/\s/g, ''); 
           
-          let points = 0; // Mặc định là SAI, KHÔNG TRỪ ĐIỂM
+          let points = 0; 
           let advanceQ = false;
           let resultMessage = "SAI (0 điểm)";
 
-          // So sánh chuỗi đã chuẩn hóa
           if (normalizedStudentAnswer === normalizedCorrectAnswer) {
               points = 10;
               advanceQ = true; // Đáp án đúng thì chuyển câu
               resultMessage = "ĐÚNG (+10)";
           } 
-          // Nếu sai, points vẫn là 0 và advanceQ vẫn là false.
 
           // Cập nhật điểm cho đội và quyết định chuyển câu
           updateTeam(teamId, points, advanceQ);
@@ -568,7 +598,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
           // Xóa document khỏi Firestore sau khi xử lý
           await deleteDoc(docRef);
           
-          console.log(`Duyệt tự động: Đội ${teamId}, Câu ${qIndex}. Đáp án HS: "${studentAnswer}". Kết quả: ${resultMessage}.`);
+          console.log(`Duyệt tự động: Đội ${teamId}, Câu ${qIndex}. Kết quả: ${resultMessage}.`);
 
       } catch(e) {
           console.error("Lỗi khi duyệt yêu cầu tự động:", e);
@@ -578,7 +608,6 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   
   // ===================================================
   // HÀM: DUYỆT BỎ QUA 
-  // Logic: BỎ QUA -> -10, chuyển câu.
   // ===================================================
   window.approveSkip = async (docId, teamId) => {
       try {
@@ -670,7 +699,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 
   // ============== LOGIC RESET DỮ LIỆU ==============
   async function resetGameData() {
-      if (!confirm("⚠️ CẢNH BÁO: Thao tác này sẽ XÓA TẤT CẢ yêu cầu duyệt đáp án trên Firebase và tải lại trang. Bạn có chắc chắn muốn RESET?")) {
+      if (!confirm("⚠️ CẢNH BÁO: Thao tác này sẽ XÓA TẤT CẢ yêu cầu duyệt đáp án và trạng thái đội trên Firebase. Bạn có chắc chắn muốn RESET?")) {
           return;
       }
       
@@ -679,16 +708,17 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       resetBtn.textContent = "ĐANG XÓA...";
 
       try {
-          const querySnapshot = await getDocs(collection(db, "submissions"));
+          // Xóa submissions
+          const subQuerySnapshot = await getDocs(collection(db, "submissions"));
+          const deleteSubPromises = subQuerySnapshot.docs.map(doc => deleteDoc(doc.ref));
           
-          const deletePromises = [];
-          querySnapshot.forEach((doc) => {
-              deletePromises.push(deleteDoc(doc.ref));
-          });
+          // Xóa team status
+          const statusQuerySnapshot = await getDocs(collection(db, TEAM_STATUS_COLLECTION));
+          const deleteStatusPromises = statusQuerySnapshot.docs.map(doc => deleteDoc(doc.ref));
           
-          await Promise.all(deletePromises);
+          await Promise.all([...deleteSubPromises, ...deleteStatusPromises]);
           
-          alert("✅ Đã xóa toàn bộ dữ liệu duyệt đáp án. Tải lại trang để bắt đầu lại.");
+          alert("✅ Đã xóa toàn bộ dữ liệu. Tải lại trang để bắt đầu lại.");
           window.location.reload(); 
           
       } catch (e) {
@@ -731,4 +761,3 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 </script>
 </body>
 </html>
-
