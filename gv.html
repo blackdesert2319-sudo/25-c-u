@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mật Mã Rương Báu - Màn Hình GV</title>
+<title>Mật Mã Rương Báu - Màn Hình GV (Chỉnh sửa)</title>
 
-<!-- QR code + MathJax -->
 <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
 <script>
 window.MathJax = {
@@ -15,31 +14,6 @@ window.MathJax = {
 </script>
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 
-<!-- Firebase -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getDatabase, ref, onValue, set, get, update, push, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyB4c-qU-DemoKeySample",
-    authDomain: "demo.firebaseapp.com",
-    databaseURL: "https://demo-default-rtdb.firebaseio.com",
-    projectId: "demo",
-    storageBucket: "demo.appspot.com",
-    messagingSenderId: "1234567890",
-    appId: "1:1234567890:web:abcd1234efgh5678"
-  };
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  window.db = db;
-  window.ref = ref;
-  window.onValue = onValue;
-  window.set = set;
-  window.update = update;
-  window.push = push;
-  window.remove = remove;
-</script>
-
 <style>
 body {
   font-family:'Arial',sans-serif;
@@ -48,9 +22,6 @@ body {
   margin:0;
   padding:0;
   overflow-x:hidden;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
 }
 h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 #timer {
@@ -88,18 +59,15 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 }
 
 /* === GIAO DIỆN 2 === */
-#game-wrapper {
-  display:none;
-}
+#game-wrapper { display:none; }
 .game-layout {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: flex-start;
   width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 20px;
+  margin: 0;
+  padding: 0 10px;
   box-sizing: border-box;
 }
 
@@ -115,14 +83,15 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 
 /* Cột phải: hàng đợi */
 #submission-queue-area {
-  width: 240px;
+  width: 120px;
   background: #34495e;
   border-radius: 10px;
-  padding: 10px;
-  height: calc(100vh - 80px);
+  padding: 8px;
+  height: calc(100vh - 40px);
   overflow-y: auto;
-  position: sticky;
-  top: 10px;
+  position: fixed;
+  right: 0;
+  top: 0;
 }
 #submission-queue-area h2 {
   font-size: 1em;
@@ -167,22 +136,24 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   font-size:1.1em;
   margin-bottom:4px;
 }
-.team-row .team-status-area {
-  display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap:5px;
-  justify-items:center;
+.team-status-area {
+  display:flex;
+  justify-content:center;
+  align-items:center;
   margin-top:5px;
 }
 .q-status-item {
-  width:22px; height:22px;
+  width:28px;
+  height:28px;
   border-radius:50%;
-  display:flex; justify-content:center; align-items:center;
-  font-size:0.8em; font-weight:bold;
-  color:white; background:#7f8c8d;
+  font-size:1em;
+  font-weight:bold;
+  color:white;
+  background:#2980b9;
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
-.status-ready { background:#2980b9; }
-.status-correct { background:#2ecc71; }
 
 .team-question-area {
   flex:1;
@@ -286,7 +257,7 @@ function renderTeams(){
       <div class="team-score-control">
         <div class="team-score-value" id="score-${team.id}">0</div>
         <div class="team-name">${team.name}</div>
-        <div class="team-status-area">${Array.from({length:7},(_,i)=>`<div class='q-status-item'>${i+1}</div>`).join("")}</div>
+        <div class="team-status-area"><div class='q-status-item'>1</div></div>
       </div>
       <div class="team-question-area">
         <div class="q-number">Câu 1</div>
