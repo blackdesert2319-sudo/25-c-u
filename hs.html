@@ -97,10 +97,11 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     
-    const TEAM_STATUS_COLLECTION = "team_status"; // PHẢI GIỐNG VỚI FILE GV
+    const TEAM_STATUS_COLLECTION = "team_status"; 
 
     let teamId = null;
-    let currentQuestionIndex = 1;
+    let currentQuestionIndex = 1; // Vị trí câu hỏi trong chuỗi đã giải (C index: 1, 2, 3...)
+    let questionOrder = []; // Mảng thứ tự câu hỏi thực tế (Q index: [3, 1, 5, 2...])
 
     document.addEventListener('DOMContentLoaded', () => {
       const params = new URLSearchParams(window.location.search);
@@ -113,15 +114,25 @@
         document.getElementById('skip-button').onclick = skipQuestion;
         
         updateQuestionDisplay();
-        listenToTeamStatus(); // BẮT ĐẦU LẮNG NGHE TRẠNG THÁI TỪ GV
+        listenToTeamStatus(); 
         
         document.getElementById('status-message').textContent = 'Đang đồng bộ trạng thái...';
       } else {
         document.getElementById('status-message').textContent = 'Không tìm thấy mã đội. Vui lòng quét lại QR.';
       }
     });
+
+    // HÀM MỚI: Tính toán index câu hỏi thực tế (Q Index)
+    function getActualQuestionIndex(qIndexInOrder) {
+        // qIndexInOrder là currentQuestionIndex (1, 2, 3...)
+        if (questionOrder.length === 0 || qIndexInOrder < 1 || qIndexInOrder > questionOrder.length) {
+            return 1; // Default to Q1
+        }
+        // Lấy giá trị thực tế từ mảng theo vị trí hiện tại
+        return questionOrder[qIndexInOrder - 1]; 
+    }
     
-    // HÀM MỚI: Lắng nghe trạng thái từ GV (Real-time sync)
+    // HÀM SỬA: Lắng nghe trạng thái từ GV (Real-time sync)
     function listenToTeamStatus() {
         if (!teamId) return;
         const docRef = doc(db, TEAM_STATUS_COLLECTION, teamId);
@@ -130,6 +141,11 @@
             if (docSnapshot.exists()) {
                 const data = docSnapshot.data();
                 const newQ = data.currentQ;
+
+                // THÊM: Cập nhật thứ tự câu hỏi
+                if (data.questionOrder && data.questionOrder.length > 0) {
+                    questionOrder = data.questionOrder;
+                }
                 
                 if (newQ > currentQuestionIndex) {
                     currentQuestionIndex = newQ;
@@ -138,7 +154,8 @@
                     document.getElementById('status-message').style.color = "#2ecc71";
                     document.getElementById('answer-input').value = ""; // Xóa đáp án cũ
                 } else if (newQ === currentQuestionIndex) {
-                    document.getElementById('status-message').textContent = `Sẵn sàng gửi đáp án hoặc yêu cầu bỏ qua cho C${currentQuestionIndex}.`;
+                    updateQuestionDisplay(); 
+                    document.getElementById('status-message').textContent = `Sẵn sàng gửi đáp án hoặc yêu cầu bỏ qua cho C${currentQuestionIndex}. (Câu hỏi thực tế: Q${getActualQuestionIndex(currentQuestionIndex)})`;
                     document.getElementById('status-message').style.color = "white";
                 }
             } else {
@@ -152,10 +169,13 @@
         });
     }
 
+    // HÀM SỬA: Hiển thị cả 2 index
     function updateQuestionDisplay() {
-        document.getElementById('question-display').textContent = `Câu hiện tại: C${currentQuestionIndex}`;
+        const actualQIndex = getActualQuestionIndex(currentQuestionIndex);
+        document.getElementById('question-display').textContent = `Câu hiện tại: C${currentQuestionIndex} (Q${actualQIndex})`;
     }
 
+    // HÀM SỬA: Gửi đáp án
     async function submitAnswer() {
       const input = document.getElementById('answer-input');
       const status = document.getElementById('status-message');
@@ -170,14 +190,16 @@
       status.textContent = "Đang gửi đáp án...";
       status.style.color = "#f1c40f";
       try {
+        const actualQIndex = getActualQuestionIndex(currentQuestionIndex); // Lấy index thực tế
         await addDoc(collection(db, "submissions"), {
           teamId,
           answer,
-          questionIndex: currentQuestionIndex,
+          questionIndex: currentQuestionIndex, // Vị trí trong chuỗi đã giải (C Index)
+          actualQuestionIndex: actualQIndex, // Index thực tế của câu hỏi (Q Index)
           timestamp: serverTimestamp(),
           status: "pending"
         });
-        status.textContent = `Đã gửi đáp án '${answer}'. Chờ GV duyệt. (Câu C${currentQuestionIndex})`;
+        status.textContent = `Đã gửi đáp án '${answer}'. Chờ GV duyệt. (Câu C${currentQuestionIndex} - Q${actualQIndex})`;
         status.style.color = "#2ecc71";
       } catch {
         status.textContent = "Gửi thất bại. Kiểm tra mạng.";
@@ -187,6 +209,7 @@
       }
     }
 
+    // HÀM SỬA: Gửi yêu cầu bỏ qua
     async function skipQuestion() {
       const status = document.getElementById('status-message');
       const skipBtn = document.getElementById('skip-button');
@@ -194,15 +217,17 @@
       status.textContent = "Đang gửi yêu cầu bỏ qua...";
       status.style.color = "#f1c40f";
       try {
+        const actualQIndex = getActualQuestionIndex(currentQuestionIndex); // Lấy index thực tế
         await addDoc(collection(db, "submissions"), {
           teamId,
-          questionIndex: currentQuestionIndex,
+          questionIndex: currentQuestionIndex, // Vị trí trong chuỗi đã giải (C Index)
+          actualQuestionIndex: actualQIndex, // Index thực tế của câu hỏi (Q Index)
           action: "skip",
           timestamp: serverTimestamp(),
           status: "pending"
         });
         
-        status.textContent = `Đã gửi yêu cầu bỏ qua cho C${currentQuestionIndex}. Chờ GV duyệt.`;
+        status.textContent = `Đã gửi yêu cầu bỏ qua cho C${currentQuestionIndex} (Q${actualQIndex}). Chờ GV duyệt.`;
         status.style.color = "#e67e22";
       } catch {
         status.textContent = "Không gửi được yêu cầu bỏ qua.";
