@@ -61,7 +61,7 @@ button{cursor:pointer;}
 </div>
 
 <script>
-// ==== FIREBASE KHỞI TẠO ====
+/* ========== KHỞI TẠO FIREBASE ========== */
 const firebaseConfig = {
   apiKey:"AIzaSyDfcMrblRonAS9Q7BSfD9ZZYeOmSy4UjfQ",
   authDomain:"nutnhap.firebaseapp.com",
@@ -74,7 +74,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// ==== DỮ LIỆU ĐỘI ====
+/* ========== DỮ LIỆU CÁC ĐỘI ========== */
 const teams = [
   {id:'red',name:'Đội Đỏ',colorClass:'team-red',score:0,current:0,state:new Array(7).fill(false)},
   {id:'blue',name:'Đội Xanh',colorClass:'team-blue',score:0,current:0,state:new Array(7).fill(false)},
@@ -83,24 +83,19 @@ const teams = [
   {id:'purple',name:'Đội Tím',colorClass:'team-purple',score:0,current:0,state:new Array(7).fill(false)}
 ];
 
-// ==== CÂU HỎI MẪU ====
 const QUESTIONS = {
- red:[{q:'Cho CSC có $u_1=3$, $d=2$. Tìm $u_{10}$.',correct:'21'}],
- blue:[{q:'Cho CSN có $u_1=3$, $q=2$. Tìm $u_4$.',correct:'24'}],
- green:[{q:'Cho CSC có $u_1=5$, $d=4$. Tìm $u_6$.',correct:'25'}],
- yellow:[{q:'Cho CSC có $u_1=2$, $d=5$. Tìm $u_7$.',correct:'32'}],
- purple:[{q:'Cho CSC có $u_1=3$, $d=4$. Tìm $u_5$.',correct:'19'}]
+  red:[{q:'Cho CSC có $u_1=3$, $d=2$. Tìm $u_{10}$.',correct:'21'}],
+  blue:[{q:'Cho CSN có $u_1=3$, $q=2$. Tìm $u_4$.',correct:'24'}],
+  green:[{q:'Cho CSC có $u_1=5$, $d=4$. Tìm $u_6$.',correct:'25'}],
+  yellow:[{q:'Cho CSC có $u_1=2$, $d=5$. Tìm $u_7$.',correct:'32'}],
+  purple:[{q:'Cho CSC có $u_1=3$, $d=4$. Tìm $u_5$.',correct:'19'}]
 };
 
-// ==== TẠO QR CODE NGAY KHI LOAD ====
-window.onload = function() {
-  generateQRCodes();
-  document.getElementById('transitionButton').onclick = transitionToGame;
-};
-
+/* ========== TẠO MÃ QR ========== */
 function generateQRCodes() {
   const BASE = "https://blackdesert2319-sudo.github.io/25-c-u/hs.html";
   const list = document.getElementById('qr-list');
+  if (!list) return;
   list.innerHTML = '';
   teams.forEach(t => {
     const url = `${BASE}?teamId=${t.id}`;
@@ -108,35 +103,58 @@ function generateQRCodes() {
     div.className = 'qr-item';
     div.innerHTML = `<p>${t.name}</p><div id="qr-${t.id}"></div><small>${url}</small>`;
     list.appendChild(div);
-    new QRCode(document.getElementById(`qr-${t.id}`), {text:url,width:150,height:150});
+    new QRCode(document.getElementById(`qr-${t.id}`), {
+      text: url,
+      width: 150,
+      height: 150
+    });
   });
 }
 
-// ==== CHUYỂN GIAO DIỆN ====
+/* ========== CHUYỂN GIAO DIỆN ========== */
 function transitionToGame() {
-  document.getElementById('intro-wrapper').style.display='none';
-  document.getElementById('game-wrapper').style.display='block';
+  document.getElementById('intro-wrapper').style.display = 'none';
+  document.getElementById('game-wrapper').style.display = 'block';
   renderTeams();
 }
 
-// ==== BẮT ĐẦU GAME ====
+/* ========== KHI TRANG LOAD XONG ========== */
+document.addEventListener('DOMContentLoaded', () => {
+  // Đảm bảo QRCode script đã sẵn sàng
+  if (typeof QRCode === 'undefined') {
+    const check = setInterval(() => {
+      if (typeof QRCode !== 'undefined') {
+        clearInterval(check);
+        generateQRCodes();
+      }
+    }, 200);
+  } else generateQRCodes();
+
+  // Gán sự kiện cho nút
+  const btn = document.getElementById('transitionButton');
+  if (btn) btn.addEventListener('click', transitionToGame);
+});
+
+/* ========== BẮT ĐẦU TRÒ CHƠI ========== */
 function startGame() {
-  document.getElementById('timer').style.display='block';
-  countdown();
+  document.getElementById('timer').style.display = 'block';
+  startTimer();
   listenSubmissions();
 }
 
-function countdown(){
-  let t=600;
-  const el=document.getElementById('timer');
-  setInterval(()=>{
-    t--;const m=Math.floor(t/60),s=t%60;
-    el.textContent=`${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-  },1000);
+/* ========== ĐỒNG HỒ ĐẾM LÙI ========== */
+let timeLeft = 600;
+function startTimer() {
+  const el = document.getElementById('timer');
+  setInterval(() => {
+    timeLeft--;
+    const m = Math.floor(timeLeft/60), s = timeLeft%60;
+    el.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+  }, 1000);
 }
 
-// ==== FIRESTORE LISTEN ====
-function listenSubmissions(){
+/* ========== FIRESTORE LẮNG NGHE ========== */
+function listenSubmissions() {
   db.collection("submissions").orderBy("timestamp","asc").onSnapshot(snap=>{
     const area=document.getElementById('submission-queue-area');
     let html=`<h2>HÀNG ĐỢI DUYỆT ĐÁP ÁN (${snap.size})</h2>`;
@@ -150,20 +168,21 @@ function listenSubmissions(){
   });
 }
 
-// ==== DUYỆT ĐÁP ÁN ====
+/* ========== DUYỆT ĐÁP ÁN ========== */
 async function approve(id,teamId,ans){
-  const team=teams.find(t=>t.id===teamId);
-  const q=team.current;
+  const t=teams.find(x=>x.id===teamId);
+  if(!t) return;
+  const q=t.current;
   const correct=QUESTIONS[teamId][q].correct.toLowerCase();
   if(ans.trim().toLowerCase()===correct){
-    team.score+=10;team.state[q]=true;team.current++;
-    alert(`${team.name}: Chính xác! +10 điểm`);
-  }else alert(`${team.name}: Sai!`);
+    t.score+=10; t.state[q]=true; t.current++;
+    alert(`${t.name}: Chính xác! +10 điểm`);
+  } else alert(`${t.name}: Sai!`);
   await db.collection("submissions").doc(id).delete();
   renderTeams();
 }
 
-// ==== HIỂN THỊ BẢNG ĐỘI ====
+/* ========== HIỂN THỊ BẢNG ĐỘI ========== */
 function renderTeams(){
   const c=document.getElementById('team-rows-container');
   c.innerHTML='';
@@ -180,5 +199,7 @@ function renderTeams(){
   });
 }
 </script>
+
 </body>
 </html>
+
