@@ -54,13 +54,13 @@
     #skip-button { background-color: #e67e22; }
     #skip-button:hover { background-color: #d35400; }
 
-    /* CSS MỚI: Dòng khẩu hiệu */
+    /* CSS cho Khẩu hiệu */
     #status-message { 
         margin-top: 20px; 
         font-style: italic; 
-        font-size: 1.5em; /* Tăng kích thước khẩu hiệu */
+        font-size: 1.5em; 
         font-weight: bold;
-        color: #f1c40f; /* Thay đổi màu cho nổi bật */
+        color: #f1c40f; 
     }
     
     #question-display { 
@@ -108,9 +108,9 @@
 
     let teamId = null;
     let currentQuestionIndex = 1; // Vị trí câu hỏi trong chuỗi đã giải (C index: 1, 2, 3...)
-    let questionOrder = []; // Mảng thứ tự câu hỏi thực tế (Q index: [3, 1, 5, 2...])
+    let questionOrder = []; // Mảng thứ tự câu hỏi thực tế (Chỉ số mảng 0-6)
     
-    const DEFAULT_SLOGAN = "Đoàn kết là sức mạnh"; // Khẩu hiệu mặc định
+    const DEFAULT_SLOGAN = "Đoàn kết là sức mạnh"; 
 
     document.addEventListener('DOMContentLoaded', () => {
       const params = new URLSearchParams(window.location.search);
@@ -125,7 +125,6 @@
         updateQuestionDisplay();
         listenToTeamStatus(); 
         
-        // THAY ĐỔI: Khẩu hiệu mặc định ban đầu
         document.getElementById('status-message').textContent = DEFAULT_SLOGAN;
         document.getElementById('status-message').style.color = "#f1c40f"; 
 
@@ -139,21 +138,35 @@
     function resetStatusMessage() {
         setTimeout(() => {
             const status = document.getElementById('status-message');
-            // Chỉ reset nếu nội dung hiện tại không phải là khẩu hiệu mặc định (tức là đang hiển thị thông báo)
             if (status.textContent !== DEFAULT_SLOGAN) {
                 status.textContent = DEFAULT_SLOGAN;
-                status.style.color = "#f1c40f"; // Đặt lại màu khẩu hiệu
+                status.style.color = "#f1c40f"; 
             }
-        }, 5000); // 5 giây
+        }, 5000); 
     }
 
 
     // HÀM MỚI: Tính toán index câu hỏi thực tế (Q Index)
-    function getActualQuestionIndex(qIndexInOrder) {
+    // Trả về chỉ số mảng 0-6
+    function getActualQuestionIndexInArray(qIndexInOrder) {
+        // qIndexInOrder là currentQuestionIndex (1, 2, 3...)
         if (questionOrder.length === 0 || qIndexInOrder < 1 || qIndexInOrder > questionOrder.length) {
-            return 1; 
+            return -1; // Index lỗi
         }
+        // Lấy chỉ số mảng (0-6) từ mảng thứ tự ngẫu nhiên
         return questionOrder[qIndexInOrder - 1]; 
+    }
+    
+    // HÀM MỚI: Tạo mã câu hỏi thực tế (Ví dụ: Q1.5)
+    function generateActualQuestionCode(qIndexInOrder) {
+        const teamNumber = (teamId === 'red' ? 1 : teamId === 'blue' ? 2 : teamId === 'green' ? 3 : teamId === 'yellow' ? 4 : 5);
+        const qIndexInTeam = getActualQuestionIndexInArray(qIndexInOrder) + 1; // Chuyển từ index 0-6 sang số câu 1-7
+        
+        if (qIndexInTeam < 1 || qIndexInTeam > 7) {
+            return "Q??";
+        }
+        
+        return `Q${teamNumber}.${qIndexInTeam}`;
     }
     
     // HÀM SỬA: Lắng nghe trạng thái từ GV (Real-time sync)
@@ -177,11 +190,10 @@
                     updateQuestionDisplay();
                     status.textContent = `GV đã duyệt. Chuyển sang C${currentQuestionIndex}. Nhập đáp án mới.`;
                     status.style.color = "#2ecc71";
-                    document.getElementById('answer-input').value = ""; // Xóa đáp án cũ
-                    resetStatusMessage(); // Reset về khẩu hiệu sau khi thông báo
+                    document.getElementById('answer-input').value = ""; 
+                    resetStatusMessage(); 
                 } else if (newQ === currentQuestionIndex) {
                     updateQuestionDisplay(); 
-                    // THAY ĐỔI: Không hiển thị tin nhắn này khi không có gì xảy ra
                     if (status.textContent !== DEFAULT_SLOGAN) {
                         status.textContent = DEFAULT_SLOGAN;
                         status.style.color = "#f1c40f";
@@ -200,8 +212,8 @@
 
     // HÀM SỬA: Hiển thị cả 2 index
     function updateQuestionDisplay() {
-        const actualQIndex = getActualQuestionIndex(currentQuestionIndex);
-        document.getElementById('question-display').textContent = `Câu hiện tại: C${currentQuestionIndex} (Q${actualQIndex})`;
+        const actualQCode = generateActualQuestionCode(currentQuestionIndex);
+        document.getElementById('question-display').textContent = `Câu hiện tại: C${currentQuestionIndex} (${actualQCode})`;
     }
 
     // HÀM SỬA: Gửi đáp án
@@ -213,29 +225,29 @@
       if (!answer) {
         status.textContent = "Vui lòng nhập đáp án!";
         status.style.color = "#e74c3c";
-        resetStatusMessage(); // Reset về khẩu hiệu sau khi báo lỗi
+        resetStatusMessage(); 
         return;
       }
       btn.disabled = true;
       status.textContent = "Đang gửi đáp án...";
       status.style.color = "#f1c40f";
       try {
-        const actualQIndex = getActualQuestionIndex(currentQuestionIndex);
+        const actualQCode = generateActualQuestionCode(currentQuestionIndex);
         await addDoc(collection(db, "submissions"), {
           teamId,
           answer,
           questionIndex: currentQuestionIndex,
-          actualQuestionIndex: actualQIndex,
+          actualQuestionIndex: actualQCode, // Gửi mã Q Index (Ví dụ: Q1.5)
           timestamp: serverTimestamp(),
           status: "pending"
         });
-        status.textContent = `Đã gửi đáp án '${answer}'. Chờ GV duyệt. (Câu C${currentQuestionIndex} - Q${actualQIndex})`;
+        status.textContent = `Đã gửi đáp án '${answer}'. Chờ GV duyệt. (Câu C${currentQuestionIndex} - ${actualQCode})`;
         status.style.color = "#2ecc71";
-        resetStatusMessage(); // Reset về khẩu hiệu sau khi thông báo
+        resetStatusMessage(); 
       } catch {
         status.textContent = "Gửi thất bại. Kiểm tra mạng.";
         status.style.color = "#e74c3c";
-        resetStatusMessage(); // Reset về khẩu hiệu sau khi báo lỗi
+        resetStatusMessage(); 
       } finally {
         setTimeout(() => (btn.disabled = false), 4000);
       }
@@ -249,23 +261,23 @@
       status.textContent = "Đang gửi yêu cầu bỏ qua...";
       status.style.color = "#f1c40f";
       try {
-        const actualQIndex = getActualQuestionIndex(currentQuestionIndex);
+        const actualQCode = generateActualQuestionCode(currentQuestionIndex);
         await addDoc(collection(db, "submissions"), {
           teamId,
           questionIndex: currentQuestionIndex,
-          actualQuestionIndex: actualQIndex,
+          actualQuestionIndex: actualQCode, // Gửi mã Q Index (Ví dụ: Q1.5)
           action: "skip",
           timestamp: serverTimestamp(),
           status: "pending"
         });
         
-        status.textContent = `Đã gửi yêu cầu bỏ qua cho C${currentQuestionIndex} (Q${actualQIndex}). Chờ GV duyệt.`;
+        status.textContent = `Đã gửi yêu cầu bỏ qua cho C${currentQuestionIndex} (${actualQCode}). Chờ GV duyệt.`;
         status.style.color = "#e67e22";
-        resetStatusMessage(); // Reset về khẩu hiệu sau khi thông báo
+        resetStatusMessage(); 
       } catch {
         status.textContent = "Không gửi được yêu cầu bỏ qua.";
         status.style.color = "#e74c3c";
-        resetStatusMessage(); // Reset về khẩu hiệu sau khi báo lỗi
+        resetStatusMessage(); 
       } finally {
         setTimeout(() => (skipBtn.disabled = false), 3000);
       }
