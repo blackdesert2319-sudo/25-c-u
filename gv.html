@@ -265,7 +265,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   <h1>CHIẾN THẮNG KHI HOÀN THÀNH 7 CÂU HỎI NHANH NHẤT</h1>
   <div id="qr-list"></div>
 
-  <button id="startBtn" onclick="showGame()" style="padding:12px 22px;font-size:1.2em;background:#f1c40f;color:#222;border:none;border-radius:8px;margin:20px;font-weight:bold;cursor:pointer;">
+  <button id="startBtn" style="padding:12px 22px;font-size:1.2em;background:#f1c40f;color:#222;border:none;border-radius:8px;margin:20px;font-weight:bold;cursor:pointer;">
     BẮT ĐẦU VÒNG 3!
   </button>
 
@@ -457,7 +457,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       }
   };
 
-  // D3. Hàm tạo HTML cho yêu cầu duyệt rút gọn (ĐÃ SỬA THEO YÊU CẦU CỦA BẠN)
+  // D3. Hàm tạo HTML cho yêu cầu duyệt rút gọn
   function renderSubmissionItem(doc) {
     const data = doc.data();
     const docId = doc.id;
@@ -525,6 +525,14 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       });
     });
   }
+  
+  // === LỖI ĐÃ ĐƯỢC SỬA: Gắn sự kiện click cho nút BẮT ĐẦU VÒNG 3! ===
+  document.addEventListener('DOMContentLoaded', () => {
+    const startBtn = document.getElementById("startBtn");
+    if (startBtn) {
+      startBtn.addEventListener('click', showGame);
+    }
+  });
 
 </script>
 </body>
