@@ -48,9 +48,8 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   z-index:10;
 }
 
-/* === QR ở giao diện đầu === */
+/* === QR ở giao diện đầu (GIỮ !important để đảm bảo hiển thị) === */
 #qr-list {
-  /* Bỏ !important hoặc giữ lại nếu muốn JS ghi đè */
   display:flex !important; 
   flex-wrap:wrap;
   justify-content:center;
@@ -185,7 +184,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   font-size: 1.8em; 
   font-weight: 700;
   line-height: 1.3;
-  color: #ffffff; 
+  color: #f1c40f; 
 }
 
 /* Hàng đợi duyệt đáp án (CSS cho mục rút gọn) */
@@ -257,7 +256,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 .treasure-image {
     width: 250px; 
     height: 250px;
-    /* ĐƯỜNG DẪN RƯƠNG ĐÓNG */
+    /* CẬP NHẬT ĐƯỜNG DẪN TỪ GITHUB CỦA BẠN */
     background-image: url('https://raw.githubusercontent.com/blackdesert2319-sudo/25-c-u/main/treasure-closed.png'); 
     background-size: contain;
     background-repeat: no-repeat;
@@ -265,7 +264,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     transition: transform 1s ease-in-out;
 }
 .opened .treasure-image {
-    /* ĐƯỜNG DẪN RƯƠNG MỞ */
+    /* CẬP NHẬT ĐƯỜNG DẪN TỪ GITHUB CỦA BẠN */
     background-image: url('https://raw.githubusercontent.com/blackdesert2319-sudo/25-c-u/main/treasure-opened.png'); 
     animation: shake 0.5s;
 }
@@ -290,6 +289,13 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
+}
+#reward-list {
+  background: #333;
+  padding: 15px;
+  border-radius: 10px;
+  border: 2px dashed #f1c40f;
+  color: #fff;
 }
 @keyframes shake {
     0% { transform: translate(1px, 1px) rotate(0deg); }
@@ -545,7 +551,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     showGameLayout();
   }
 
-  // HÀM SỬA: Chỉ hiển thị giao diện chơi và ẩn main-controls
+  // HÀM SỬA: Chỉ hiển thị giao diện chơi và ẩn main-controls (SỬA LỖI QR)
   function showGameLayout(){
     // DÒNG QUAN TRỌNG: Ghi đè display="none" bằng !important để khắc phục xung đột CSS
     document.getElementById("qr-list").style.setProperty('display', 'none', 'important');
@@ -639,21 +645,34 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     totalSeconds--;
   }
   
-  // HÀM: Xử lý nhập mã và hiệu ứng mở rương
+  // HÀM SỬA: Xử lý nhập mã và hiệu ứng mở rương, HIỂN THỊ PHẦN THƯỞNG
   function handleOpenTreasure() {
       const inputCode = document.getElementById("code-input").value.trim();
-      const treasureImage = document.getElementById("treasure-image");
       const container = document.getElementById("treasure-box-container");
+      const rewardList = document.getElementById("reward-list");
 
       if (inputCode === TREASURE_CODE) {
           // MÃ ĐÚNG: HIỆU ỨNG MỞ
           container.classList.add('opened');
-          // Đường dẫn ảnh đã được đặt trong CSS, chỉ cần kích hoạt class
           document.getElementById("submitCodeBtn").textContent = "🔓 MÃ CHÍNH XÁC! 🎉";
           document.getElementById("submitCodeBtn").disabled = true;
 
-          // Hiển thị thông báo và hiệu ứng
+          // === HIỂN THỊ DANH SÁCH PHẦN THƯỞNG ===
+          const rewards = [
+              "Hộp Quà VIP (Phần thưởng lớn)",
+              "Cúp Vô Địch",
+              "10 Điểm thưởng cho Đội Vàng",
+              "Vé xem phim đôi"
+          ];
+          
+          rewardList.innerHTML = "<div style='font-size: 1.2em; font-weight: bold;'>🎁 PHẦN THƯỞNG CỦA ĐỘI CHIẾN THẮNG 🎁</div>" + 
+                                 "<ul style='list-style: none; padding: 0; margin-top: 10px;'>" + 
+                                 rewards.map(r => `<li style='color: #2ecc71; margin-bottom: 5px; font-weight: bold;'>- ${r}</li>`).join('') + 
+                                 "</ul>";
+          
+          // Hiển thị danh sách phần thưởng sau hiệu ứng
           setTimeout(() => {
+               rewardList.style.display = 'block';
                alert("Thành công! Rương Báu đã mở, các hộp quà đang bay ra!");
           }, 1200);
 
@@ -664,7 +683,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       }
   }
 
-  // HÀM MỚI: Hiển thị giao diện nhập mã Rương Báu
+  // HÀM SỬA: Hiển thị giao diện nhập mã Rương Báu (ĐÃ THÊM KHỐI REWARD)
   function renderTreasureOverlay(winningTeam = null, isFinal = false) {
       const overlay = document.getElementById("endOverlay");
       overlay.style.backgroundColor = 'rgba(155, 89, 182, 0.95)'; 
@@ -672,8 +691,8 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       overlay.style.display = "flex";
       isTreasureOverlayOpen = true;
       
-      // THÊM: Đảm bảo ẩn khối QR khi Overlay mở 
-      document.getElementById("qr-list").style.setProperty('display', 'none', 'important');
+      // Đảm bảo ẩn khối QR khi Overlay mở 
+      document.getElementById("qr-list").style.setProperty('display', 'none', 'important'); 
 
       // Xóa class 'opened' cũ nếu có
       overlay.querySelector('#treasure-box-container')?.classList.remove('opened');
@@ -701,7 +720,9 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
               
               ${isFinal ? 
                   `<input type="text" id="code-input" placeholder="Nhập Mã Rương" maxlength="4">
-                   <button id="submitCodeBtn">XÁC NHẬN MỞ</button>` : 
+                   <button id="submitCodeBtn">XÁC NHẬN MỞ</button>
+                   <div id="reward-list" style="margin-top:20px; font-size:1.5em; display:none;"></div>
+                   ` : 
                    `<button id="closeTreasureBtn" style="padding:12px 25px; font-size:1.2em; background:#f1c40f; color:#222; border:none; border-radius:8px; cursor:pointer; font-weight:bold; margin-top:15px;">ĐÓNG</button>`
               }
           </div>
@@ -730,14 +751,14 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       renderTreasureOverlay(winningTeam, true); 
   }
   
-  // HÀM SỬA: Kết thúc sớm/Hết giờ (Chuyển sang giao diện Rương Báu nhưng không cho mở)
+  // HÀM SỬA: Kết thúc sớm/Hết giờ
   function endGame(){
       clearInterval(timerInterval);
       document.getElementById("timer").style.display="none";
       document.getElementById("endEarlyBtn").style.display="none";
       document.getElementById("game-wrapper").style.display="none"; // Ẩn giao diện game
       
-      // THÊM: Đảm bảo ẩn QR khi game kết thúc
+      // Đảm bảo ẩn QR khi game kết thúc
       document.getElementById("qr-list").style.setProperty('display', 'none', 'important'); 
 
       // Hiển thị giao diện Rương Báu (không phải kết thúc, isFinal = false)
@@ -1024,4 +1045,3 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 </script>
 </body>
 </html>
-
