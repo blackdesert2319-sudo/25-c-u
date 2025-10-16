@@ -292,13 +292,16 @@ window.onload = function() {
 };
 
 function showGame(){
-  // Ẩn QR khi sang giao diện 2
-  document.getElementById("qr-list").style.display="none";
+  // Xóa hoàn toàn phần mã QR để giải phóng không gian
+  const qrList = document.getElementById("qr-list");
+  if (qrList) qrList.remove();
+
   document.getElementById("startBtn").style.display="none";
   document.getElementById("game-wrapper").style.display="block";
   renderTeams();
   document.getElementById("startGameBtn").style.display="block";
 }
+
 
 function renderTeams(){
   const container = document.getElementById("team-rows-container");
@@ -358,3 +361,4 @@ function endGame(){
 </script>
 </body>
 </html>
+
