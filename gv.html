@@ -1,256 +1,106 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>GV - Mật Mã Rương Báu</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Học sinh - Mật Mã Rương Báu</title>
   <style>
-    :root{
-      --bg:#0d1b2a;
-      --card:#0f2740;
-      --accent:#ffd166;
-      --muted:#a0b0c0;
-      --panel:#122436;
-      --team-gap:14px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: "Segoe UI", Roboto, Arial, sans-serif;
-      background:var(--bg);
-      color:#fff;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      padding:18px;
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #0d1b2a;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
     }
 
-    header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:14px;
-    }
-    h1{
-      margin:0;
-      font-size:1.6rem;
-      color:var(--accent);
-      letter-spacing:0.4px;
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
     }
 
-    /* Setup screen (giao diện 1) */
-    #setupScreen{ text-align:center; padding:20px 10px; }
-    #startMissionBtn{
-      background:var(--accent);
-      color:#000;
-      border:0;
-      padding:12px 20px;
-      border-radius:10px;
-      font-weight:700;
-      font-size:1.05rem;
-      cursor:pointer;
-      margin-top:12px;
-    }
-    .qr-container{
-      margin-top:18px;
-      display:flex;
-      justify-content:center;
-      flex-wrap:wrap;
-      gap:18px;
-    }
-    .qr-item{
-      background:var(--card);
-      padding:12px;
-      border-radius:12px;
-      width:160px;
-      text-align:center;
-      box-shadow:0 6px 18px rgba(0,0,0,0.5);
-    }
-    .qr-item canvas, .qr-item img{ display:block; margin:0 auto 8px auto; }
-
-    /* Game interface (giao diện 2) */
-    #gameInterface{ display:none; margin-top:6px; }
-
-    .top-controls{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      margin-bottom:12px;
-    }
-    .left-controls{ display:flex; gap:10px; align-items:center; }
-    .btn{
-      background:var(--accent);
-      color:#000;
-      border:0;
-      padding:8px 14px;
-      border-radius:8px;
-      cursor:pointer;
-      font-weight:700;
-    }
-    .countdown{
-      font-size:1.35rem;
-      background:#071427;
-      padding:8px 12px;
-      border-radius:10px;
-      color:var(--accent);
-      font-weight:800;
-      min-width:110px;
-      text-align:center;
+    .team-name {
+      font-weight: bold;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
     }
 
-    .layout{
-      display:grid;
-      grid-template-columns: 1fr 320px;
-      gap:16px;
-      align-items:start;
+    .question-box {
+      background: #1b263b;
+      padding: 20px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 0 10px rgba(255,255,255,0.2);
+      min-height: 120px;
+      font-size: 1.4rem;
+      line-height: 1.5;
     }
 
-    /* teams area */
-    .teams-area{
-      display:grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap:var(--team-gap);
+    .answer-input {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
     }
 
-    .team-card{
-      background:var(--panel);
-      border-radius:12px;
-      padding:14px;
-      min-height:180px;
-      display:flex;
-      flex-direction:column;
-      justify-content:flex-start;
-      box-shadow:0 6px 18px rgba(0,0,0,0.45);
+    input[type="text"] {
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      width: 60%;
+      font-size: 1rem;
     }
 
-    .team-top{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:8px;
-      margin-bottom:10px;
-    }
-    .team-title{
-      font-weight:800;
-      font-size:1.05rem;
-      text-transform:uppercase;
-    }
-    .team-score{
-      font-weight:900;
-      font-size:1.1rem;
-      background:rgba(255,255,255,0.06);
-      padding:6px 10px;
-      border-radius:8px;
+    button {
+      background: #ffd166;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: bold;
     }
 
-    .question{
-      font-size:2rem; /* lớn hơn để dễ đọc */
-      line-height:1.2;
-      margin-bottom:10px;
-      min-height:90px;
+    button:hover:not(.disabled) {
+      background: #ffca3a;
     }
 
-    .q-buttons{
-      display:flex;
-      justify-content:center;
-      gap:8px;
-      margin-top:auto;
-    }
-    .q-buttons button{
-      width:44px;
-      height:44px;
-      border-radius:50%;
-      border:0;
-      background:#274b67;
-      color:#fff;
-      font-weight:800;
-      cursor:pointer;
-    }
-    .q-buttons button.active{
-      background:var(--accent);
-      color:#000;
+    .disabled {
+      background: #aaa !important;
+      cursor: not-allowed;
     }
 
-    /* pending column */
-    .pending-column{
-      background:var(--panel);
-      padding:12px;
-      border-radius:10px;
-      max-height:76vh;
-      overflow:auto;
-      box-shadow:0 6px 18px rgba(0,0,0,0.35);
-    }
-    .pending-column h3{ margin:0 0 8px 0; color:var(--accent) }
-    .pending-item{
-      background:#14324a;
-      padding:8px;
-      border-radius:8px;
-      margin-bottom:8px;
-      font-size:0.95rem;
-    }
-    .controls-small{ display:flex; gap:8px; align-items:center; }
-
-    /* responsive */
-    @media (max-width:900px){
-      .layout{ grid-template-columns: 1fr; }
-      .teams-area{ grid-template-columns: 1fr; }
-      .pending-column{ max-height:40vh; }
+    .message {
+      margin-top: 15px;
+      color: #ffca3a;
+      font-weight: bold;
     }
   </style>
 </head>
+
 <body>
-  <header>
-    <h1>MẬT MÃ RƯƠNG BÁU: 5 ĐỘI TRANH TÀI</h1>
-    <div style="font-size:0.95rem;color:var(--muted)">GV Control Panel</div>
-  </header>
+  <h1>MẬT MÃ RƯƠNG BÁU</h1>
+  <div class="team-name" id="teamName">Tên đội</div>
+  <div class="question-box" id="questionBox">Đợi giáo viên bắt đầu phi vụ...</div>
 
-  <!-- GIAO DIỆN 1: Setup (QR + Start mission) -->
-  <section id="setupScreen">
-    <div style="max-width:960px;margin:0 auto">
-      <div style="display:flex;justify-content:center;gap:14px;align-items:center;flex-direction:column">
-        <button id="startMissionBtn" aria-label="Bắt đầu Phi Vụ">BẮT ĐẦU PHI VỤ</button>
-        <div style="color:var(--muted);margin-top:6px">Học sinh quét mã QR để vào giao diện đội</div>
-      </div>
+  <div class="answer-input">
+    <input type="text" id="answerInput" placeholder="Nhập đáp án...">
+    <button id="submitBtn">GỬI ĐÁP ÁN</button>
+    <button id="skipBtn">BỎ QUA</button>
+  </div>
 
-      <div class="qr-container" id="qrContainer" aria-live="polite"></div>
-    </div>
-  </section>
-
-  <!-- GIAO DIỆN 2: Game Interface -->
-  <section id="gameInterface" class="hidden" aria-hidden="true">
-    <div class="top-controls">
-      <div class="left-controls">
-        <button id="backToQR" class="btn">🔙 Quay lại</button>
-        <button id="startCountdownBtn" class="btn">▶ BẮT ĐẦU ĐẾM NGƯỢC</button>
-        <button id="endEarlyBtn" class="btn">⏹ TỔNG KẾT SỚM</button>
-      </div>
-      <div class="controls-small">
-        <div class="countdown" id="countdown">10:00</div>
-      </div>
-    </div>
-
-    <div class="layout">
-      <div>
-        <div class="teams-area" id="teamsGrid">
-          <!-- các team card sẽ được render ở đây -->
-        </div>
-      </div>
-
-      <aside class="pending-column" id="pendingColumn" aria-live="polite">
-        <h3>HÀNG CHỜ DUYỆT</h3>
-        <div id="pendingList"></div>
-      </aside>
-    </div>
-  </section>
-
-  <!-- Thư viện: Firebase + QRCode -->
+  <div class="message" id="statusMsg"></div>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
   <script>
-    // ===== Firebase config (giữ nguyên project của bạn) =====
+    // === Firebase giữ nguyên cấu hình của bạn ===
     const firebaseConfig = {
       apiKey: "AIzaSyC9SRP8hEhtJ8bY2n1mTuPhtvpgMyZbktY",
       authDomain: "blackdesert2319-sudo.firebaseapp.com",
@@ -260,35 +110,38 @@
       appId: "1:628771580196:web:1e95f7f3c9de7e3e6cb36d"
     };
 
-    // init
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // ===== Teams config =====
-    const teams = [
+    // ===== XÁC ĐỊNH ĐỘI =====
+    const urlParams = new URLSearchParams(window.location.search);
+    const teamId = urlParams.get("teamId") || "unknown";
+    const teams = [ // Cần trùng với GV để lấy màu và tên
       { id: "red", name: "Đội Đỏ", color: "#e63946" },
       { id: "blue", name: "Đội Xanh", color: "#1d3557" },
       { id: "green", name: "Đội Lá", color: "#2a9d8f" },
       { id: "yellow", name: "Đội Vàng", color: "#f4a261" },
       { id: "purple", name: "Đội Tím", color: "#9d4edd" }
     ];
+    const teamData = teams.find(t=>t.id===teamId);
+    const teamName = teamData ? teamData.name : "Đội không xác định";
+    const teamColor = teamData ? teamData.color : "#fff";
+    
+    document.getElementById("teamName").textContent = teamName;
+    document.getElementById("teamName").style.color = teamColor;
+    document.body.style.background = teamData ? `color-mix(in srgb, ${teamColor} 10%, #0d1b2a)` : '#0d1b2a'; // Nền nhạt hơn màu đội
 
-    // ===== Base questions (đề gốc, 7 câu) =====
+    // ===== DANH SÁCH CÂU HỎI VÀ THỨ TỰ (Phải trùng với GV) =====
     const questions = [
-      "Cho cấp số cộng có u₁ = 2, công sai d = 3. Tìm u₅.",
-      "Cho cấp số cộng 5, 8, 11, ... Tính số hạng thứ 10.",
-      "Cho cấp số nhân có u₁ = 3, q = 2. Tìm u₅.",
-      "Cho cấp số nhân 2, 6, 18, ... Tìm công bội q.",
-      "Cho cấp số cộng có 7 số hạng, tổng là 35, u₁ = 2. Tìm công sai d.",
-      "Cho cấp số nhân có 5 số hạng, u₁ = 2, u₅ = 32. Tìm q.",
-      "Cho cấp số cộng 4, 7, 10, ... Tìm số hạng thứ 12."
+      "Cho cấp số cộng có u₁ = 2, công sai d = 3. Tìm u₅?",
+      "Cho cấp số cộng 5, 8, 11, ... Tính số hạng thứ 10?",
+      "Cho cấp số nhân có u₁ = 3, q = 2. Tìm u₅?",
+      "Cho cấp số nhân 2, 6, 18, ... Tìm công bội q?",
+      "Cho cấp số cộng có 7 số hạng, tổng là 35, u₁ = 2. Tìm công sai d?",
+      "Cho cấp số nhân có 5 số hạng, u₁ = 2, u₅ = 32. Tìm q?",
+      "Cho cấp số cộng 4, 7, 10, ... Tìm số hạng thứ 12?"
     ];
-
-    // ===== Correct answers tương ứng (chuẩn để so sánh, string dạng không dấu) =====
-    const correctAnswers = ["14","32","48","3","5","2","37"];
-
-    // ===== Question order: mỗi đội có 1 hoán vị riêng (0-based indices của questions[]) =====
-    // Bạn có thể thay đổi các hoán vị này để random từng lần; hiện cài cố định.
+    
     const questionOrder = {
       red:    [0,1,2,3,4,5,6],
       blue:   [2,5,0,3,1,6,4],
@@ -296,262 +149,128 @@
       yellow: [1,3,5,2,0,4,6],
       purple: [6,0,4,1,3,2,5]
     };
+    
+    // Chỉ số câu hỏi hiện tại (vị trí trong dãy 7 câu, 0-based)
+    let currentQuestionIndex = 0; 
+    let gameStarted = false;
 
-    // State: điểm & currentQuestion per team (index into their own order)
-    const teamScores = { red:0, blue:0, green:0, yellow:0, purple:0 };
-    const currentQuestion = { red:0, blue:0, green:0, yellow:0, purple:0 };
+    const questionBox = document.getElementById("questionBox");
+    const answerInput = document.getElementById("answerInput");
+    const submitBtn = document.getElementById("submitBtn");
+    const skipBtn = document.getElementById("skipBtn");
+    const statusMsg = document.getElementById("statusMsg");
 
-    // DOM refs
-    const qrContainer = document.getElementById("qrContainer");
-    const startMissionBtn = document.getElementById("startMissionBtn");
-    const setupScreen = document.getElementById("setupScreen");
-    const gameInterface = document.getElementById("gameInterface");
-    const teamsGrid = document.getElementById("teamsGrid");
-    const startCountdownBtn = document.getElementById("startCountdownBtn");
-    const endEarlyBtn = document.getElementById("endEarlyBtn");
-    const countdownEl = document.getElementById("countdown");
-    const pendingList = document.getElementById("pendingList");
-    const backToQR = document.getElementById("backToQR");
-
-    // ensure DOM loaded
-    window.addEventListener('load', () => {
-      generateQRCodes();
-      renderTeams();
-      attachEvents();
-      listenControlState(); // để cập nhật nếu startGame thay đổi từ ngoài
-      listenSubmissionsRealtime();
-      updateAllDisplays();
+    // ===== NGHE TRẠNG THÁI STARTGAME TỪ GV (Control State) =====
+    const ctrlRef = db.collection("control").doc("state");
+    ctrlRef.onSnapshot((doc) => {
+      const data = doc.data();
+      if (data && data.startGame) {
+        if (!gameStarted) {
+          gameStarted = true;
+          // showQuestion() sẽ được gọi sau khi đồng bộ currentQuestionIndex
+        }
+      } else {
+        gameStarted = false;
+        questionBox.textContent = "Đợi giáo viên bắt đầu phi vụ...";
+        disableInputs(true);
+      }
+    });
+    
+    // ===== NGHE VỊ TRÍ CÂU HỎI HIỆN TẠI TỪ GV (Team State) =====
+    const teamStateRef = db.collection("teamState").doc(teamId);
+    teamStateRef.onSnapshot((doc) => {
+        const data = doc.data();
+        if(data && data.currentQIndex !== undefined) {
+            if (data.currentQIndex !== currentQuestionIndex) {
+                // Chỉ số câu hỏi đã được GV cập nhật (do trả lời đúng/bỏ qua)
+                currentQuestionIndex = data.currentQIndex;
+                if(gameStarted) {
+                    showQuestion();
+                    statusMsg.textContent = ""; // Xóa thông báo cũ khi chuyển câu
+                }
+            }
+        }
     });
 
-    // ========== Generate QR codes ==========
-    function generateQRCodes(){
-      qrContainer.innerHTML = '';
-      teams.forEach(team=>{
-        const box = document.createElement('div');
-        box.className = 'qr-item';
-        const canvas = document.createElement('canvas');
-        const url = `${window.location.origin}/25-c-u/hs.html?teamId=${team.id}`;
-        // generate canvas QR (QRCode lib)
-        QRCode.toCanvas(canvas, url, { width: 140 }).then(()=>{}).catch(()=>{});
-        const label = document.createElement('div');
-        label.textContent = team.name;
-        label.style.marginTop='6px';
-        label.style.fontWeight='700';
-        label.style.color = team.color;
-        box.appendChild(canvas);
-        box.appendChild(label);
-        qrContainer.appendChild(box);
-      });
-    }
 
-    // ========== Render teams on GV ==========
-    function renderTeams(){
-      teamsGrid.innerHTML = '';
-      teams.forEach(team=>{
-        const card = document.createElement('div');
-        card.className = 'team-card';
-        card.id = `card-${team.id}`;
-        card.innerHTML = `
-          <div class="team-top">
-            <div class="team-title">${team.name}</div>
-            <div class="team-score" id="score-${team.id}">0</div>
-          </div>
-          <div class="question" id="question-${team.id}">Câu hỏi sẽ hiện khi bắt đầu đếm ngược...</div>
-          <div class="q-buttons" id="btns-${team.id}">
-            ${[1,2,3,4,5,6,7].map(n=>`<button data-num="${n}">${n}</button>`).join('')}
-          </div>
-        `;
-        teamsGrid.appendChild(card);
-      });
-      // set button active for each team's current index
-      updateAllDisplays();
-    }
-
-    // ========== Attach UI events ==========
-    function attachEvents(){
-      startMissionBtn.addEventListener('click', () => {
-        // chuyển sang giao diện chơi
-        setupScreen.style.display = 'none';
-        gameInterface.style.display = 'block';
-        gameInterface.removeAttribute('aria-hidden');
-        // ensure teams render
-        renderTeams();
-      });
-
-      backToQR.addEventListener('click', () => {
-        gameInterface.style.display = 'none';
-        setupScreen.style.display = 'block';
-      });
-
-      startCountdownBtn.addEventListener('click', async () => {
-        // set startGame flag in Firestore
-        try{
-          await db.collection('control').doc('state').set({ startGame: true, startedAt: new Date() });
-        }catch(e){ console.error(e) }
-        startCountdown(); // local UI countdown
-        // show first questions for GV view (per team order)
-        teams.forEach(t=>{
-          const idx = currentQuestion[t.id];
-          const globalIdx = questionOrder[t.id][idx];
-          const qText = questions[globalIdx] || "Đã hoàn thành";
-          const qEl = document.getElementById(`question-${t.id}`);
-          if(qEl) qEl.textContent = qText;
-        });
-        updateAllDisplays();
-      });
-
-      endEarlyBtn.addEventListener('click', async () => {
-        // stop the game
-        clearInterval(countdownTimer);
-        try{ await db.collection('control').doc('state').set({ startGame: false }); }catch(e){console.error(e)}
-        alert('Đã kết thúc vòng chơi.');
-      });
-    }
-
-    // ========== Countdown logic ==========
-    let countdownTimer = null;
-    let timeLeft = 10*60; // seconds
-
-    function startCountdown(){
-      clearInterval(countdownTimer);
-      timeLeft = 10*60;
-      updateCountdownUI();
-      countdownTimer = setInterval(()=>{
-        timeLeft--;
-        updateCountdownUI();
-        if(timeLeft<=0){
-          clearInterval(countdownTimer);
-          alert('⏰ Hết giờ!');
-          // set startGame false
-          db.collection('control').doc('state').set({ startGame: false }).catch(()=>{});
-        }
-      },1000);
-    }
-    function updateCountdownUI(){
-      const m = Math.floor(timeLeft/60);
-      const s = timeLeft%60;
-      countdownEl.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-    }
-
-    // ========== Listen to control state changes (so GV view reflects external updates) ==========
-    function listenControlState(){
-      db.collection('control').doc('state').onSnapshot(doc=>{
-        const data = doc.data();
-        if(!data) return;
-        if(data.startGame){
-          // if GV UI not show, leave as is (GV starts countdown manually)
-          // update GV question texts if needed
-          teams.forEach(t=>{
-            const idx = currentQuestion[t.id];
-            const globalIdx = questionOrder[t.id][idx];
-            const qText = questions[globalIdx] || "Đã hoàn thành";
-            const qEl = document.getElementById(`question-${t.id}`);
-            if(qEl) qEl.textContent = qText;
-          });
-          updateAllDisplays();
-        } else {
-          // game stopped
-          teams.forEach(t=>{
-            const qEl = document.getElementById(`question-${t.id}`);
-            if(qEl) qEl.textContent = 'Câu hỏi sẽ hiện khi bắt đầu đếm ngược...';
-          });
-        }
-      });
-    }
-
-    // ========== Submissions listener (real-time) ==========
-    function listenSubmissionsRealtime(){
-      db.collection('submissions').orderBy('timestamp','asc')
-        .onSnapshot(snapshot=>{
-          snapshot.docChanges().forEach(change=>{
-            if(change.type === 'added'){
-              const docData = change.doc.data();
-              const docId = change.doc.id;
-              displayPending(docData, docId);
-              processSubmission(docData, docId);
-            }
-          });
-        });
-    }
-
-    function displayPending(data, docId){
-      const div = document.createElement('div');
-      div.className = 'pending-item';
-      const team = teams.find(t=>t.id===data.teamId);
-      const tm = team?team.name:data.teamId;
-      const qi = (typeof data.questionIndex === 'number') ? data.questionIndex+1 : '?';
-      const ts = data.timestamp && data.timestamp.toDate ? data.timestamp.toDate().toLocaleTimeString('vi-VN') : '';
-      div.innerHTML = `<strong>${tm}</strong><div>Câu ${qi}: ${escapeHtml(String(data.answer||''))}</div><div style="font-size:0.85rem;color:var(--muted)">${ts}</div>`;
-      // prepend
-      pendingList.prepend(div);
-      // keep limited items
-      while(pendingList.children.length > 80) pendingList.removeChild(pendingList.lastChild);
-    }
-
-    // ========== Process submission ==========
-    async function processSubmission(data, docId){
-      try{
-        const teamId = data.teamId;
-        const answerRaw = (data.answer||'').toString().trim().toLowerCase();
-        const qPos = (typeof data.questionIndex === 'number') ? data.questionIndex : currentQuestion[teamId];
-        // map to global index in questions[]
-        const globalIdx = (questionOrder[teamId] && questionOrder[teamId][qPos] !== undefined) ? questionOrder[teamId][qPos] : questionOrder['red'][qPos];
-        const correct = (correctAnswers[globalIdx]||'').toLowerCase();
-
-        if(answerRaw === 'skip' || answerRaw === 'bỏ qua' || answerRaw === 'skip'){
-          // minus 10, advance
-          teamScores[teamId] = (teamScores[teamId]||0) - 10;
-          currentQuestion[teamId] = Math.min(questions.length-1, (currentQuestion[teamId]||0) + 1);
-          notify(`${getTeamName(teamId)} đã bỏ qua câu ${qPos+1} (-10đ)`);
-        } else if(answerRaw === correct){
-          teamScores[teamId] = (teamScores[teamId]||0) + 10;
-          currentQuestion[teamId] = Math.min(questions.length-1, (currentQuestion[teamId]||0) + 1);
-          notify(`${getTeamName(teamId)} trả lời đúng (+10đ)`);
-        } else {
-          notify(`${getTeamName(teamId)} trả lời sai.`);
-          // do not advance
-        }
-
-        // update UI
-        updateTeamDisplay(teamId);
-      }catch(e){
-        console.error('processSubmission error',e);
-      }finally{
-        // remove submission doc to avoid reprocessing
-        try{ await db.collection('submissions').doc(docId).delete(); }catch(e){console.error(e)}
+    function showQuestion() {
+      // Xác định chỉ số global của câu hỏi dựa trên thứ tự riêng của đội
+      const qOrder = questionOrder[teamId] || questionOrder['red']; // Fallback
+      
+      if (currentQuestionIndex < questions.length) {
+        const globalIndex = qOrder[currentQuestionIndex];
+        const questionText = questions[globalIndex];
+        
+        // Thêm số thứ tự câu hỏi trong dãy riêng của đội (Câu 1, Câu 2, ...)
+        questionBox.textContent = `Câu ${currentQuestionIndex + 1}: ${questionText.substring(questionText.indexOf(':') + 2)}`;
+        disableInputs(false);
+      } else {
+        questionBox.textContent = "🎉 Bạn đã hoàn thành toàn bộ câu hỏi!";
+        disableInputs(true);
       }
     }
 
-    // helpers
-    function getTeamName(id){ const t=teams.find(x=>x.id===id); return t? t.name : id; }
-    function notify(msg){ console.log(msg); /* optionally show UI toast */ }
-
-    function updateTeamDisplay(teamId){
-      // update score
-      const scoreEl = document.getElementById(`score-${teamId}`);
-      if(scoreEl) scoreEl.textContent = (teamScores[teamId]||0);
-      // update question text according to currentQuestion and questionOrder
-      const qEl = document.getElementById(`question-${teamId}`);
-      const qIdx = currentQuestion[teamId] || 0;
-      const globalIdx = (questionOrder[teamId] && questionOrder[teamId][qIdx] !== undefined) ? questionOrder[teamId][qIdx] : questionOrder['red'][qIdx];
-      if(qEl){
-        qEl.textContent = questions[globalIdx] || "Đã hoàn thành toàn bộ câu hỏi!";
+    function disableInputs(state) {
+      answerInput.disabled = state;
+      submitBtn.disabled = state;
+      skipBtn.disabled = state;
+      if (state) {
+        submitBtn.classList.add("disabled");
+        skipBtn.classList.add("disabled");
+      } else {
+        submitBtn.classList.remove("disabled");
+        skipBtn.classList.remove("disabled");
       }
-      // update active button
-      const btns = document.querySelectorAll(`#btns-${teamId} button`);
-      btns.forEach((b,i)=>{
-        if(i === qIdx) b.classList.add('active'); else b.classList.remove('active');
+    }
+
+    // ===== GỬI ĐÁP ÁN =====
+    submitBtn.addEventListener("click", async () => {
+      if (!gameStarted || currentQuestionIndex >= questions.length || submitBtn.disabled) return;
+      
+      const answer = answerInput.value.trim();
+      if (!answer) {
+        statusMsg.textContent = "⚠️ Vui lòng nhập đáp án!";
+        return;
+      }
+      
+      disableInputs(true); // Tạm thời khóa input sau khi gửi
+      
+      await db.collection("submissions").add({
+        teamId: teamId,
+        questionIndex: currentQuestionIndex, // Gửi chỉ số câu hỏi hiện tại để GV so sánh
+        answer: answer,
+        timestamp: new Date()
       });
-    }
+      
+      statusMsg.textContent = `✅ Đã gửi đáp án: ${answer}. Đợi GV duyệt...`;
+      answerInput.value = "";
+      
+      setTimeout(() => { // Mở lại input sau 2 giây nếu không có cập nhật từ GV
+          if (currentQuestionIndex < questions.length && gameStarted) {
+              disableInputs(false);
+          }
+      }, 2000);
+    });
 
-    function updateAllDisplays(){
-      teams.forEach(t=>updateTeamDisplay(t.id));
-    }
+    // ===== BỎ QUA =====
+    skipBtn.addEventListener("click", async () => {
+      if (!gameStarted || currentQuestionIndex >= questions.length || skipBtn.disabled) return;
 
-    // Escape HTML for safety in pending display
-    function escapeHtml(str){
-      return str.replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]); });
-    }
+      disableInputs(true); // Khóa input khi bỏ qua
+
+      await db.collection("submissions").add({
+        teamId: teamId,
+        questionIndex: currentQuestionIndex, // Gửi chỉ số câu hỏi hiện tại
+        answer: "SKIP", // Signal để GV xử lý BỎ QUA
+        timestamp: new Date()
+      });
+      
+      statusMsg.textContent = `⏭️ Đã gửi yêu cầu BỎ QUA câu ${currentQuestionIndex + 1}. Đợi GV xử lý...`;
+      answerInput.value = "";
+      
+      // KHÔNG tự tăng currentQuestionIndex ở đây. 
+      // Việc chuyển câu sẽ do logic đồng bộ từ GV (Team State) đảm nhiệm.
+    });
   </script>
 </body>
 </html>
