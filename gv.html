@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mật Mã Rương Báu - GV (Hoàn Chỉnh)</title>
+<title>Mật Mã Rương Báu - GV (Final)</title>
 
 <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
 <script>
@@ -73,21 +73,11 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   border:2px solid transparent;
   margin-bottom:5px;
 }
-.qr-item.team-red {
-    border-color: #e74c3c; /* Đỏ */
-}
-.qr-item.team-blue {
-    border-color: #3498db; /* Xanh Lam */
-}
-.qr-item.team-green {
-    border-color: #2ecc71; /* Xanh Lục */
-}
-.qr-item.team-yellow {
-    border-color: #f1c40f; /* Vàng */
-}
-.qr-item.team-purple {
-    border-color: #9b59b6; /* Tím */
-}
+.qr-item.team-red { border-color: #e74c3c; }
+.qr-item.team-blue { border-color: #3498db; }
+.qr-item.team-green { border-color: #2ecc71; }
+.qr-item.team-yellow { border-color: #f1c40f; }
+.qr-item.team-purple { border-color: #9b59b6; }
 
 /* === GIAO DIỆN 2 === */
 #game-wrapper { display:none; position:relative; }
@@ -132,7 +122,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 }
 /* CSS cho Bộ đếm */
 #queue-count {
-  background: #e74c3c; /* Đỏ */
+  background: #e74c3c; 
   padding: 2px 8px;
   border-radius: 5px;
   font-size: 1em;
@@ -188,16 +178,13 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 .team-question-area {
   flex:1;
   padding-left:20px;
-  display:none; /* MẶC ĐỊNH ẨN */
+  display:none; 
 }
 .question-title {
   font-size: 1.8em; 
   font-weight: 700;
   line-height: 1.3;
-  color: #ffffff; 
-}
-.answer-text {
-  display:none; /* Ẩn đáp án mẫu */
+  color: #f1c40f; 
 }
 
 /* Hàng đợi duyệt đáp án (CSS cho mục rút gọn) */
@@ -242,7 +229,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   z-index:10;
 }
 
-/* OVERLAY KẾT THÚC */
+/* OVERLAY KẾT THÚC VÀ RƯƠNG BÁU */
 #endOverlay {
   display:none;
   position:fixed;
@@ -254,28 +241,68 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   align-items:center;
   flex-direction:column;
   text-align:center;
+  /* Thêm thuộc tính chặn click ra ngoài */
+  pointer-events: auto; 
 }
-#endOverlay h1 {
-  font-size:3em;
-  margin-bottom:20px;
+/* === CSS CHO GIAO DIỆN RƯƠNG BÁU === */
+#treasure-box-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    width: 90%;
+    max-width: 600px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
 }
-#endOverlay .scoreboard {
-  font-size:2em;
-  line-height:1.5;
-  font-weight:bold;
+.treasure-image {
+    width: 250px; 
+    height: 250px;
+    background-image: url('treasure-closed.png'); /* Cần thay bằng đường dẫn ảnh rương đóng */
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: transform 1s ease-in-out;
 }
-
-/* CSS cho Nút Reset */
-#resetBtn {
+.opened .treasure-image {
+    background-image: url('treasure-opened.png'); /* Cần thay bằng đường dẫn ảnh rương mở */
+    animation: shake 0.5s;
+}
+#code-input {
+    padding: 15px;
+    font-size: 1.5em;
+    margin: 20px 0 10px;
+    border: 3px solid #f1c40f;
+    border-radius: 8px;
+    text-align: center;
+    width: 200px;
+    background: #333;
+    color: #fff;
+    font-weight: bold;
+}
+#submitCodeBtn, #closeTreasureBtn {
+    padding: 12px 25px;
     font-size: 1.2em;
-    padding: 12px 22px;
-    background: #e74c3c; 
+    background: #2ecc71;
     color: #fff;
     border: none;
     border-radius: 8px;
-    margin: 20px 5px; 
-    font-weight: bold;
     cursor: pointer;
+    font-weight: bold;
+}
+@keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
 }
 </style>
 </head>
@@ -308,9 +335,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   </div>
 
   <div id="endOverlay">
-    <h1>🏆 TRÒ CHƠI KẾT THÚC </h1>
-    <div class="scoreboard" id="finalScores"></div>
-  </div>
+    </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
@@ -419,6 +444,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   let timerInterval;
   let totalSeconds = 600; // 10 phút
   let isTreasureOverlayOpen = false; // Trạng thái của Overlay Rương Báu/Kết thúc
+  const TREASURE_CODE = "2025"; // Mã bí mật mặc định
 
   // Hàm tiện ích: Xáo trộn mảng (Fisher-Yates)
   function shuffleArray(array) {
@@ -522,8 +548,8 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   // HÀM SỬA: Chỉ hiển thị giao diện chơi và ẩn main-controls
   function showGameLayout(){
     const qrList = document.getElementById("qr-list");
-    if (qrList) qrList.remove();
-
+    if (qrList) qrList.style.display="none"; // Ẩn QR thay vì xóa
+    
     // DÒNG QUAN TRỌNG: ẨN TOÀN BỘ KHỐI CHỨA 3 NÚT Ở GIAO DIỆN 1
     document.getElementById("main-controls").style.display="none"; 
 
@@ -580,7 +606,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       if (qTitleElement) {
           const questionData = getQuestionData(team.id, team.currentQ);
           const questionText = questionData ? questionData.text : "HOÀN THÀNH!";
-          qTitleElement.innerHTML = `${questionText}`; // Đã loại bỏ mã câu hỏi thực tế (Qx.y)
+          qTitleElement.innerHTML = `${questionText}`; 
       }
       MathJax.typeset();
   }
@@ -614,56 +640,107 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     }
     totalSeconds--;
   }
+  
+  // HÀM: Xử lý nhập mã và hiệu ứng mở rương
+  function handleOpenTreasure() {
+      const inputCode = document.getElementById("code-input").value.trim();
+      const treasureImage = document.getElementById("treasure-image");
+      const container = document.getElementById("treasure-box-container");
 
-  // HÀM: Xử lý giao diện thắng Rương Báu
+      if (inputCode === TREASURE_CODE) {
+          // MÃ ĐÚNG: HIỆU ỨNG MỞ
+          container.classList.add('opened');
+          treasureImage.style.backgroundImage = "url('treasure-opened.png')"; 
+          document.getElementById("submitCodeBtn").textContent = "🔓 MÃ CHÍNH XÁC! 🎉";
+          document.getElementById("submitCodeBtn").disabled = true;
+
+          // Hiển thị thông báo và hiệu ứng
+          setTimeout(() => {
+               alert("Thành công! Rương Báu đã mở, các hộp quà đang bay ra!");
+          }, 1200);
+
+      } else {
+          // MÃ SAI
+          alert("Mã Rương Báu không chính xác! Vui lòng thử lại.");
+          document.getElementById("code-input").value = "";
+      }
+  }
+
+  // HÀM MỚI: Hiển thị giao diện nhập mã Rương Báu
+  function renderTreasureOverlay(winningTeam = null, isFinal = false) {
+      const overlay = document.getElementById("endOverlay");
+      overlay.style.backgroundColor = 'rgba(155, 89, 182, 0.95)'; 
+      overlay.style.color = '#fff';
+      overlay.style.display = "flex";
+      isTreasureOverlayOpen = true;
+
+      // Tính toán điểm số hiện tại
+      let scoreHTML = "KẾT QUẢ HIỆN TẠI (Trước khi kết thúc):<br>";
+      teams.forEach(t => {
+          const score = document.getElementById(`score-${t.id}`) ? document.getElementById(`score-${t.id}`).textContent : t.score;
+          const status = document.getElementById(`status-${t.id}`) ? document.getElementById(`status-${t.id}`).textContent : t.currentQ;
+          scoreHTML += `<div style="margin: 5px 0;">${t.name}: ${score} điểm (C${status})</div>`;
+      });
+
+      // Nội dung Overlay Rương Báu
+      overlay.innerHTML = `
+          <div id="treasure-box-container">
+              ${isFinal ? 
+                  `<h1 style="color: #f1c40f;">🏆 ${winningTeam.name} GIÀNH CHIẾN THẮNG! 🏆</h1>
+                   <h2>Nhập MÃ RƯƠNG BÁU để mở khóa phần thưởng!</h2>` : 
+                  `<h1>💎 TRẠNG THÁI RƯƠNG BÁU 💎</h1>
+                   <h2 style="color: #f1c40f;">${scoreHTML}</h2>
+                   <h2>(Tiếp tục giải mật mã để giành phần thưởng!)</h2>`
+              }
+              <div class="treasure-image" id="treasure-image"></div>
+              
+              ${isFinal ? 
+                  `<input type="text" id="code-input" placeholder="Nhập Mã Rương" maxlength="4">
+                   <button id="submitCodeBtn">XÁC NHẬN MỞ</button>` : 
+                   `<button id="closeTreasureBtn" style="padding:12px 25px; font-size:1.2em; background:#f1c40f; color:#222; border:none; border-radius:8px; cursor:pointer; font-weight:bold; margin-top:15px;">ĐÓNG</button>`
+              }
+          </div>
+      `;
+
+      // Gắn sự kiện MỞ RƯƠNG (Chỉ khi là giao diện Kết thúc)
+      if (isFinal) {
+          document.getElementById("submitCodeBtn").addEventListener('click', handleOpenTreasure);
+      } else {
+          // Gắn sự kiện ĐÓNG (Khi mở từ nút MỞ GIAO DIỆN RƯƠNG BÁU)
+          document.getElementById("closeTreasureBtn").addEventListener('click', showTreasureOverlay);
+      }
+  }
+
+
+  // HÀM SỬA: Xử lý giao diện thắng Rương Báu
   function winGame(winningTeam) {
-    clearInterval(timerInterval); 
-    document.getElementById("timer").style.display = "none";
-    document.getElementById("endEarlyBtn").style.display = "none";
-    
-    const overlay = document.getElementById("endOverlay");
-    
-    overlay.style.display = "flex";
-    overlay.style.backgroundColor = 'rgba(255, 215, 0, 0.95)'; 
-    overlay.style.color = '#e74c3c'; 
-    
-    overlay.innerHTML = `
-      <h1>🏆 ${winningTeam.name} ĐÃ GIÀNH CHIẾN THẮNG 🏆</h1>
-      <h2>🎉 ĐƯỢC THƯỞNG THÊM ${TREASURE_BONUS} ĐIỂM RƯƠNG BÁU! 🎉</h2>
-      <div class="scoreboard" id="finalScores" style="color: #333;">
-        Điểm cuối cùng: ${winningTeam.score}
-      </div>
-    `;
-    isTreasureOverlayOpen = true; // Đánh dấu overlay đang mở
+      clearInterval(timerInterval); 
+      document.getElementById("timer").style.display = "none";
+      document.getElementById("endEarlyBtn").style.display = "none";
+      
+      // Ẩn tất cả các đội còn lại (dọn giao diện game)
+      document.getElementById("game-wrapper").style.display="none";
+      
+      // Hiển thị giao diện Mở Rương (isFinal = true)
+      renderTreasureOverlay(winningTeam, true); 
   }
   
-  // HÀM: Kết thúc sớm/Hết giờ
+  // HÀM SỬA: Kết thúc sớm/Hết giờ (Chuyển sang giao diện Rương Báu nhưng không cho mở)
   function endGame(){
-    clearInterval(timerInterval);
-    document.getElementById("timer").style.display="none";
-    document.getElementById("endEarlyBtn").style.display="none";
-    
-    const overlay=document.getElementById("endOverlay");
-    
-    overlay.style.backgroundColor = 'rgba(241,196,15,0.9)'; 
-    overlay.style.color = '#000';
-    overlay.style.display="flex";
-    
-    overlay.innerHTML = `
-      <h1>🏆 TRÒ CHƠI KẾT THÚC </h1>
-      <div class="scoreboard" id="finalScores"></div>
-    `;
-
-    let scoreHTML="Kết quả chung cuộc:<br>";
-    teams.forEach(t=>{
-      const score = document.getElementById(`score-${t.id}`).textContent;
-      scoreHTML += `${t.name}: ${score} điểm<br>`;
-    });
-    document.getElementById("finalScores").innerHTML=scoreHTML;
-    isTreasureOverlayOpen = true; // Đánh dấu overlay đang mở
+      clearInterval(timerInterval);
+      document.getElementById("timer").style.display="none";
+      document.getElementById("endEarlyBtn").style.display="none";
+      document.getElementById("game-wrapper").style.display="none"; // Ẩn giao diện game
+      
+      // Hiển thị giao diện Rương Báu (không phải kết thúc, isFinal = false)
+      renderTreasureOverlay(null, false); 
+      
+      // Đổi lại tiêu đề cho đúng trường hợp hết giờ
+      document.getElementById("endOverlay").querySelector('h1').textContent = "🏆 TRÒ CHƠI KẾT THÚC 🏆";
+      document.getElementById("endOverlay").querySelector('h2').textContent = "Hết giờ! Xem điểm hiện tại (Cần mã để mở rương).";
   }
 
-  // HÀM MỚI: Chỉ hiển thị/ẩn overlay Rương Báu độc lập
+  // HÀM SỬA: Chỉ hiển thị/ẩn overlay Rương Báu độc lập
   function showTreasureOverlay() {
       const overlay = document.getElementById("endOverlay");
       const button = document.getElementById("showTreasureBtn");
@@ -673,48 +750,31 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
           overlay.style.display = "none";
           button.textContent = "MỞ GIAO DIỆN RƯƠNG BÁU";
           
-          // Khôi phục hiển thị Giao diện Game (Nếu đã vào Giao diện 2)
+          // Khôi phục hiển thị
           if (document.getElementById("game-wrapper").style.display === "block") {
-              if (timerInterval) { // Nếu đồng hồ đang chạy
+              if (timerInterval) { 
                 document.getElementById("timer").style.display="block"; 
                 document.getElementById("endEarlyBtn").style.display="block";
               }
-              document.querySelectorAll('.team-row').forEach(el=>el.style.display='flex');
               document.getElementById("submission-queue-area").style.display="block";
           } else {
-             // Đang ở giao diện 1, khôi phục lại hiển thị 3 nút điều khiển (main-controls)
+             // Đang ở giao diện 1, khôi phục lại hiển thị 3 nút điều khiển (main-controls) và QR
              document.getElementById("main-controls").style.display="block";
+             document.getElementById("qr-list").style.display="flex"; 
           }
           isTreasureOverlayOpen = false;
       } else {
-          // Mở Overlay (Tạm ẩn giao diện game và 3 nút điều khiển)
+          // Mở Overlay (Tạm ẩn giao diện game, QR và 3 nút điều khiển)
           document.getElementById("game-wrapper").style.display="none";
-          document.getElementById("main-controls").style.display="none"; // Ẩn khối nút 
-          
-          // Cập nhật nội dung hiển thị điểm hiện tại
-          let scoreHTML = "KẾT QUẢ HIỆN TẠI (Trước khi kết thúc):<br>";
-          teams.forEach(t => {
-              const score = document.getElementById(`score-${t.id}`) ? document.getElementById(`score-${t.id}`).textContent : t.score;
-              const status = document.getElementById(`status-${t.id}`) ? document.getElementById(`status-${t.id}`).textContent : t.currentQ;
-              scoreHTML += `<div style="margin: 5px 0;">${t.name}: ${score} điểm (C${status})</div>`;
-          });
+          document.getElementById("main-controls").style.display="none"; 
+          document.getElementById("qr-list").style.display="none"; 
 
-          overlay.style.backgroundColor = 'rgba(155, 89, 182, 0.9)'; // Màu tím nổi bật
-          overlay.style.color = '#fff';
-          overlay.style.display = "flex";
+          // Hiển thị giao diện Rương Báu (không phải kết thúc, isFinal = false)
+          renderTreasureOverlay(null, false); 
           
-          overlay.innerHTML = `
-              <h1>💎 TRẠNG THÁI RƯƠNG BÁU 💎</h1>
-              <div class="scoreboard" id="finalScores" style="color:#fff; font-size:1.5em;">
-                  ${scoreHTML}
-              </div>
-              <h2 style="color: #f1c40f;">Tiếp tục giải mật mã để giành phần thưởng!</h2>
-          `;
           button.textContent = "ĐÓNG GIAO DIỆN RƯƠNG BÁU";
-          isTreasureOverlayOpen = true;
       }
   }
-
 
   // Logic cập nhật đội
   function updateTeam(teamId, points, advanceQ = false) {
@@ -755,7 +815,6 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
           const docRef = doc(db, "submissions", docId);
           
           // Dùng teamId và actualQIndex để lấy đáp án chính xác
-          // actualQIndex là mã Q Index đã xáo trộn (ví dụ: Q1.5)
           const questionData = QUESTIONS[teamId].find(q => q.qIndex === actualQIndex);
           
           if (!questionData) {
@@ -834,13 +893,12 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     const div = document.createElement('div');
     div.className = 'submission-item';
     div.id = `sub-${docId}`;
-    div.style.borderLeftColor = team ? teamColorMap[team.id] : '#f1c40f'; // Dùng ID để lấy màu viền
+    div.style.borderLeftColor = team ? teamColorMap[team.id] : '#f1c40f'; 
     div.style.alignItems = 'center';
     div.style.padding = '10px 8px';
     div.style.color = '#fff';
     div.style.textAlign = 'center';
 
-    // Đã loại bỏ ký hiệu (C...) theo yêu cầu của bạn
     div.innerHTML = `
       <div style="font-size:1.2em; font-weight:bold; margin-bottom: 5px;">${label}</div>
       ${buttonsHTML}
