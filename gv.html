@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mật Mã Rương Báu - Màn Hình GV (Chỉnh sửa)</title>
+<title>Mật Mã Rương Báu - GV (Bản mở rộng)</title>
 
 <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
 <script>
@@ -31,6 +31,21 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   color:#e74c3c; background:#f1c40f;
   padding:4px 12px; border-radius:8px;
   display:none;
+  z-index:10;
+}
+#endEarlyBtn {
+  position:fixed;
+  top:70px; right:12px;
+  font-size:1.1em;
+  background:#e67e22;
+  color:white;
+  border:none;
+  border-radius:8px;
+  padding:6px 14px;
+  font-weight:bold;
+  cursor:pointer;
+  display:none;
+  z-index:10;
 }
 
 /* === QR ở giao diện đầu === */
@@ -59,7 +74,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 }
 
 /* === GIAO DIỆN 2 === */
-#game-wrapper { display:none; }
+#game-wrapper { display:none; position:relative; }
 .game-layout {
   display: flex;
   flex-direction: row;
@@ -118,11 +133,12 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 .team-purple{background:#9b59b6;}
 
 .team-score-control {
-  width:130px;
+  width:160px;
   display:flex;
-  flex-direction:column;
+  flex-direction:row;
   align-items:center;
-  justify-content:flex-start;
+  justify-content:space-between;
+  gap:10px;
 }
 .team-score-value {
   font-size:2.5em;
@@ -130,23 +146,16 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   background:rgba(255,255,255,0.25);
   padding:2px 12px;
   border-radius:8px;
-  margin-bottom:2px;
 }
 .team-name {
   font-size:1.1em;
   margin-bottom:4px;
 }
-.team-status-area {
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  margin-top:5px;
-}
 .q-status-item {
-  width:28px;
-  height:28px;
+  width:36px;
+  height:36px;
   border-radius:50%;
-  font-size:1em;
+  font-size:1.1em;
   font-weight:bold;
   color:white;
   background:#2980b9;
@@ -158,6 +167,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 .team-question-area {
   flex:1;
   padding-left:20px;
+  display:none; /* ẩn trước khi start */
 }
 .q-number {
   font-weight:bold;
@@ -192,6 +202,47 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   margin-top:5px;
   font-size:0.9em;
 }
+
+/* START BUTTON */
+#startGameBtn {
+  position:absolute;
+  top:45%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  font-size:2em;
+  padding:14px 30px;
+  border:none;
+  border-radius:10px;
+  background:#2ecc71;
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+  display:none;
+  z-index:10;
+}
+
+/* OVERLAY KẾT THÚC */
+#endOverlay {
+  display:none;
+  position:fixed;
+  top:0; left:0; right:0; bottom:0;
+  background:rgba(241,196,15,0.9);
+  color:#000;
+  z-index:20;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  text-align:center;
+}
+#endOverlay h1 {
+  font-size:3em;
+  margin-bottom:20px;
+}
+#endOverlay .scoreboard {
+  font-size:2em;
+  line-height:1.5;
+  font-weight:bold;
+}
 </style>
 </head>
 
@@ -199,12 +250,14 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   <h1>MẬT MÃ RƯƠNG BÁU: 5 ĐỘI TRANH TÀI</h1>
   <div id="qr-list"></div>
 
-  <button id="startBtn" onclick="startGame()" style="padding:12px 22px;font-size:1.2em;background:#f1c40f;color:#222;border:none;border-radius:8px;margin:20px;font-weight:bold;cursor:pointer;">
+  <button id="startBtn" onclick="showGame()" style="padding:12px 22px;font-size:1.2em;background:#f1c40f;color:#222;border:none;border-radius:8px;margin:20px;font-weight:bold;cursor:pointer;">
     BẮT ĐẦU PHI VỤ!
   </button>
 
   <div id="game-wrapper">
     <div id="timer">10:00</div>
+    <button id="endEarlyBtn" onclick="endGame()">KẾT THÚC SỚM</button>
+    <button id="startGameBtn" onclick="startCountdown()">START</button>
     <div class="game-layout">
       <div id="team-rows-container"></div>
       <div id="submission-queue-area">
@@ -213,14 +266,22 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     </div>
   </div>
 
+  <div id="endOverlay">
+    <h1>🏆 TRÒ CHƠI KẾT THÚC 🏆</h1>
+    <div class="scoreboard" id="finalScores"></div>
+  </div>
+
 <script>
 const teams = [
-  { name: "Đội Đỏ", color: "team-red", id: "red" },
-  { name: "Đội Xanh", color: "team-blue", id: "blue" },
-  { name: "Đội Lục", color: "team-green", id: "green" },
-  { name: "Đội Vàng", color: "team-yellow", id: "yellow" },
-  { name: "Đội Tím", color: "team-purple", id: "purple" }
+  { name: "Đội Đỏ", color: "team-red", id: "red", score: 0 },
+  { name: "Đội Xanh", color: "team-blue", id: "blue", score: 0 },
+  { name: "Đội Lục", color: "team-green", id: "green", score: 0 },
+  { name: "Đội Vàng", color: "team-yellow", id: "yellow", score: 0 },
+  { name: "Đội Tím", color: "team-purple", id: "purple", score: 0 }
 ];
+
+let timerInterval;
+let totalSeconds = 600; // 10 phút
 
 window.onload = function() {
   const qrList = document.getElementById("qr-list");
@@ -239,12 +300,12 @@ window.onload = function() {
   });
 };
 
-function startGame(){
+function showGame(){
   document.getElementById("qr-list").style.display="none";
   document.getElementById("startBtn").style.display="none";
   document.getElementById("game-wrapper").style.display="block";
   renderTeams();
-  MathJax.typeset();
+  document.getElementById("startGameBtn").style.display="block";
 }
 
 function renderTeams(){
@@ -256,16 +317,52 @@ function renderTeams(){
     row.innerHTML=`
       <div class="team-score-control">
         <div class="team-score-value" id="score-${team.id}">0</div>
-        <div class="team-name">${team.name}</div>
-        <div class="team-status-area"><div class='q-status-item'>1</div></div>
+        <div class="q-status-item" id="status-${team.id}">1</div>
       </div>
-      <div class="team-question-area">
+      <div class="team-question-area" id="qarea-${team.id}">
         <div class="q-number">Câu 1</div>
         <div class="q-text">Cho CSC có $u_1=3$, $d=2$. Tìm $u_{10}$.</div>
       </div>
     `;
     container.appendChild(row);
   });
+}
+
+function startCountdown(){
+  document.getElementById("startGameBtn").style.display="none";
+  document.getElementById("timer").style.display="block";
+  document.getElementById("endEarlyBtn").style.display="block";
+  document.querySelectorAll('.team-question-area').forEach(el=>el.style.display='block');
+  MathJax.typeset();
+  timerInterval = setInterval(updateTimer,1000);
+}
+
+function updateTimer(){
+  const min = Math.floor(totalSeconds/60);
+  const sec = totalSeconds%60;
+  document.getElementById("timer").textContent = `${min}:${sec.toString().padStart(2,'0')}`;
+  if(totalSeconds <= 0){
+    clearInterval(timerInterval);
+    endGame();
+  }
+  if(totalSeconds <= 10){
+    document.getElementById("timer").style.background="#e74c3c";
+  }
+  totalSeconds--;
+}
+
+function endGame(){
+  clearInterval(timerInterval);
+  document.getElementById("timer").style.display="none";
+  document.getElementById("endEarlyBtn").style.display="none";
+  const overlay=document.getElementById("endOverlay");
+  overlay.style.display="flex";
+  let scoreHTML="";
+  teams.forEach(t=>{
+    const score = document.getElementById(`score-${t.id}`).textContent;
+    scoreHTML += `${t.name}: ${score} điểm<br>`;
+  });
+  document.getElementById("finalScores").innerHTML=scoreHTML;
 }
 </script>
 </body>
