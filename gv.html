@@ -405,9 +405,9 @@ const QUESTIONS = {
         // 3. CSC: Tìm d (u1=10, u11=70) -> 6
         { qIndex: 'Q2.3', text: "Tìm công sai $d$ của CSC, biết $u_1 = 10$ và $u_{11} = 70$", answer: "6" }, 
         // 4. CSN: Tìm q (u1=2, u11=1024) -> 2
-        { qIndex: 'Q2.4', text: "Tìm công bội $q$ (nguyên dương) của CSN, biết $u_1 = 2$ và $u_{11} = 1024$", answer: "2" }, 
+        { qIndex: 'Q2.4', text: "Tìm công bội $q$ (nguyên dương) của CSN, biết $u_1 = 2$ và $u_{11} = 2048$", answer: "2" }, 
         // 5. CSC: Tìm S8 (u1=5, d=3) -> 140
-        { qIndex: 'Q2.5', text: "Tìm tổng $S_8$ của CSC, biết $u_1 = 5$ và công sai $d = 3$", answer: "140" }, 
+        { qIndex: 'Q2.5', text: "Tìm tổng $S_8$ của CSC, biết $u_1 = 5$ và công sai $d = 3$", answer: "124" }, 
         // 6. CSN: Tìm S8 (u1=2, q=2) -> 510
         { qIndex: 'Q2.6', text: "Tìm tổng $S_8$ của CSN, biết $u_1 = 2$ và công bội $q = 2$", answer: "510" }, 
         // 7. CSC: Tìm n (u1=10, d=4, un=50) -> 11
@@ -425,7 +425,7 @@ const QUESTIONS = {
         // 4. CSN: Tìm q (u1=5, u11=5120) -> 2
         { qIndex: 'Q3.4', text: "Tìm công bội $q$ (nguyên dương) của CSN, biết $u_1 = 5$ và $u_{11} = 5120$", answer: "2" }, 
         // 5. CSC: Tìm S8 (u1=20, d=-3) -> 134
-        { qIndex: 'Q3.5', text: "Tìm tổng $S_8$ của CSC, biết $u_1 = 20$ và công sai $d = -3$", answer: "134" }, 
+        { qIndex: 'Q3.5', text: "Tìm tổng $S_8$ của CSC, biết $u_1 = 20$ và công sai $d = -3$", answer: "76" }, 
         // 6. CSN: Tìm S8 (u1=3, q=3) -> 9840
         { qIndex: 'Q3.6', text: "Tìm tổng $S_8$ của CSN, biết $u_1 = 3$ và công bội $q = 3$", answer: "9840" }, 
         // 7. CSC: Tìm n (u1=8, d=5, un=63) -> 12
@@ -443,7 +443,7 @@ const QUESTIONS = {
         // 4. CSN: Tìm q (u1=1, u11=59049) -> 3
         { qIndex: 'Q4.4', text: "Tìm công bội $q$ (nguyên dương) của CSN, biết $u_1 = 1$ và $u_{11} = 59049$", answer: "3" }, 
         // 5. CSC: Tìm S8 (u1=15, d=-4) -> 40
-        { qIndex: 'Q4.5', text: "Tìm tổng $S_8$ của CSC, biết $u_1 = 15$ và công sai $d = -4$", answer: "40" }, 
+        { qIndex: 'Q4.5', text: "Tìm tổng $S_8$ của CSC, biết $u_1 = 15$ và công sai $d = -4$", answer: "8" }, 
         // 6. CSN: Tìm S8 (u1=4, q=2) -> 1020
         { qIndex: 'Q4.6', text: "Tìm tổng $S_8$ của CSN, biết $u_1 = 4$ và công bội $q = 2$", answer: "1020" }, 
         // 7. CSC: Tìm n (u1=2, d=7, un=72) -> 11
@@ -461,7 +461,7 @@ const QUESTIONS = {
         // 4. CSN: Tìm q (u1=4, u11=4096) -> 2
         { qIndex: 'Q5.4', text: "Tìm công bội $q$ (nguyên dương) của CSN, biết $u_1 = 4$ và $u_{11} = 4096$", answer: "2" }, 
         // 5. CSC: Tìm S8 (u1=12, d=-5) -> -20
-        { qIndex: 'Q5.5', text: "Tìm tổng $S_8$ của CSC, biết $u_1 = 12$ và công sai $d = -5$", answer: "-20" }, 
+        { qIndex: 'Q5.5', text: "Tìm tổng $S_8$ của CSC, biết $u_1 = 12$ và công sai $d = -5$", answer: "-44" }, 
         // 6. CSN: Tìm S8 (u1=5, q=2) -> 1275
         { qIndex: 'Q5.6', text: "Tìm tổng $S_8$ của CSN, biết $u_1 = 5$ và công bội $q = 2$", answer: "1275" }, 
         // 7. CSC: Tìm n (u1=1, d=6, un=67) -> 12
@@ -700,11 +700,11 @@ function handleOpenTreasure() {
 
         // === LOGIC CHỌN MỘT PHẦN THƯỞNG NGẪU NHIÊN ===
         const rewards = [
-            "Hộp Quà VIP (7 gói bim bim 6k)",
+            "Hộp Quà VIP (+1,25đ vào 1 bài 15p)",
             "+1đ vào 1 bài 15p",
             "1 đề cương 15 câu",
             "1 đề cương 20 câu",
-            "7 cái bút chì 5k", // Thêm các phần thưởng khác nếu muốn
+            "2 tràng pháo tay", // Thêm các phần thưởng khác nếu muốn
             "1 tràng pháo tay"
         ];
         
@@ -1095,6 +1095,7 @@ function handleOpenTreasure() {
 </script>
 </body>
 </html>
+
 
 
 
