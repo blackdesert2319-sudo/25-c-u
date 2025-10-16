@@ -194,7 +194,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   font-size: 1.8em; 
   font-weight: 700;
   line-height: 1.3;
-  color: #ffffff; 
+  color: #f1c40f; 
 }
 .answer-text {
   display:none; /* Ẩn đáp án mẫu */
@@ -342,13 +342,13 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   // ==========================================================
   // MẢNG CÂU HỎI VÀ ĐÁP ÁN ĐÚNG MẪU (INDEX BẮT ĐẦU TỪ 1)
   const QUESTIONS = [
-    { text: "Cho CSC có $u_1=3$, $d=2$. Tìm $u_{10}$", answer: "21" }, 
-    { text: "Tính tổng 1 + 2 + ... + 10", answer: "55" }, 
-    { text: "Kết quả phép tính 15 x 3", answer: "45" }, 
-    { text: "Năm sinh của Hồ Chí Minh", answer: "1890" }, 
-    { text: "Số ngày trong 3 tháng liên tiếp không có tháng 2", answer: "92" }, 
-    { text: "Số nguyên tố nhỏ nhất", answer: "2" }, 
-    { text: "Kết quả của 5! (5 giai thừa)", answer: "120" }
+    { text: "C1: Cho CSC có $u_1=3$, $d=2$. Tìm $u_{10}$", answer: "21" }, 
+    { text: "C2: Tính tổng 1 + 2 + ... + 10", answer: "55" }, 
+    { text: "C3: Kết quả phép tính 15 x 3", answer: "45" }, 
+    { text: "C4: Năm sinh của Hồ Chí Minh", answer: "1890" }, 
+    { text: "C5: Số ngày trong 3 tháng liên tiếp không có tháng 2", answer: "92" }, 
+    { text: "C6: Số nguyên tố nhỏ nhất", answer: "2" }, 
+    { text: "C7: Kết quả của 5! (5 giai thừa)", answer: "120" }
   ];
   // ==========================================================
 
@@ -377,12 +377,11 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 
   // Hàm mới: Thiết lập thứ tự câu hỏi ngẫu nhiên cho mỗi đội
   function setupQuestionOrder() {
-      // Tạo mảng chỉ số câu hỏi từ 1 đến 7
       const questionIndices = Array.from({length: QUESTIONS.length}, (_, i) => i + 1); 
       teams.forEach(team => {
-          const shuffledOrder = [...questionIndices]; // Copy mảng
+          const shuffledOrder = [...questionIndices]; 
           shuffleArray(shuffledOrder);
-          team.questionOrder = shuffledOrder; // Lưu mảng thứ tự ngẫu nhiên
+          team.questionOrder = shuffledOrder; 
       });
       console.log("Question orders randomized:", teams.map(t => ({ id: t.id, order: t.questionOrder })));
   }
@@ -402,16 +401,50 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
         height: 150
       });
     });
+    // KHI TẢI LẠI TRANG, LUÔN CỐ GẮNG HIỂN THỊ GIAO DIỆN CHƠI NẾU ĐÃ CÓ DỮ LIỆU
+    checkIfGameStarted();
   };
+  
+  // HÀM MỚI: Kiểm tra trạng thái game và hiển thị lại giao diện
+  async function checkIfGameStarted() {
+      try {
+          // Lấy trạng thái của đội đầu tiên (đỏ) để kiểm tra xem game đã được khởi tạo chưa
+          const docRef = doc(db, TEAM_STATUS_COLLECTION, 'red');
+          const docSnap = await getDocs(docRef);
+
+          if (docSnap.exists() && docSnap.data().questionOrder && docSnap.data().questionOrder.length > 0) {
+              // Nếu đã có dữ liệu khởi tạo, tải lại toàn bộ trạng thái đội
+              const snapshot = await getDocs(collection(db, TEAM_STATUS_COLLECTION));
+              snapshot.docs.forEach(doc => {
+                  const data = doc.data();
+                  const team = teams.find(t => t.id === doc.id);
+                  if (team) {
+                      team.score = data.score || 0;
+                      team.currentQ = data.currentQ || 1;
+                      team.questionOrder = data.questionOrder || [];
+                  }
+              });
+              
+              // Hiển thị giao diện chơi
+              showGameLayout();
+          }
+      } catch (e) {
+          console.error("Lỗi khi kiểm tra trạng thái game:", e);
+      }
+  }
+
 
   // Hàm mới: Khởi tạo trạng thái đội trên Firebase
   async function initializeTeamStatusOnFirebase() {
+      // 1. Tạo thứ tự câu hỏi ngẫu nhiên trước
+      setupQuestionOrder();
+      
       const promises = teams.map(team => {
           return setDoc(doc(db, TEAM_STATUS_COLLECTION, team.id), {
               score: team.score,
               currentQ: team.currentQ,
               name: team.name,
-              questionOrder: team.questionOrder // THÊM: Lưu thứ tự câu hỏi ngẫu nhiên
+              questionOrder: team.questionOrder
           });
       });
       await Promise.all(promises);
@@ -424,14 +457,15 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
           await setDoc(doc(db, TEAM_STATUS_COLLECTION, teamId), {
               score: newScore,
               currentQ: newQ,
-              questionOrder: newOrder // Cập nhật cả thứ tự (nếu có)
+              questionOrder: newOrder
           }, { merge: true });
       } catch (e) {
           console.error("Error updating team status on Firebase:", e);
       }
   }
 
-  function showGame(){
+  // HÀM MỚI: Chỉ hiển thị giao diện chơi
+  function showGameLayout(){
     const qrList = document.getElementById("qr-list");
     if (qrList) qrList.remove();
 
@@ -439,18 +473,19 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     if (buttonContainer) buttonContainer.style.display = "none";
 
     document.getElementById("game-wrapper").style.display="block";
-    
-    // THÊM: Tạo thứ tự câu hỏi ngẫu nhiên trước khi khởi tạo
-    setupQuestionOrder();
-
-    // Khởi tạo trạng thái trên Firebase 
-    initializeTeamStatusOnFirebase().then(() => {
-        renderTeams();
-        document.getElementById("startGameBtn").style.display="block";
-        listenForSubmissions();
-    }).catch(e => {
-        console.error("Failed to initialize game:", e);
-    });
+    renderTeams(); // VẼ LẠI GIAO DIỆN CÁC ĐỘI
+    listenForSubmissions();
+    // Ẩn nút START nếu game đã được khởi tạo
+    document.getElementById("startGameBtn").style.display="none"; 
+    // Hiện thị khu vực câu hỏi nếu game đã bắt đầu (sau khi START được bấm)
+    document.querySelectorAll('.team-question-area').forEach(el=>el.style.display='block'); 
+  }
+  
+  // HÀM SỬA: BẮT ĐẦU VÒNG 3 (Chuẩn bị data và chuyển giao diện)
+  async function showGame(){
+    await initializeTeamStatusOnFirebase();
+    showGameLayout();
+    document.getElementById("startGameBtn").style.display="block"; // Hiện nút START để bấm giờ
   }
 
 
@@ -458,12 +493,12 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     const container = document.getElementById("team-rows-container");
     container.innerHTML = "";
     teams.forEach(team=>{
-      // THAY ĐỔI: Lấy index thực tế (Q Index) từ mảng ngẫu nhiên
+      // Lấy index thực tế (Q Index) từ mảng ngẫu nhiên
       const actualQIndex = team.questionOrder[team.currentQ - 1]; 
       const questionData = QUESTIONS[actualQIndex - 1]; 
       const questionText = questionData ? questionData.text : "HOÀN THÀNH!";
       
-      row=document.createElement("div");
+      const row=document.createElement("div");
       row.className=`team-row ${team.color}`;
 
       row.innerHTML=`
@@ -471,7 +506,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
           <div class="team-score-value" id="score-${team.id}">${team.score}</div>
           <div class="q-status-item" id="status-${team.id}">${team.currentQ}</div>
         </div>
-        <div class="team-question-area" id="qarea-${team.id}">
+        <div class="team-question-area" id="qarea-${team.id}" style="display:${totalSeconds < 600 ? 'block' : 'none'};">
             <div class="question-title" id="q-title-${team.id}">
                 (Q${actualQIndex}): ${questionText}
             </div>
@@ -479,6 +514,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       `;
       container.appendChild(row);
     });
+    MathJax.typeset();
   }
 
   // HÀM: Cập nhật chỉ hiển thị câu hỏi
@@ -486,7 +522,6 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       const qTitleElement = document.getElementById(`q-title-${team.id}`);
       
       if (qTitleElement) {
-          // Lấy index thực tế (Q Index) từ mảng ngẫu nhiên
           const actualQIndex = team.questionOrder[team.currentQ - 1];
           const questionData = QUESTIONS[actualQIndex - 1]; 
           const questionText = questionData ? questionData.text : "HOÀN THÀNH!";
@@ -598,7 +633,6 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   // ===================================================
   // HÀM: DUYỆT TỰ ĐỘNG VÀ ĐỐI CHIẾU ĐÁP ÁN (Sử dụng ActualQIndex)
   // ===================================================
-  // THAY ĐỔI tham số: Giờ đây HS gửi lên 'actualQuestionIndex'
   window.autoApproveSubmission = async (docId, teamId, qIndexInOrder, actualQIndex, studentAnswer) => {
       try {
           const docRef = doc(db, "submissions", docId);
@@ -641,7 +675,6 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   // ===================================================
   // HÀM: DUYỆT BỎ QUA 
   // ===================================================
-  // THAY ĐỔI tham số: Cần thêm actualQIndex để thống nhất cách gọi từ renderSubmissionItem
   window.approveSkip = async (docId, teamId, actualQIndex) => {
       try {
           const docRef = doc(db, "submissions", docId);
