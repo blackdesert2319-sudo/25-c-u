@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mật Mã Rương Báu - GV (Đã Fix Lỗi Ẩn Câu Hỏi)</title>
+<title>Mật Mã Rương Báu - GV (Hoàn Chỉnh)</title>
 
 <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
 <script>
@@ -284,11 +284,11 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   <h1>CHIẾN THẮNG KHI HOÀN THÀNH 7 CÂU HỎI NHANH NHẤT</h1>
   <div id="qr-list"></div>
 
-  <div style="text-align:center;">
+  <div id="main-controls" style="text-align:center;">
     <button id="startBtn" style="padding:12px 22px;font-size:1.2em;background:#f1c40f;color:#222;border:none;border-radius:8px;margin:20px 5px;font-weight:bold;cursor:pointer;">
       BẮT ĐẦU VÒNG 3!
     </button>
-    <button id="resetBtn">
+    <button id="resetBtn" style="font-size: 1.2em;padding: 12px 22px;background: #e74c3c;color: #fff;border: none;border-radius: 8px;margin: 20px 5px;font-weight: bold;cursor: pointer;">
       💣 RESET DỮ LIỆU
     </button>
     <button id="showTreasureBtn" style="padding:12px 22px;font-size:1.2em;background:#9b59b6;color:#fff;border:none;border-radius:8px;margin:20px 5px;font-weight:bold;cursor:pointer;">
@@ -399,13 +399,18 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   };
   // ==========================================================
 
-  // Ánh xạ các class màu CSS sang mã màu Hex cho nền QR
+  // Ánh xạ các class màu CSS sang mã màu Hex cho nền QR và cột duyệt
   const teamColorMap = {
       'team-red': '#f8d7da',        
       'team-blue': '#d0e0f0',       
       'team-yellow': '#fff3cd',      
       'team-green': '#d4edda',       
-      'team-purple': '#e8d9ef'       
+      'team-purple': '#e8d9ef',
+      'red': '#e74c3c', // Màu viền cột duyệt
+      'blue': '#3498db',
+      'green': '#2ecc71',
+      'yellow': '#f1c40f',
+      'purple': '#9b59b6'
   };
 
   // HẰNG SỐ GAME
@@ -457,7 +462,8 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   async function checkIfGameStarted() {
       try {
           // Lấy trạng thái của đội bất kỳ (ví dụ đội đỏ) để kiểm tra xem game đã setup chưa
-          const docSnap = await getDocs(doc(db, TEAM_STATUS_COLLECTION, 'red'));
+          const docRef = doc(db, TEAM_STATUS_COLLECTION, 'red');
+          const docSnap = await getDocs(docRef);
 
           if (docSnap.exists() && docSnap.data().questionOrder && docSnap.data().questionOrder.length > 0) {
               const snapshot = await getDocs(collection(db, TEAM_STATUS_COLLECTION));
@@ -507,27 +513,27 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       }
   }
 
-  // HÀM: Chỉ hiển thị giao diện chơi
-  function showGameLayout(){
-    const qrList = document.getElementById("qr-list");
-    if (qrList) qrList.remove();
-
-    const buttonContainer = document.querySelector('div[style="text-align:center;"]');
-    if (buttonContainer) buttonContainer.style.display = "block"; // Giữ các nút điều khiển
-
-    document.getElementById("game-wrapper").style.display="block";
-    renderTeams(); // VẼ LẠI GIAO DIỆN CÁC ĐỘI
-    listenForSubmissions();
-    document.getElementById("startGameBtn").style.display="block"; 
-    // KHÔNG HIỂN THỊ CÂU HỎI Ở ĐÂY. CÂU HỎI ĐƯỢC ẨN MẶC ĐỊNH
-  }
-  
   // HÀM SỬA: BẮT ĐẦU VÒNG 3 (Chuẩn bị data và chuyển giao diện)
   async function showGame(){
     await initializeTeamStatusOnFirebase();
     showGameLayout();
   }
 
+  // HÀM SỬA: Chỉ hiển thị giao diện chơi và ẩn main-controls
+  function showGameLayout(){
+    const qrList = document.getElementById("qr-list");
+    if (qrList) qrList.remove();
+
+    // DÒNG QUAN TRỌNG: ẨN TOÀN BỘ KHỐI CHỨA 3 NÚT Ở GIAO DIỆN 1
+    document.getElementById("main-controls").style.display="none"; 
+
+    document.getElementById("game-wrapper").style.display="block";
+    renderTeams(); // VẼ LẠI GIAO DIỆN CÁC ĐỘI
+    listenForSubmissions();
+    document.getElementById("startGameBtn").style.display="block"; 
+    // CÂU HỎI VẪN ĐANG ẨN, CHỈ HIỂN THỊ KHI BẤM START
+  }
+  
   // Hàm tiện ích: Lấy dữ liệu câu hỏi thực tế dựa trên teamId và index trong mảng xáo trộn
   function getQuestionData(teamId, qIndexInOrder) {
       const team = teams.find(t => t.id === teamId);
@@ -546,7 +552,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     const container = document.getElementById("team-rows-container");
     container.innerHTML = "";
     teams.forEach(team=>{
-      // CHỈ CẦN DÒNG PLACEHOLDER, KHÔNG LẤY DỮ LIỆU THỰC TẾ TRƯỚC KHI START
+      // Text mặc định trước khi START
       const questionText = "SẴN SÀNG..."; 
       
       const row=document.createElement("div");
@@ -565,7 +571,6 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       `;
       container.appendChild(row);
     });
-    // Không chạy MathJax ở đây để tránh hiển thị biểu thức toán học lỗi
   }
 
   // HÀM: Cập nhật chỉ hiển thị câu hỏi (Đã bỏ mã Qx.y)
@@ -624,7 +629,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     
     overlay.innerHTML = `
       <h1>🏆 ${winningTeam.name} ĐÃ GIÀNH CHIẾN THẮNG 🏆</h1>
-      <h2>🎉 ĐƯỢNG THƯỞNG THÊM ${TREASURE_BONUS} ĐIỂM RƯƠNG BÁU! 🎉</h2>
+      <h2>🎉 ĐƯỢC THƯỞNG THÊM ${TREASURE_BONUS} ĐIỂM RƯƠNG BÁU! 🎉</h2>
       <div class="scoreboard" id="finalScores" style="color: #333;">
         Điểm cuối cùng: ${winningTeam.score}
       </div>
@@ -667,24 +672,30 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
           // Đóng Overlay
           overlay.style.display = "none";
           button.textContent = "MỞ GIAO DIỆN RƯƠNG BÁU";
-          // Khôi phục hiển thị game nếu timer đã chạy
-          if (timerInterval) {
-            document.getElementById("game-wrapper").style.display="block";
-            document.getElementById("timer").style.display="block"; 
-            document.getElementById("endEarlyBtn").style.display="block";
+          
+          // Khôi phục hiển thị Giao diện Game (Nếu đã vào Giao diện 2)
+          if (document.getElementById("game-wrapper").style.display === "block") {
+              if (timerInterval) { // Nếu đồng hồ đang chạy
+                document.getElementById("timer").style.display="block"; 
+                document.getElementById("endEarlyBtn").style.display="block";
+              }
+              document.querySelectorAll('.team-row').forEach(el=>el.style.display='flex');
+              document.getElementById("submission-queue-area").style.display="block";
+          } else {
+             // Đang ở giao diện 1, khôi phục lại hiển thị 3 nút điều khiển (main-controls)
+             document.getElementById("main-controls").style.display="block";
           }
           isTreasureOverlayOpen = false;
       } else {
-          // Mở Overlay (Tạm ẩn giao diện game)
+          // Mở Overlay (Tạm ẩn giao diện game và 3 nút điều khiển)
           document.getElementById("game-wrapper").style.display="none";
-          document.getElementById("timer").style.display="none"; 
-          document.getElementById("endEarlyBtn").style.display="none";
+          document.getElementById("main-controls").style.display="none"; // Ẩn khối nút 
           
           // Cập nhật nội dung hiển thị điểm hiện tại
           let scoreHTML = "KẾT QUẢ HIỆN TẠI (Trước khi kết thúc):<br>";
           teams.forEach(t => {
-              const score = document.getElementById(`score-${t.id}`).textContent;
-              const status = document.getElementById(`status-${t.id}`).textContent;
+              const score = document.getElementById(`score-${t.id}`) ? document.getElementById(`score-${t.id}`).textContent : t.score;
+              const status = document.getElementById(`status-${t.id}`) ? document.getElementById(`status-${t.id}`).textContent : t.currentQ;
               scoreHTML += `<div style="margin: 5px 0;">${t.name}: ${score} điểm (C${status})</div>`;
           });
 
@@ -739,12 +750,12 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   // ===================================================
   // HÀM: DUYỆT TỰ ĐỘNG VÀ ĐỐI CHIẾU ĐÁP ÁN 
   // ===================================================
-  // actualQuestionIndex ở đây là mã Q Index đã xáo trộn (ví dụ: Q1.5)
   window.autoApproveSubmission = async (docId, teamId, qIndexInOrder, actualQIndex, studentAnswer) => {
       try {
           const docRef = doc(db, "submissions", docId);
           
           // Dùng teamId và actualQIndex để lấy đáp án chính xác
+          // actualQIndex là mã Q Index đã xáo trộn (ví dụ: Q1.5)
           const questionData = QUESTIONS[teamId].find(q => q.qIndex === actualQIndex);
           
           if (!questionData) {
@@ -823,7 +834,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     const div = document.createElement('div');
     div.className = 'submission-item';
     div.id = `sub-${docId}`;
-    div.style.borderLeftColor = team ? teamColorMap[team.color] : '#f1c40f';
+    div.style.borderLeftColor = team ? teamColorMap[team.id] : '#f1c40f'; // Dùng ID để lấy màu viền
     div.style.alignItems = 'center';
     div.style.padding = '10px 8px';
     div.style.color = '#fff';
