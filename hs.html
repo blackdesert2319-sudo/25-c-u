@@ -155,8 +155,7 @@
                     document.getElementById('answer-input').value = ""; // Xóa đáp án cũ
                 } else if (newQ === currentQuestionIndex) {
                     updateQuestionDisplay(); 
-                    document.getElementById('status-message').textContent = `Sẵn sàng gửi đáp án hoặc yêu cầu bỏ qua cho C${currentQuestionIndex}. (Câu hỏi thực tế: Q${getActualQuestionIndex(currentQuestionIndex)})`;
-                    document.getElementById('status-message').style.color = "white";
+                    document.getElementById('status-message').textContent = `Chậm mà chắc bạn ơi, nhanh phải chuẩn';
                 }
             } else {
                 document.getElementById('status-message').textContent = 'GV chưa bắt đầu game hoặc trạng thái bị lỗi.';
@@ -239,3 +238,4 @@
   </script>
 </body>
 </html>
+
