@@ -68,6 +68,45 @@ h1 {
   margin-bottom:5px;
 }
 
+/* === BỐ CỤC MÀN HÌNH 2 === */
+#game-wrapper {
+  display:flex;
+  flex-direction:row;
+  justify-content:center;
+  align-items:flex-start;
+  width:100%;
+  position:relative;
+}
+
+/* CỘT TRÁI: khu các đội */
+#team-rows-container {
+  width:78%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:5px;
+}
+
+/* CỘT PHẢI: hàng đợi duyệt đáp án */
+#submission-queue-area {
+  width:22%;
+  max-width:260px;
+  background:#34495e;
+  border-radius:10px;
+  margin-left:8px;
+  padding:10px;
+  height:calc(100vh - 80px);
+  overflow-y:auto;
+  position:sticky;
+  top:10px;
+}
+#submission-queue-area h2 {
+  font-size:1em;
+  text-align:center;
+  color:#f1c40f;
+  margin-bottom:8px;
+}
+
 /* === KHUNG MỖI ĐỘI === */
 .team-row {
   display:flex;
@@ -81,7 +120,6 @@ h1 {
   min-height:95px;
 }
 
-/* Màu nền từng đội */
 .team-red{background:#e74c3c;}
 .team-blue{background:#3498db;}
 .team-green{background:#2ecc71;}
@@ -109,7 +147,7 @@ h1 {
   margin-bottom:4px;
 }
 
-/* ✅ Giới hạn grid chỉ trong phần .team-status-area */
+/* Lưới tròn 1–7 (3 hàng) */
 .team-row .team-status-area {
   display:grid;
   grid-template-columns: repeat(3, 1fr);
@@ -132,7 +170,7 @@ h1 {
 .status-ready { background:#2980b9; }
 .status-correct { background:#2ecc71; }
 
-/* Cột phải: câu hỏi */
+/* Cột phải của hàng đội: câu hỏi */
 .team-question-area {
   flex:1;
   padding-left:20px;
@@ -143,40 +181,36 @@ h1 {
   margin-bottom:2px;
 }
 .q-text {
-  font-size:2.3em; /* chữ to dễ đọc */
+  font-size:2.3em;
   font-weight:700;
   line-height:1.3;
 }
 
-/* Hàng đợi duyệt đáp án */
+/* === CÁC Ô DUYỆT ĐÁP ÁN === */
 .submission-item {
-  padding:10px;
-  margin-bottom:6px;
+  padding:8px;
+  margin-bottom:8px;
   background:#2c3e50;
-  border-radius:5px;
+  border-radius:6px;
   display:flex;
-  justify-content:space-between;
+  flex-direction:column;
   align-items:center;
-  border-left:5px solid #f1c40f;
+  border-left:4px solid #f1c40f;
+}
+.submission-item b {
+  color:#f1c40f;
 }
 .submission-item button {
-  padding:6px 12px;
+  padding:5px 10px;
   background:#e67e22;
   color:white;
   border:none;
   border-radius:5px;
   font-weight:bold;
-}
-#submission-queue-area {
-  width:100%;
-  max-width:1200px;
-  background:#34495e;
-  border-radius:10px;
-  margin-top:18px;
-  padding:12px;
+  margin-top:5px;
+  font-size:0.9em;
 }
 </style>
-
   
 </head>
 <body>
@@ -342,6 +376,7 @@ function renderTeams(){
 
 </body>
 </html>
+
 
 
 
