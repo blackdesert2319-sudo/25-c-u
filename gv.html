@@ -42,6 +42,32 @@ h1 {
   display:none;
 }
 
+/* === QR ở giao diện đầu === */
+#qr-list {
+  display:flex !important;
+  flex-wrap:wrap;
+  justify-content:center;
+  align-items:center;
+  gap:12px;
+  margin-top:20px;
+}
+.qr-item {
+  width:180px;
+  margin:10px;
+  padding:10px;
+  border-radius:8px;
+  background:white;
+  color:#333;
+  text-align:center;
+  font-weight:bold;
+}
+.qr-item img {
+  width:150px;
+  height:150px;
+  border:2px solid #333;
+  margin-bottom:5px;
+}
+
 /* === KHUNG MỖI ĐỘI === */
 .team-row {
   display:flex;
@@ -83,12 +109,13 @@ h1 {
   margin-bottom:4px;
 }
 
-/* Lưới tròn 1–7 3 hàng  */
-.team-status-area {
+/* ✅ Giới hạn grid chỉ trong phần .team-status-area */
+.team-row .team-status-area {
   display:grid;
   grid-template-columns: repeat(3, 1fr);
   gap:5px;
   justify-items:center;
+  margin-top:5px;
 }
 .q-status-item {
   width:22px;
@@ -121,7 +148,7 @@ h1 {
   line-height:1.3;
 }
 
-/* Vùng duyệt đáp án */
+/* Hàng đợi duyệt đáp án */
 .submission-item {
   padding:10px;
   margin-bottom:6px;
@@ -149,6 +176,7 @@ h1 {
   padding:12px;
 }
 </style>
+
   
 </head>
 <body>
@@ -314,6 +342,7 @@ function renderTeams(){
 
 </body>
 </html>
+
 
 
 
