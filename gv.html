@@ -1,593 +1,177 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>GV - Mật Mã Rương Báu</title>
-  <style>
-    :root{
-      --bg:#0d1b2a;
-      --card:#0f2740;
-      --accent:#ffd166;
-      --muted:#a0b0c0;
-      --panel:#122436;
-      --team-gap:14px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: "Segoe UI", Roboto, Arial, sans-serif;
-      background:var(--bg);
-      color:#fff;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      padding:18px;
-    }
-
-    header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:14px;
-    }
-    h1{
-      margin:0;
-      font-size:1.6rem;
-      color:var(--accent);
-      letter-spacing:0.4px;
-    }
-
-    /* Setup screen (giao diện 1) - Hiển thị mặc định */
-    #setupScreen{ text-align:center; padding:20px 10px; display:block; }
-    #startMissionBtn{
-      background:var(--accent);
-      color:#000;
-      border:0;
-      padding:12px 20px;
-      border-radius:10px;
-      font-weight:700;
-      font-size:1.05rem;
-      cursor:pointer;
-      margin-top:12px;
-    }
-    .qr-container{
-      margin-top:18px;
-      display:flex;
-      justify-content:center;
-      flex-wrap:wrap;
-      gap:18px;
-    }
-    .qr-item{
-      background:var(--card);
-      padding:12px;
-      border-radius:12px;
-      width:160px;
-      text-align:center;
-      box-shadow:0 6px 18px rgba(0,0,0,0.5);
-    }
-    .qr-item canvas, .qr-item img{ display:block; margin:0 auto 8px auto; }
-
-    /* Game interface (giao diện 2) */
-    #gameInterface{ display:none; margin-top:6px; }
-
-    .top-controls{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      margin-bottom:12px;
-    }
-    .left-controls{ display:flex; gap:10px; align-items:center; }
-    .btn{
-      background:var(--accent);
-      color:#000;
-      border:0;
-      padding:8px 14px;
-      border-radius:8px;
-      cursor:pointer;
-      font-weight:700;
-    }
-    .countdown{
-      font-size:1.35rem;
-      background:#071427;
-      padding:8px 12px;
-      border-radius:10px;
-      color:var(--accent);
-      font-weight:800;
-      min-width:110px;
-      text-align:center;
-    }
-
-    .layout{
-      display:grid;
-      grid-template-columns: 1fr 320px;
-      gap:16px;
-      align-items:start;
-    }
-
-    /* teams area */
-    .teams-area{
-      display:grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap:var(--team-gap);
-    }
-
-    .team-card{
-      background:var(--panel);
-      border-radius:12px;
-      padding:14px;
-      min-height:180px;
-      display:flex;
-      flex-direction:column;
-      justify-content:flex-start;
-      box-shadow:0 6px 18px rgba(0,0,0,0.45);
-    }
-
-    .team-top{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:8px;
-      margin-bottom:10px;
-    }
-    .team-title{
-      font-weight:800;
-      font-size:1.05rem;
-      text-transform:uppercase;
-    }
-    .team-score{
-      font-weight:900;
-      font-size:1.1rem;
-      background:rgba(255,255,255,0.06);
-      padding:6px 10px;
-      border-radius:8px;
-    }
-
-    .question{
-      font-size:2rem; /* Yêu cầu: Hiển thị to rõ */
-      line-height:1.2;
-      margin-bottom:10px;
-      min-height:90px;
-    }
-
-    .q-buttons{
-      display:flex;
-      justify-content:center;
-      gap:8px;
-      margin-top:auto;
-    }
-    .q-buttons button{
-      width:44px;
-      height:44px;
-      border-radius:50%;
-      border:0;
-      background:#274b67;
-      color:#fff;
-      font-weight:800;
-      cursor:pointer;
-    }
-    .q-buttons button.active{
-      background:var(--accent);
-      color:#000;
-    }
-
-    /* pending column */
-    .pending-column{
-      background:var(--panel);
-      padding:12px;
-      border-radius:10px;
-      max-height:76vh;
-      overflow:auto;
-      box-shadow:0 6px 18px rgba(0,0,0,0.35);
-    }
-    .pending-column h3{ margin:0 0 8px 0; color:var(--accent) }
-    .pending-item{
-      background:#14324a;
-      padding:8px;
-      border-radius:8px;
-      margin-bottom:8px;
-      font-size:0.95rem;
-    }
-    .controls-small{ display:flex; gap:8px; align-items:center; }
-
-    /* responsive */
-    @media (max-width:900px){
-      .layout{ grid-template-columns: 1fr; }
-      .teams-area{ grid-template-columns: 1fr; }
-      .pending-column{ max-height:40vh; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mật Mã Thám Tử V-FIREBASE: Màn Hình GV</title>
+<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']] },
+    startup: { typeset: false }
+};
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+body { font-family:'Arial',sans-serif; display:flex; flex-direction:column; align-items:center; background:#282c34; color:#fff; padding:10px; min-height:100vh; }
+h1{color:#f1c40f;margin-bottom:10px;}
+#timer{position:fixed;top:10px;right:10px;font-size:2.5em;font-weight:bold;color:#e74c3c;background:#f1c40f;padding:5px 15px;border-radius:10px;box-shadow:0 0 15px rgba(255,255,255,0.5);display:none;}
+.team-row{display:flex;align-items:stretch;margin-bottom:10px;padding:0;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,0.4);border:2px solid transparent;min-height:100px;}
+.team-red{background:#e74c3c;border-color:#c0392b;}
+.team-blue{background:#3498db;border-color:#2980b9;}
+.team-green{background:#2ecc71;border-color:#27ae60;}
+.team-yellow{background:#f1c40f;color:#333;border-color:#f39c12;}
+.team-purple{background:#9b59b6;border-color:#8e44ad;}
+.team-yellow .team-score-value,.team-yellow .q-text{color:#333;}
+.team-score-control{width:90px;text-align:center;display:flex;flex-direction:column;justify-content:center;border-right:1px solid rgba(255,255,255,0.3);}
+.team-score-value{font-size:2em;font-weight:900;margin-bottom:5px;}
+.team-status-area{width:250px;padding:10px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid rgba(255,255,255,0.3);}
+.q-status-bar{display:flex;gap:3px;margin-bottom:5px;}
+.q-status-item{width:18px;height:18px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:0.7em;font-weight:bold;color:white;background:#7f8c8d;}
+.status-ready{background:#3498db;}
+.status-correct{background:#2ecc71;}
+.team-question-area{flex-grow:1;padding:5px 15px;display:flex;flex-direction:column;justify-content:center;}
+.q-number{font-weight:bold;}
+.q-text{font-size:1.2em;font-weight:700;line-height:1.2;}
+#submission-queue-area,#qr-code-area{width:100%;max-width:1200px;background:#34495e;border-radius:10px;margin-top:20px;padding:15px;}
+.submission-item{padding:12px;margin-bottom:8px;background:#2c3e50;border-radius:5px;display:flex;justify-content:space-between;align-items:center;border-left:5px solid #f1c40f;}
+.submission-item button{padding:8px 15px;background:#e67e22;color:white;border:none;border-radius:5px;cursor:pointer;font-weight:bold;}
+#qr-list{display:flex;justify-content:space-around;flex-wrap:wrap;margin-top:15px;}
+.qr-item{width:180px;margin:10px;padding:10px;border-radius:8px;background:white;color:#333;text-align:center;font-weight:bold;}
+.qr-item img{width:150px;height:150px;border:2px solid #333;margin-bottom:5px;}
+</style>
 </head>
 <body>
-  <header>
-    <h1>MẬT MÃ RƯƠNG BÁU: 05 ĐỘI TRANH TÀI</h1>
-    <div style="font-size:0.95rem;color:var(--muted)">GV Control Panel</div>
-  </header>
+<div id="timer">10:00</div>
+<h1>MẬT MÃ RƯƠNG BÁU: 5 ĐỘI TRANH TÀI</h1>
+<button id="transitionButton">BẮT ĐẦU PHI VỤ!</button>
 
-  <section id="setupScreen">
-    <div style="max-width:960px;margin:0 auto">
-      <div style="display:flex;justify-content:center;gap:14px;align-items:center;flex-direction:column">
-        <button id="startMissionBtn" aria-label="Bắt đầu Phi Vụ">BẮT ĐẦU PHI VỤ</button>
-        <div style="color:var(--muted);margin-top:6px">Học sinh quét mã QR để vào giao diện đội</div>
-      </div>
-
-      <div class="qr-container" id="qrContainer" aria-live="polite"></div>
+<div id="game-wrapper" style="display:none;">
+    <div id="control-area">
+        <button id="startGameButton" onclick="startGame()">BẮT ĐẦU ĐẾM GIỜ</button>
+        <div id="qr-code-area">
+            <h2 style="color:#f1c40f;">QUÉT MÃ QR CODE ĐỂ NHẬP ĐÁP ÁN</h2>
+            <div id="qr-list"></div>
+            <button onclick="generateQRCodes()" style="padding:10px 20px;font-size:1.2em;background:#e67e22;color:white;border:none;border-radius:5px;margin-top:10px;">TẠO/CẬP NHẬT MÃ QR</button>
+        </div>
+        <div id="submission-queue-area"><h2>HÀNG ĐỢI DUYỆT ĐÁP ÁN</h2></div>
     </div>
-  </section>
+    <div id="team-rows-container"></div>
+</div>
 
-  <section id="gameInterface" class="hidden" aria-hidden="true">
-    <div class="top-controls">
-      <div class="left-controls">
-        <button id="backToQR" class="btn">🔙 Quay lại</button>
-        <button id="startCountdownBtn" class="btn">▶ BẮT ĐẦU ĐẾM NGƯỢC</button>
-        <button id="endEarlyBtn" class="btn">⏹ TỔNG KẾT SỚM</button>
-      </div>
-      <div class="controls-small">
-        <div class="countdown" id="countdown">10:00</div>
-      </div>
-    </div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import { getFirestore, collection, query, orderBy, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-    <div class="layout">
-      <div>
-        <div class="teams-area" id="teamsGrid">
-          </div>
-      </div>
+const firebaseConfig = {
+ apiKey:"AIzaSyDfcMrblRonAS9Q7BSfD9ZZYeOmSy4UjfQ",
+ authDomain:"nutnhap.firebaseapp.com",
+ projectId:"nutnhap",
+ storageBucket:"nutnhap.firebasestorage.app",
+ messagingSenderId:"359344838873",
+ appId:"1:359344838873:web:d1746d32920881091c86c8",
+ measurementId:"G-0VTTNLWDD9"
+};
 
-      <aside class="pending-column" id="pendingColumn" aria-live="polite">
-        <h3>HÀNG CHỜ DUYỆT</h3>
-        <div id="pendingList"></div>
-      </aside>
-    </div>
-  </section>
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
 
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+const teams=[
+{id:'red',name:'Đội Đỏ',colorClass:'team-red',score:0,currentManhMoiIndex:0,manhMoiCompletedState:new Array(7).fill(false)},
+{id:'blue',name:'Đội Xanh',colorClass:'team-blue',score:0,currentManhMoiIndex:0,manhMoiCompletedState:new Array(7).fill(false)},
+{id:'green',name:'Đội Lá',colorClass:'team-green',score:0,currentManhMoiIndex:0,manhMoiCompletedState:new Array(7).fill(false)},
+{id:'yellow',name:'Đội Vàng',colorClass:'team-yellow',score:0,currentManhMoiIndex:0,manhMoiCompletedState:new Array(7).fill(false)},
+{id:'purple',name:'Đội Tím',colorClass:'team-purple',score:0,currentManhMoiIndex:0,manhMoiCompletedState:new Array(7).fill(false)}
+];
 
-  <script>
-    // ===== Firebase config (thay thế bằng config của bạn) =====
-    const firebaseConfig = {
-      apiKey: "AIzaSyC9SRP8hEhtJ8bY2n1mTuPhtvpgMyZbktY",
-      authDomain: "blackdesert2319-sudo.firebaseapp.com",
-      projectId: "blackdesert2319-sudo",
-      storageBucket: "blackdesert2319-sudo.appspot.com",
-      messagingSenderId: "628771580196",
-      appId: "1:628771580196:web:1e95f7f3c9de7e3e6cb36d"
-    };
+window.transitionToGame=function(){
+ document.getElementById('transitionButton').style.display='none';
+ document.getElementById('game-wrapper').style.display='block';
+ renderTeamRows();
+ generateQRCodes();
+};
+document.getElementById('transitionButton').onclick=transitionToGame;
 
-    // init
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+// ✅ Đã sửa QR trỏ về hs.html
+window.generateQRCodes=function(){
+ const BASE_CLIENT_URL=window.location.origin+'/hs.html';
+ const qrList=document.getElementById('qr-list');
+ qrList.innerHTML='';
+ teams.forEach(team=>{
+   const link=`${BASE_CLIENT_URL}?teamId=${team.id}`;
+   const div=document.createElement('div');
+   div.className='qr-item';
+   div.innerHTML=`<p>${team.name}</p><div id="qr-${team.id}"></div>`;
+   qrList.appendChild(div);
+   new QRCode(document.getElementById(`qr-${team.id}`),{text:link,width:150,height:150,colorDark:"#000",colorLight:"#fff",correctLevel:QRCode.CorrectLevel.H});
+ });
+};
 
-    // ===== Teams config =====
-    const teams = [
-      { id: "red", name: "Đội Đỏ", color: "#e63946" },
-      { id: "blue", name: "Đội Xanh", color: "#1d3557" },
-      { id: "green", name: "Đội Lá", color: "#2a9d8f" },
-      { id: "yellow", name: "Đội Vàng", color: "#f4a261" },
-      { id: "purple", name: "Đội Tím", color: "#9d4edd" }
-    ];
+window.startGame=function(){
+ document.getElementById('timer').style.display='block';
+ startTimer();
+ listenForSubmissions();
+};
 
-    // ===== Base questions (đề gốc, 7 câu) =====
-    const questions = [
-      "Cho cấp số cộng có u₁ = 2, công sai d = 3. Tìm u₅.",
-      "Cho cấp số cộng 5, 8, 11, ... Tính số hạng thứ 10.",
-      "Cho cấp số nhân có u₁ = 3, q = 2. Tìm u₅.",
-      "Cho cấp số nhân 2, 6, 18, ... Tìm công bội q.",
-      "Cho cấp số cộng có 7 số hạng, tổng là 35, u₁ = 2. Tìm công sai d.",
-      "Cho cấp số nhân có 5 số hạng, u₁ = 2, u₅ = 32. Tìm q.",
-      "Cho cấp số cộng 4, 7, 10, ... Tìm số hạng thứ 12."
-    ];
+function listenForSubmissions(){
+ const q=query(collection(db,"submissions"),orderBy("timestamp","asc"));
+ onSnapshot(q,snapshot=>{
+  const area=document.getElementById('submission-queue-area');
+  let html=`<h2>HÀNG ĐỢI DUYỆT ĐÁP ÁN (${snapshot.size})</h2>`;
+  if(snapshot.empty) html+='<p>Chưa có đội nào gửi.</p>';
+  else snapshot.forEach(docSnap=>{
+    const sub=docSnap.data();
+    html+=`<div class="submission-item"><b>${sub.teamId.toUpperCase()}</b>: ${sub.answer}
+    <button onclick="handleReviewSubmission('${docSnap.id}','${sub.teamId}','${sub.answer}')">DUYỆT</button></div>`;
+  });
+  area.innerHTML=html;
+ });
+}
 
-    // ===== Correct answers tương ứng (chuẩn để so sánh, string dạng không dấu) =====
-    const correctAnswers = ["14","32","48","3","5","2","37"];
+window.handleReviewSubmission=async function(id,teamId,answer){
+ const team=teams.find(t=>t.id===teamId);
+ if(!team)return;
+ const qIndex=team.currentManhMoiIndex;
+ const correct=ALL_TEAM_QUESTIONS[teamId][qIndex].correct;
+ const isCorrect=answer.trim().toLowerCase()===correct.toLowerCase();
+ if(isCorrect){
+   team.score+=10;
+   team.currentManhMoiIndex++;
+   team.manhMoiCompletedState[qIndex]=true;
+   alert(`${team.name}: Chính xác! +10 điểm`);
+ }else alert(`${team.name}: Sai! Đáp án đúng là ${correct}`);
+ await deleteDoc(doc(db,"submissions",id));
+ renderTeamRows();
+};
 
-    // ===== Question order: mỗi đội có 1 hoán vị riêng (0-based indices của questions[]) =====
-    const questionOrder = {
-      red:    [0,1,2,3,4,5,6],
-      blue:   [2,5,0,3,1,6,4],
-      green:  [4,2,6,0,1,5,3],
-      yellow: [1,3,5,2,0,4,6],
-      purple: [6,0,4,1,3,2,5]
-    };
+const ALL_TEAM_QUESTIONS={
+red:[{q:'Cho CSC có $u_1=3$, $d=2$. Tìm $u_{10}$.',correct:'21'},{q:'Cho CSN có $u_1=2$, $q=2$. Tìm $u_5$.',correct:'32'},{q:'Cho CSC có $u_1=2$, $u_5=18$. Tìm $d$.',correct:'4'},{q:'Cho CSN có $u_1=3$, $u_3=12$. Tìm $q$.',correct:'2'},{q:'Cho CSC có $u_1=5$, $d=2$. Tìm $S_5$.',correct:'45'},{q:'Cho CSN có $u_1=3$, $q=2$. Tìm $S_4$.',correct:'45'},{q:'Cho CSC có $u_1=5$, $d=3$, biết $u_n=32$. Tìm $n$.',correct:'10'}],
+blue:[{q:'Cho CSC có $u_1=10$, $d=3$. Tìm $u_8$.',correct:'31'},{q:'Cho CSN có $u_1=3$, $q=2$. Tìm $u_4$.',correct:'24'},{q:'Cho CSC có $u_1=3$, $u_5=15$. Tìm $d$.',correct:'3'},{q:'Cho CSN có $u_1=2$, $u_3=50$. Tìm $q$.',correct:'5'},{q:'Cho CSC có $u_1=5$, $d=2$. Tìm $S_5$.',correct:'45'},{q:'Cho CSN có $u_1=3$, $q=2$. Tìm $S_4$.',correct:'45'},{q:'Cho CSN có $u_1=2$, $q=2$, biết $u_n=64$. Tìm $n$.',correct:'6'}],
+green:[{q:'Cho CSC có $u_1=5$, $d=4$. Tìm $u_6$.',correct:'25'},{q:'Cho CSN có $u_1=4$, $q=3$. Tìm $u_3$.',correct:'36'},{q:'Cho CSC có $u_1=10$, $u_5=30$. Tìm $d$.',correct:'5'},{q:'Cho CSN có $u_1=5$, $u_3=45$. Tìm $q$.',correct:'3'},{q:'Cho CSC có $u_1=2$, $u_6=12$. Tìm $S_6$.',correct:'42'},{q:'Cho CSN có $u_1=4$, $q=2$. Tìm $S_3$.',correct:'28'},{q:'Cho CSC có $u_1=2$, $d=4$, biết $u_n=26$. Tìm $n$.',correct:'7'}],
+yellow:[{q:'Cho CSC có $u_1=2$, $d=5$. Tìm $u_7$.',correct:'32'},{q:'Cho CSN có $u_1=2$, $q=3$. Tìm $u_4$.',correct:'54'},{q:'Cho CSC có $u_1=4$, $u_5=28$. Tìm $d$.',correct:'6'},{q:'Cho CSN có $u_1=2$, $u_3=50$. Tìm $q$.',correct:'5'},{q:'Cho CSC có $u_1=1$, $d=3$. Tìm $S_4$.',correct:'22'},{q:'Cho CSN có $u_1=5$, $q=-2$. Tìm $S_3$.',correct:'15'},{q:'Cho CSN có $u_1=3$, $q=2$, biết $u_n=48$. Tìm $n$.',correct:'5'}],
+purple:[{q:'Cho CSC có $u_1=3$, $d=4$. Tìm $u_5$.',correct:'19'},{q:'Cho CSN có $u_1=5$, $q=2$. Tìm $u_4$.',correct:'40'},{q:'Cho CSC có $u_1=5$, $u_5=29$. Tìm $d$.',correct:'6'},{q:'Cho CSN có $u_1=4$, $u_3=100$. Tìm $q$.',correct:'5'},{q:'Cho CSC có $u_1=10$, $d=-1$. Tìm $S_5$.',correct:'40'},{q:'Cho CSN có $u_1=4$, $q=3$. Tìm $S_3$.',correct:'52'},{q:'Cho CSC có $u_1=10$, $d=-2$, biết $u_n=0$. Tìm $n$.',correct:'6'}]
+};
 
-    // ===== Configuration / Constants =====
-    // Hằng số để tạo URL cho giao diện học sinh (hs.html)
-    const BASE_CLIENT_URL = window.location.origin + '/25-c-u/hs.html'; 
+function renderTeamRows(){
+ const c=document.getElementById('team-rows-container');
+ let html='';
+ teams.forEach(team=>{
+  const i=team.currentManhMoiIndex;
+  const qText=i<ALL_TEAM_QUESTIONS[team.id].length?ALL_TEAM_QUESTIONS[team.id][i].q:"ĐÃ HOÀN THÀNH";
+  html+=`<div class="team-row ${team.colorClass}">
+  <div class="team-score-control"><div class="team-score-value">${team.score}</div>${team.name}</div>
+  <div class="team-status-area">${team.manhMoiCompletedState.map((done,idx)=>`<div class="q-status-item ${done?'status-correct':idx===i?'status-ready':''}">${idx+1}</div>`).join('')}</div>
+  <div class="team-question-area"><div class="q-number">Câu ${i+1}</div><div class="q-text">${qText}</div></div></div>`;
+ });
+ c.innerHTML=html;
+ if(window.MathJax) window.MathJax.typesetPromise([c]);
+}
 
-    // State: điểm & currentQuestion per team (index into their own order)
-    const teamScores = { red:0, blue:0, green:0, yellow:0, purple:0 };
-    const currentQuestion = { red:0, blue:0, green:0, yellow:0, purple:0 };
-
-    // DOM refs
-    const qrContainer = document.getElementById("qrContainer");
-    const startMissionBtn = document.getElementById("startMissionBtn");
-    const setupScreen = document.getElementById("setupScreen");
-    const gameInterface = document.getElementById("gameInterface");
-    const teamsGrid = document.getElementById("teamsGrid");
-    const startCountdownBtn = document.getElementById("startCountdownBtn");
-    const endEarlyBtn = document.getElementById("endEarlyBtn");
-    const countdownEl = document.getElementById("countdown");
-    const pendingList = document.getElementById("pendingList");
-    const backToQR = document.getElementById("backToQR");
-
-    // ensure DOM loaded
-    window.addEventListener('load', () => {
-      // Bắt buộc phải chạy ngay khi DOM load để QR và nút hoạt động
-      generateQRCodes(); 
-      renderTeams();
-      attachEvents();
-      listenControlState(); 
-      listenSubmissionsRealtime();
-      listenTeamStateRealtime(); 
-      updateAllDisplays();
-    });
-
-    // ========== Generate QR codes ==========
-    function generateQRCodes(){
-      qrContainer.innerHTML = '';
-      teams.forEach(team=>{
-        const box = document.createElement('div');
-        box.className = 'qr-item';
-        const canvas = document.createElement('canvas');
-        
-        // SỬ DỤNG BASE_CLIENT_URL ĐÃ CUNG CẤP TỪ YÊU CẦU MỚI
-        const url = `${BASE_CLIENT_URL}?teamId=${team.id}`;
-        
-        QRCode.toCanvas(canvas, url, { width: 140 }).then(()=>{
-          // console.log(`QR for ${team.id} generated.`);
-        }).catch(err=>{
-          // Nếu không tạo được (thường do môi trường), hiển thị link thay thế
-          const errorMsg = document.createElement('div');
-          errorMsg.textContent = `Lỗi QR. Link: ${url}`;
-          box.appendChild(errorMsg);
-          console.error("QR Code Error:", err);
-        });
-        
-        const label = document.createElement('div');
-        label.textContent = team.name;
-        label.style.marginTop='6px';
-        label.style.fontWeight='700';
-        label.style.color = team.color;
-        
-        box.appendChild(canvas); // THÊM CANVAS VÀO BOX
-        box.appendChild(label);
-        qrContainer.appendChild(box);
-      });
-    }
-
-    // ========== Render teams on GV ==========
-    function renderTeams(){
-      teamsGrid.innerHTML = '';
-      teams.forEach(team=>{
-        const card = document.createElement('div');
-        card.className = 'team-card';
-        card.id = `card-${team.id}`;
-        card.innerHTML = `
-          <div class="team-top">
-            <div class="team-title" style="color:${team.color}">${team.name}</div>
-            <div class="team-score" id="score-${team.id}">0</div>
-          </div>
-          <div class="question" id="question-${team.id}">Câu hỏi sẽ hiện khi bắt đầu đếm ngược...</div>
-          <div class="q-buttons" id="btns-${team.id}">
-            ${[1,2,3,4,5,6,7].map(n=>`<button data-num="${n}">${n}</button>`).join('')}
-          </div>
-        `;
-        teamsGrid.appendChild(card);
-      });
-      updateAllDisplays();
-    }
-
-    // ========== Attach UI events (Logic chuyển màn hình) ==========
-    function attachEvents(){
-      startMissionBtn.addEventListener('click', () => {
-        // **CHUYỂN SANG GIAO DIỆN CHƠI**
-        setupScreen.style.display = 'none';
-        gameInterface.style.display = 'block';
-        gameInterface.removeAttribute('aria-hidden');
-        renderTeams();
-      });
-
-      backToQR.addEventListener('click', () => {
-        // **TRỞ VỀ GIAO DIỆN QR**
-        gameInterface.style.display = 'none';
-        setupScreen.style.display = 'block';
-      });
-
-      startCountdownBtn.addEventListener('click', async () => {
-        try{
-          await db.collection('control').doc('state').set({ startGame: true, startedAt: new Date() });
-          
-          teams.forEach(t => {
-            currentQuestion[t.id] = 0; 
-            teamScores[t.id] = 0; 
-            db.collection('teamState').doc(t.id).set({ currentQIndex: 0, score: 0, timestamp: new Date() }, { merge: true }).catch(console.error);
-          });
-
-        }catch(e){ console.error(e) }
-        startCountdown(); 
-        updateAllDisplays();
-      });
-
-      endEarlyBtn.addEventListener('click', async () => {
-        clearInterval(countdownTimer);
-        try{ await db.collection('control').doc('state').set({ startGame: false }); }catch(e){console.error(e)}
-        alert('Đã kết thúc vòng chơi.');
-        updateAllDisplays();
-      });
-    }
-
-    // (Giữ nguyên Countdown logic)
-    let countdownTimer = null;
-    let timeLeft = 10*60; 
-    function startCountdown(){
-      clearInterval(countdownTimer);
-      timeLeft = 10*60;
-      updateCountdownUI();
-      countdownTimer = setInterval(()=>{
-        timeLeft--;
-        updateCountdownUI();
-        if(timeLeft<=0){
-          clearInterval(countdownTimer);
-          alert('⏰ Hết giờ!');
-          db.collection('control').doc('state').set({ startGame: false }).catch(()=>{});
-        }
-      },1000);
-    }
-    function updateCountdownUI(){
-      const m = Math.floor(timeLeft/60);
-      const s = timeLeft%60;
-      countdownEl.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-    }
-
-    // (Giữ nguyên các hàm lắng nghe Firebase)
-    function listenControlState(){
-      db.collection('control').doc('state').onSnapshot(doc=>{
-        const data = doc.data();
-        if(!data) return;
-        
-        if(data.startGame){
-          teams.forEach(t=>{
-            const idx = currentQuestion[t.id];
-            const globalIdx = questionOrder[t.id][idx];
-            const qText = questions[globalIdx] || "Đã hoàn thành toàn bộ câu hỏi!";
-            const qEl = document.getElementById(`question-${t.id}`);
-            if(qEl) qEl.textContent = qText;
-          });
-          updateAllDisplays();
-        } else {
-          teams.forEach(t=>{
-            const qEl = document.getElementById(`question-${t.id}`);
-            if(qEl) qEl.textContent = 'Câu hỏi sẽ hiện khi bắt đầu đếm ngược...';
-          });
-        }
-      });
-    }
-    
-    function listenTeamStateRealtime() {
-        teams.forEach(team => {
-            db.collection('teamState').doc(team.id).onSnapshot(doc => {
-                const data = doc.data();
-                if (data) {
-                    teamScores[team.id] = data.score !== undefined ? data.score : (teamScores[team.id] || 0);
-                    currentQuestion[team.id] = data.currentQIndex !== undefined ? data.currentQIndex : (currentQuestion[team.id] || 0);
-                    updateTeamDisplay(team.id);
-                }
-            });
-        });
-    }
-
-    function listenSubmissionsRealtime(){
-      db.collection('submissions').orderBy('timestamp','asc')
-        .onSnapshot(snapshot=>{
-          snapshot.docChanges().forEach(change=>{
-            if(change.type === 'added'){
-              const docData = change.doc.data();
-              const docId = change.doc.id;
-              displayPending(docData, docId);
-              processSubmission(docData, docId); 
-            }
-          });
-        });
-    }
-
-    function displayPending(data, docId){
-      const div = document.createElement('div');
-      div.className = 'pending-item';
-      const team = teams.find(t=>t.id===data.teamId);
-      const tm = team?team.name:data.teamId;
-      const qPos = (typeof data.questionIndex === 'number') ? data.questionIndex : (currentQuestion[data.teamId] || 0);
-      const qi = qPos + 1;
-      const ts = data.timestamp && data.timestamp.toDate ? data.timestamp.toDate().toLocaleTimeString('vi-VN') : '';
-      div.innerHTML = `<strong>${tm}</strong><div>Câu ${qi}: ${escapeHtml(String(data.answer||''))}</div><div style="font-size:0.85rem;color:var(--muted)">${ts}</div>`;
-      pendingList.prepend(div);
-      while(pendingList.children.length > 80) pendingList.removeChild(pendingList.lastChild);
-    }
-
-    async function processSubmission(data, docId){
-      try{
-        const teamId = data.teamId;
-        const answerRaw = (data.answer||'').toString().trim().toLowerCase();
-        
-        const qPos = (typeof data.questionIndex === 'number') ? data.questionIndex : (currentQuestion[teamId] || 0);
-
-        const globalIdx = (questionOrder[teamId] && questionOrder[teamId][qPos] !== undefined) ? questionOrder[teamId][qPos] : questionOrder['red'][qPos];
-        const correct = (correctAnswers[globalIdx]||'').toLowerCase();
-        
-        let newScore = teamScores[teamId];
-        let newQIndex = currentQuestion[teamId];
-
-        if(qPos === currentQuestion[teamId]){ 
-             if(answerRaw === 'skip'){
-                newScore = (newScore || 0) - 10;
-                newQIndex = Math.min(questions.length, (newQIndex || 0) + 1); 
-                notify(`${getTeamName(teamId)} đã bỏ qua câu ${qPos+1} (-10đ)`);
-            } else if(answerRaw === correct){
-                newScore = (newScore || 0) + 10;
-                newQIndex = Math.min(questions.length, (newQIndex || 0) + 1);
-                notify(`${getTeamName(teamId)} trả lời đúng (+10đ)`);
-            } else {
-                notify(`${getTeamName(teamId)} trả lời sai.`);
-            }
-            
-            teamScores[teamId] = newScore;
-            currentQuestion[teamId] = newQIndex;
-
-            await db.collection('teamState').doc(teamId).set({ 
-                score: newScore,
-                currentQIndex: newQIndex,
-                timestamp: new Date()
-            }, { merge: true });
-
-        } else {
-            notify(`${getTeamName(teamId)} gửi đáp án cũ/trễ cho câu ${qPos+1}. Bỏ qua xử lý.`);
-        }
-        
-      }catch(e){
-        console.error('processSubmission error',e);
-      }finally{
-        try{ await db.collection('submissions').doc(docId).delete(); }catch(e){console.error(e)}
-      }
-    }
-
-    // (Giữ nguyên helpers)
-    function getTeamName(id){ const t=teams.find(x=>x.id===id); return t? t.name : id; }
-    function notify(msg){ console.log(msg); }
-
-    function updateTeamDisplay(teamId){
-      const scoreEl = document.getElementById(`score-${teamId}`);
-      if(scoreEl) scoreEl.textContent = (teamScores[teamId]||0);
-      
-      const qEl = document.getElementById(`question-${teamId}`);
-      const qIdx = currentQuestion[teamId] || 0;
-      
-      let qText;
-      
-      if (qIdx >= questions.length) { 
-          qText = "Đã hoàn thành toàn bộ câu hỏi!";
-      } else {
-          const globalIdx = (questionOrder[teamId] && questionOrder[teamId][qIdx] !== undefined) ? questionOrder[teamId][qIdx] : questionOrder['red'][qIdx];
-          qText = questions[globalIdx];
-      }
-      
-      if(qEl){
-        qEl.textContent = qText;
-      }
-      
-      const btns = document.querySelectorAll(`#btns-${teamId} button`);
-      btns.forEach((b,i)=>{
-        if(i === qIdx) b.classList.add('active'); else b.classList.remove('active');
-      });
-    }
-
-    function updateAllDisplays(){
-      teams.forEach(t=>updateTeamDisplay(t.id));
-    }
-
-    function escapeHtml(str){
-      return str.replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]); });
-    }
-  </script>
+let timer=600;
+function startTimer(){
+ const el=document.getElementById('timer');
+ setInterval(()=>{timer--;const m=Math.floor(timer/60),s=timer%60;el.textContent=`${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;},1000);
+}
+</script>
 </body>
 </html>
