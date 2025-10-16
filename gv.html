@@ -295,7 +295,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   </div>
   <div id="game-wrapper">
     <div id="timer">10:00</div>
-    <button id="endEarlyBtn" onclick="endGame()">KẾT THÚC SỚM</button>
+    <button id="endEarlyBtn">KẾT THÚC SỚM</button>
     <button id="startGameBtn">START</button>
     <div class="game-layout">
       <div id="team-rows-container"></div>
@@ -606,8 +606,14 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     if (resetBtn) {
         resetBtn.addEventListener('click', resetGameData);
     }
+    // 4. BỔ SUNG: Nút KẾT THÚC SỚM <--- CHÈN THÊM KHỐI NÀY
+    const endEarlyBtn = document.getElementById("endEarlyBtn");
+    if (endEarlyBtn) {
+        endEarlyBtn.addEventListener('click', endGame);
+    }
   });
 
 </script>
 </body>
 </html>
+
