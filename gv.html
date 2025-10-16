@@ -11,165 +11,167 @@
 <script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore-compat.js"></script>
 <style>
 body {
-  font-family: 'Arial', sans-serif;
-  background: #1e1e1e;
-  color: #fff;
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  font-family:'Arial',sans-serif;
+  background:#1e1e1e;
+  color:#fff;
+  margin:0;
+  padding:0;
+  overflow-x:hidden;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
 }
 
 h1 {
-  color: #f1c40f;
-  margin: 12px 0;
-  text-align: center;
+  color:#f1c40f;
+  margin:12px 0;
+  text-align:center;
 }
 
 #timer {
-  position: fixed;
-  top: 8px;
-  right: 12px;
-  font-size: 2.2em;
-  font-weight: bold;
-  color: #e74c3c;
-  background: #f1c40f;
-  padding: 4px 12px;
-  border-radius: 8px;
-  display: none;
+  position:fixed;
+  top:8px;
+  right:12px;
+  font-size:2.2em;
+  font-weight:bold;
+  color:#e74c3c;
+  background:#f1c40f;
+  padding:4px 12px;
+  border-radius:8px;
+  display:none;
 }
 
-/* --- QR đầu trang --- */
+/* === QR ở giao diện đầu === */
 .qr-item {
-  width: 180px;
-  margin: 10px;
-  padding: 10px;
-  border-radius: 8px;
-  background: white;
-  color: #333;
-  text-align: center;
-  font-weight: bold;
+  width:180px;
+  margin:10px;
+  padding:10px;
+  border-radius:8px;
+  background:white;
+  color:#333;
+  text-align:center;
+  font-weight:bold;
 }
 .qr-item img {
-  width: 150px;
-  height: 150px;
-  border: 2px solid #333;
-  margin-bottom: 5px;
+  width:150px;
+  height:150px;
+  border:2px solid #333;
+  margin-bottom:5px;
 }
 #qr-list {
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  margin-top: 15px;
+  display:flex;
+  justify-content:space-around;
+  flex-wrap:wrap;
+  margin-top:15px;
 }
 
-/* --- TEAM CARD mới (chiều ngang full, chiều cao thấp) --- */
+/* === KHUNG MỖI ĐỘI === */
 .team-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 98%;
-  margin: 4px 0;
-  padding: 8px 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.4);
-  min-height: 85px; /* thấp hơn nhiều */
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  width:97%;
+  margin:5px 0;
+  padding:8px 16px;
+  border-radius:10px;
+  box-shadow:0 2px 5px rgba(0,0,0,0.4);
+  min-height:90px;
 }
 
-/* màu đội */
-.team-red    { background: #e74c3c; }
-.team-blue   { background: #3498db; }
-.team-green  { background: #2ecc71; }
-.team-yellow { background: #f1c40f; color: #333; }
-.team-purple { background: #9b59b6; }
+/* Màu nền từng đội */
+.team-red{background:#e74c3c;}
+.team-blue{background:#3498db;}
+.team-green{background:#2ecc71;}
+.team-yellow{background:#f1c40f;color:#333;}
+.team-purple{background:#9b59b6;}
 
-/* cột trái: điểm + tên đội */
+/* Cột trái: điểm và tên đội */
 .team-score-control {
-  width: 120px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  width:100px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
 }
 .team-score-value {
-  font-size: 2.4em;
-  font-weight: 900;
-  background: rgba(255,255,255,0.25);
-  padding: 2px 12px;
-  border-radius: 8px;
-  margin-bottom: 3px;
+  font-size:2.5em;
+  font-weight:900;
+  background:rgba(255,255,255,0.25);
+  padding:2px 12px;
+  border-radius:8px;
+  margin-bottom:3px;
 }
 
-/* cột giữa: câu hỏi */
+/* Cột giữa: câu hỏi */
 .team-question-area {
-  flex: 1;
-  padding: 0 15px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex:1;
+  padding:0 15px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
 }
 .q-number {
-  font-weight: bold;
-  font-size: 1.05em;
-  margin-bottom: 3px;
+  font-weight:bold;
+  font-size:1.1em;
+  margin-bottom:2px;
 }
 .q-text {
-  font-size: 1.7em;
-  font-weight: 700;
-  line-height: 1.3;
+  font-size:2.1em; /* 💥 tăng cỡ chữ lớn hơn */
+  font-weight:700;
+  line-height:1.3;
 }
 
-/* cột phải: các chấm trạng thái nằm hàng ngang */
+/* Cột phải: dãy tròn 1–7 nằm ngang */
 .team-status-area {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  flex-wrap: nowrap;
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  gap:5px;
 }
 .q-status-item {
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 0.85em;
-  font-weight: bold;
-  color: white;
-  background: #7f8c8d;
+  width:20px; /* nhỏ gọn hơn */
+  height:20px;
+  border-radius:50%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:0.75em;
+  font-weight:bold;
+  color:white;
+  background:#7f8c8d;
 }
-.status-ready   { background: #2980b9; }
-.status-correct { background: #2ecc71; }
+.status-ready { background:#2980b9; }
+.status-correct { background:#2ecc71; }
 
-/* khu hàng đợi duyệt đáp án */
+/* Hàng đợi duyệt đáp án */
 .submission-item {
-  padding: 10px;
-  margin-bottom: 6px;
-  background: #2c3e50;
-  border-radius: 5px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-left: 5px solid #f1c40f;
+  padding:10px;
+  margin-bottom:6px;
+  background:#2c3e50;
+  border-radius:5px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-left:5px solid #f1c40f;
 }
 .submission-item button {
-  padding: 6px 12px;
-  background: #e67e22;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-weight: bold;
+  padding:6px 12px;
+  background:#e67e22;
+  color:white;
+  border:none;
+  border-radius:5px;
+  font-weight:bold;
 }
 #submission-queue-area {
-  width: 100%;
-  max-width: 1200px;
-  background: #34495e;
-  border-radius: 10px;
-  margin-top: 18px;
-  padding: 12px;
+  width:100%;
+  max-width:1200px;
+  background:#34495e;
+  border-radius:10px;
+  margin-top:18px;
+  padding:12px;
 }
 </style>
+
 
 </head>
 <body>
@@ -335,6 +337,7 @@ function renderTeams(){
 
 </body>
 </html>
+
 
 
 
