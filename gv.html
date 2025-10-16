@@ -89,22 +89,10 @@ const teams = [
 {id:'purple',name:'Đội Tím',colorClass:'team-purple',score:0,currentManhMoiIndex:0,manhMoiCompletedState:new Array(7).fill(false)}
 ];
 
-// 👉 Khi trang load xong, tạo sẵn QR
-document.addEventListener('DOMContentLoaded', generateQRCodes);
-
-// 👉 Nút chuyển sang màn hình thi đấu
-window.transitionToGame = function() {
-  document.getElementById('intro-wrapper').style.display = 'none';
-  document.getElementById('game-wrapper').style.display = 'block';
-  renderTeamRows();
-};
-document.getElementById('transitionButton').onclick = transitionToGame;
-
-// ✅ QR code trỏ về GitHub Pages của bạn
 window.generateQRCodes = function() {
   const BASE_CLIENT_URL = "https://blackdesert2319-sudo.github.io/25-c-u/hs.html?v=2";
-
   const qrList = document.getElementById('qr-list');
+  if (!qrList) return;
   qrList.innerHTML = '';
   teams.forEach(team => {
     const link = `${BASE_CLIENT_URL}?teamId=${team.id}`;
@@ -123,7 +111,20 @@ window.generateQRCodes = function() {
   });
 };
 
-// 👉 Bắt đầu game
+// ✅ Chờ DOM tải xong mới kích hoạt QR và nút
+document.addEventListener('DOMContentLoaded', () => {
+  generateQRCodes();
+  const btn = document.getElementById('transitionButton');
+  if (btn) btn.addEventListener('click', transitionToGame);
+});
+
+// 👉 Hàm chuyển sang giao diện thi đấu
+window.transitionToGame = function() {
+  document.getElementById('intro-wrapper').style.display = 'none';
+  document.getElementById('game-wrapper').style.display = 'block';
+  renderTeamRows();
+};
+
 window.startGame = function() {
   document.getElementById('timer').style.display = 'block';
   startTimer();
@@ -201,3 +202,4 @@ function startTimer() {
 </script>
 </body>
 </html>
+
