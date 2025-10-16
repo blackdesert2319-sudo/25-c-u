@@ -645,43 +645,52 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     totalSeconds--;
   }
   
-  // HÀM SỬA: Xử lý nhập mã và hiệu ứng mở rương, HIỂN THỊ PHẦN THƯỞNG
-  function handleOpenTreasure() {
-      const inputCode = document.getElementById("code-input").value.trim();
-      const container = document.getElementById("treasure-box-container");
-      const rewardList = document.getElementById("reward-list");
+  // HÀM SỬA: Xử lý nhập mã và hiệu ứng mở rương, HIỂN THỊ PHẦN THƯỞNG NGẪU NHIÊN
+function handleOpenTreasure() {
+    const inputCode = document.getElementById("code-input").value.trim();
+    const container = document.getElementById("treasure-box-container");
+    const rewardList = document.getElementById("reward-list");
 
-      if (inputCode === TREASURE_CODE) {
-          // MÃ ĐÚNG: HIỆU ỨNG MỞ
-          container.classList.add('opened');
-          document.getElementById("submitCodeBtn").textContent = "🔓 MÃ CHÍNH XÁC! 🎉";
-          document.getElementById("submitCodeBtn").disabled = true;
+    if (inputCode === TREASURE_CODE) {
+        // MÃ ĐÚNG: HIỆU ỨNG MỞ
+        container.classList.add('opened');
+        document.getElementById("submitCodeBtn").textContent = "🔓 MÃ CHÍNH XÁC! 🎉";
+        document.getElementById("submitCodeBtn").disabled = true;
 
-          // === HIỂN THỊ DANH SÁCH PHẦN THƯỞNG ===
-          const rewards = [
-              "Hộp Quà VIP (7 gói bim bim 6k)",
-              "1 tràng pháo tay từ các bạn",
-              "+1 điểm vào bài kiểm tra 15 phút gần nhất",
-              "1 đề cương có 20 bài tập"
-          ];
-          
-          rewardList.innerHTML = "<div style='font-size: 1.2em; font-weight: bold;'>🎁 PHẦN THƯỞNG CỦA ĐỘI CHIẾN THẮNG 🎁</div>" + 
-                                 "<ul style='list-style: none; padding: 0; margin-top: 10px;'>" + 
-                                 rewards.map(r => `<li style='color: #2ecc71; margin-bottom: 5px; font-weight: bold;'>- ${r}</li>`).join('') + 
-                                 "</ul>";
-          
-          // Hiển thị danh sách phần thưởng sau hiệu ứng
-          setTimeout(() => {
-               rewardList.style.display = 'block';
-               alert("Thành công! Rương Báu đã mở, các hộp quà đang bay ra!");
-          }, 1200);
+        // === LOGIC CHỌN MỘT PHẦN THƯỞNG NGẪU NHIÊN ===
+        const rewards = [
+            "Hộp Quà VIP (Phần thưởng lớn)",
+            "Cúp Vô Địch",
+            "10 Điểm thưởng cho Đội Vàng",
+            "Vé xem phim đôi",
+            "Bộ sưu tập mô hình", // Thêm các phần thưởng khác nếu muốn
+            "Thẻ giảm giá 500K"
+        ];
+        
+        // Chọn ngẫu nhiên một chỉ số từ 0 đến length-1
+        const randomIndex = Math.floor(Math.random() * rewards.length);
+        const randomReward = rewards[randomIndex];
+        
+        // Tạo nội dung hiển thị phần thưởng ngẫu nhiên
+        rewardList.innerHTML = `
+            <div style='font-size: 1.2em; font-weight: bold;'>🎁 PHẦN THƯỞNG CỦA ĐỘI CHIẾN THẮNG 🎁</div>
+            <div style='color: #f1c40f; font-size: 1.8em; margin-top: 10px; animation: shake 1s infinite; font-weight: 800;'>
+                ${randomReward}
+            </div>
+        `;
+        
+        // Hiển thị phần thưởng sau hiệu ứng
+        setTimeout(() => {
+             rewardList.style.display = 'block';
+             alert(`Thành công! Rương Báu đã mở. Phần thưởng của bạn là: ${randomReward}`);
+        }, 1200);
 
-      } else {
-          // MÃ SAI
-          alert("Mã Rương Báu không chính xác! Vui lòng thử lại.");
-          document.getElementById("code-input").value = "";
-      }
-  }
+    } else {
+        // MÃ SAI
+        alert("Mã Rương Báu không chính xác! Vui lòng thử lại.");
+        document.getElementById("code-input").value = "";
+    }
+}
 
   // HÀM SỬA: Hiển thị giao diện nhập mã Rương Báu (ĐÃ THÊM KHỐI REWARD)
   function renderTreasureOverlay(winningTeam = null, isFinal = false) {
@@ -1045,5 +1054,6 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 </script>
 </body>
 </html>
+
 
 
