@@ -38,7 +38,7 @@
       letter-spacing:0.4px;
     }
 
-    /* Setup screen (giao diện 1) - Hiển thị mặc định */
+    /* Setup screen (giao diện 1) */
     #setupScreen{ text-align:center; padding:20px 10px; display:block; }
     #startMissionBtn{
       background:var(--accent);
@@ -145,7 +145,7 @@
     }
 
     .question{
-      font-size:2rem; /* Yêu cầu: Hiển thị to rõ */
+      font-size:2rem;
       line-height:1.2;
       margin-bottom:10px;
       min-height:90px;
@@ -201,7 +201,7 @@
 </head>
 <body>
   <header>
-    <h1>MẬT MÃ RƯƠNG BÁU: 05 ĐỘI TRANH TÀI</h1>
+    <h1>MẬT MÃ RƯƠNG BÁU: 5 ĐỘI TRANH TÀI</h1>
     <div style="font-size:0.95rem;color:var(--muted)">GV Control Panel</div>
   </header>
 
@@ -246,7 +246,7 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
   <script>
-    // ===== Firebase config (thay thế bằng config của bạn) =====
+    // ===== Firebase config (giữ nguyên project của bạn) =====
     const firebaseConfig = {
       apiKey: "AIzaSyC9SRP8hEhtJ8bY2n1mTuPhtvpgMyZbktY",
       authDomain: "blackdesert2319-sudo.firebaseapp.com",
@@ -283,7 +283,7 @@
     // ===== Correct answers tương ứng (chuẩn để so sánh, string dạng không dấu) =====
     const correctAnswers = ["14","32","48","3","5","2","37"];
 
-    // ===== Question order: mỗi đội có 1 hoán vị riêng (0-based indices của questions[]) =====
+    // ===== Question order: mỗi đội có 1 hoán vị riêng =====
     const questionOrder = {
       red:    [0,1,2,3,4,5,6],
       blue:   [2,5,0,3,1,6,4],
@@ -292,7 +292,7 @@
       purple: [6,0,4,1,3,2,5]
     };
 
-    // State: điểm & currentQuestion per team (index into their own order)
+    // State: điểm & currentQuestion per team (local GV variables)
     const teamScores = { red:0, blue:0, green:0, yellow:0, purple:0 };
     const currentQuestion = { red:0, blue:0, green:0, yellow:0, purple:0 };
 
@@ -310,33 +310,40 @@
 
     // ensure DOM loaded
     window.addEventListener('load', () => {
-      generateQRCodes(); // **QUAN TRỌNG: Tạo mã QR ngay khi tải trang**
+      generateQRCodes();
       renderTeams();
       attachEvents();
-      listenControlState(); 
-      listenSubmissionsRealtime();
+      listenControlState();
       listenTeamStateRealtime(); 
+      listenSubmissionsRealtime();
       updateAllDisplays();
     });
 
-    // ========== Generate QR codes ==========
+    // ========== Generate QR codes (ĐÃ SỬA LỖI ĐƯỜNG DẪN) ==========
     function generateQRCodes(){
       qrContainer.innerHTML = '';
       teams.forEach(team=>{
         const box = document.createElement('div');
         box.className = 'qr-item';
         const canvas = document.createElement('canvas');
+        
+        // KHẮC PHỤC: Sử dụng logic thay thế đường dẫn linh hoạt
+        const currentPath = window.location.pathname;
+        let hs_path = currentPath.replace('gv.html','hs.html'); // Cho tên file thường
+        hs_path = hs_path.replace('GV.html','hs.html'); // Cho tên file hoa
+        
         // Đảm bảo URL trỏ đúng đến hs.html
-        const url = `${window.location.origin}${window.location.pathname.replace('gv.html','hs.html')}?teamId=${team.id}`;
+        const url = `${window.location.origin}${hs_path}?teamId=${team.id}`;
         
         QRCode.toCanvas(canvas, url, { width: 140 }).then(()=>{
           // console.log(`QR for ${team.id} generated.`);
         }).catch(err=>{
-          // Nếu không tạo được (thường do môi trường), hiển thị link thay thế
           const errorMsg = document.createElement('div');
           errorMsg.textContent = `Lỗi QR. Link: ${url}`;
+          errorMsg.style.fontSize = '0.7rem';
+          errorMsg.style.wordBreak = 'break-all';
           box.appendChild(errorMsg);
-          console.error("QR Code Error:", err);
+          console.error("QR Code Error (sử dụng URL fallback):", err);
         });
         
         const label = document.createElement('div');
@@ -350,7 +357,8 @@
       });
     }
 
-    // ========== Render teams on GV ==========
+    // (Các hàm logic game và Firebase giữ nguyên như phiên bản đã sửa đồng bộ)
+    
     function renderTeams(){
       teamsGrid.innerHTML = '';
       teams.forEach(team=>{
@@ -372,10 +380,8 @@
       updateAllDisplays();
     }
 
-    // ========== Attach UI events (Logic chuyển màn hình) ==========
     function attachEvents(){
       startMissionBtn.addEventListener('click', () => {
-        // **CHUYỂN SANG GIAO DIỆN CHƠI**
         setupScreen.style.display = 'none';
         gameInterface.style.display = 'block';
         gameInterface.removeAttribute('aria-hidden');
@@ -383,7 +389,6 @@
       });
 
       backToQR.addEventListener('click', () => {
-        // **TRỞ VỀ GIAO DIỆN QR**
         gameInterface.style.display = 'none';
         setupScreen.style.display = 'block';
       });
@@ -399,7 +404,7 @@
           });
 
         }catch(e){ console.error(e) }
-        startCountdown(); 
+        startCountdown();
         updateAllDisplays();
       });
 
@@ -410,8 +415,7 @@
         updateAllDisplays();
       });
     }
-
-    // (Giữ nguyên Countdown logic)
+    
     let countdownTimer = null;
     let timeLeft = 10*60; 
     function startCountdown(){
@@ -434,7 +438,6 @@
       countdownEl.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
     }
 
-    // (Giữ nguyên các hàm lắng nghe Firebase)
     function listenControlState(){
       db.collection('control').doc('state').onSnapshot(doc=>{
         const data = doc.data();
@@ -443,8 +446,8 @@
         if(data.startGame){
           teams.forEach(t=>{
             const idx = currentQuestion[t.id];
-            const globalIdx = questionOrder[t.id][idx];
-            const qText = questions[globalIdx] || "Đã hoàn thành toàn bộ câu hỏi!";
+            const globalIdx = (questionOrder[t.id] && questionOrder[t.id][idx] !== undefined) ? questionOrder[t.id][idx] : -1;
+            const qText = (globalIdx !== -1) ? questions[globalIdx] : "Đã hoàn thành toàn bộ câu hỏi!";
             const qEl = document.getElementById(`question-${t.id}`);
             if(qEl) qEl.textContent = qText;
           });
@@ -457,7 +460,7 @@
         }
       });
     }
-    
+
     function listenTeamStateRealtime() {
         teams.forEach(team => {
             db.collection('teamState').doc(team.id).onSnapshot(doc => {
@@ -501,41 +504,46 @@
     async function processSubmission(data, docId){
       try{
         const teamId = data.teamId;
-        const answerRaw = (data.answer||'').toString().trim().toLowerCase();
+        // Chuẩn hóa đáp án (bỏ qua chữ hoa/thường, dấu)
+        const answerRaw = (data.answer||'').toString().trim().toLowerCase().replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a").replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e").replace(/ì|í|ị|ỉ|ĩ/g, "i").replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o").replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u").replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y").replace(/đ/g, "d");
         
         const qPos = (typeof data.questionIndex === 'number') ? data.questionIndex : (currentQuestion[teamId] || 0);
+
+        if(qPos !== currentQuestion[teamId]){ 
+            notify(`${getTeamName(teamId)} gửi đáp án cũ/trễ cho câu ${qPos+1}. Bỏ qua xử lý.`);
+            return;
+        }
 
         const globalIdx = (questionOrder[teamId] && questionOrder[teamId][qPos] !== undefined) ? questionOrder[teamId][qPos] : questionOrder['red'][qPos];
         const correct = (correctAnswers[globalIdx]||'').toLowerCase();
         
         let newScore = teamScores[teamId];
-        let newQIndex = currentQuestion[teamId];
-
-        if(qPos === currentQuestion[teamId]){ 
-             if(answerRaw === 'skip'){
-                newScore = (newScore || 0) - 10;
-                newQIndex = Math.min(questions.length, (newQIndex || 0) + 1); 
-                notify(`${getTeamName(teamId)} đã bỏ qua câu ${qPos+1} (-10đ)`);
-            } else if(answerRaw === correct){
-                newScore = (newScore || 0) + 10;
-                newQIndex = Math.min(questions.length, (newQIndex || 0) + 1);
-                notify(`${getTeamName(teamId)} trả lời đúng (+10đ)`);
-            } else {
-                notify(`${getTeamName(teamId)} trả lời sai.`);
-            }
-            
-            teamScores[teamId] = newScore;
-            currentQuestion[teamId] = newQIndex;
-
-            await db.collection('teamState').doc(teamId).set({ 
-                score: newScore,
-                currentQIndex: newQIndex,
-                timestamp: new Date()
-            }, { merge: true });
-
+        let newQIndex = currentQuestion[teamId]; 
+        
+        const maxQIndex = questions.length; 
+        
+        if(answerRaw === 'skip' || answerRaw === 'bỏ qua'){
+            newScore = (newScore || 0) - 10;
+            newQIndex = Math.min(maxQIndex, (newQIndex || 0) + 1); 
+            notify(`${getTeamName(teamId)} đã bỏ qua câu ${qPos+1} (-10đ)`);
+        } else if(answerRaw === correct){
+            newScore = (newScore || 0) + 10;
+            newQIndex = Math.min(maxQIndex, (newQIndex || 0) + 1);
+            notify(`${getTeamName(teamId)} trả lời đúng (+10đ)`);
         } else {
-            notify(`${getTeamName(teamId)} gửi đáp án cũ/trễ cho câu ${qPos+1}. Bỏ qua xử lý.`);
+            notify(`${getTeamName(teamId)} trả lời sai.`);
+            // Sai thì không tăng index
         }
+            
+        // Cập nhật biến cục bộ và ĐẨY LÊN FIRESTORE
+        teamScores[teamId] = newScore;
+        currentQuestion[teamId] = newQIndex;
+
+        await db.collection('teamState').doc(teamId).set({ 
+            score: newScore,
+            currentQIndex: newQIndex,
+            timestamp: new Date()
+        }, { merge: true });
         
       }catch(e){
         console.error('processSubmission error',e);
@@ -544,7 +552,6 @@
       }
     }
 
-    // (Giữ nguyên helpers)
     function getTeamName(id){ const t=teams.find(x=>x.id===id); return t? t.name : id; }
     function notify(msg){ console.log(msg); }
 
@@ -584,4 +591,3 @@
   </script>
 </body>
 </html>
-
