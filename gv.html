@@ -50,7 +50,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 
 /* === QR ở giao diện đầu === */
 #qr-list {
-  /* Giữ display:flex để hiển thị đúng khi ở giao diện 1 */
+  /* Bỏ !important hoặc giữ lại nếu muốn JS ghi đè */
   display:flex !important; 
   flex-wrap:wrap;
   justify-content:center;
@@ -185,7 +185,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   font-size: 1.8em; 
   font-weight: 700;
   line-height: 1.3;
-  color: #ffffff; 
+  color: #f1c40f; 
 }
 
 /* Hàng đợi duyệt đáp án (CSS cho mục rút gọn) */
@@ -257,7 +257,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 .treasure-image {
     width: 250px; 
     height: 250px;
-    /* CẬP NHẬT ĐƯỜNG DẪN TỪ GITHUB CỦA BẠN */
+    /* ĐƯỜNG DẪN RƯƠNG ĐÓNG */
     background-image: url('https://raw.githubusercontent.com/blackdesert2319-sudo/25-c-u/main/treasure-closed.png'); 
     background-size: contain;
     background-repeat: no-repeat;
@@ -265,7 +265,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     transition: transform 1s ease-in-out;
 }
 .opened .treasure-image {
-    /* CẬP NHẬT ĐƯỜNG DẪN TỪ GITHUB CỦA BẠN */
+    /* ĐƯỜNG DẪN RƯƠNG MỞ */
     background-image: url('https://raw.githubusercontent.com/blackdesert2319-sudo/25-c-u/main/treasure-opened.png'); 
     animation: shake 0.5s;
 }
@@ -547,9 +547,9 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 
   // HÀM SỬA: Chỉ hiển thị giao diện chơi và ẩn main-controls
   function showGameLayout(){
-    // DÒNG NÀY ĐỂ ẨN QR
-    document.getElementById("qr-list").style.display="none"; 
-    document.getElementById("main-controls").style.display="none"; 
+    // DÒNG QUAN TRỌNG: Ghi đè display="none" bằng !important để khắc phục xung đột CSS
+    document.getElementById("qr-list").style.setProperty('display', 'none', 'important');
+    document.getElementById("main-controls").style.setProperty('display', 'none', 'important'); 
 
     document.getElementById("game-wrapper").style.display="block";
     renderTeams(); // VẼ LẠI GIAO DIỆN CÁC ĐỘI
@@ -672,8 +672,8 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       overlay.style.display = "flex";
       isTreasureOverlayOpen = true;
       
-      // THÊM: Đảm bảo ẩn khối QR khi Overlay mở (phòng trường hợp gọi từ nút)
-      document.getElementById("qr-list").style.display="none"; 
+      // THÊM: Đảm bảo ẩn khối QR khi Overlay mở 
+      document.getElementById("qr-list").style.setProperty('display', 'none', 'important');
 
       // Xóa class 'opened' cũ nếu có
       overlay.querySelector('#treasure-box-container')?.classList.remove('opened');
@@ -738,7 +738,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
       document.getElementById("game-wrapper").style.display="none"; // Ẩn giao diện game
       
       // THÊM: Đảm bảo ẩn QR khi game kết thúc
-      document.getElementById("qr-list").style.display="none"; 
+      document.getElementById("qr-list").style.setProperty('display', 'none', 'important'); 
 
       // Hiển thị giao diện Rương Báu (không phải kết thúc, isFinal = false)
       renderTreasureOverlay(null, false); 
@@ -770,19 +770,21 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
               document.getElementById("submission-queue-area").style.display="block";
               document.getElementById("game-wrapper").style.display="block"; // Đảm bảo wrapper hiển thị
               
-              // THÊM: Đảm bảo ẩn QR khi quay lại giao diện Game
-              document.getElementById("qr-list").style.display="none"; 
+              // Đảm bảo ẩn QR khi quay lại giao diện Game
+              document.getElementById("qr-list").style.setProperty('display', 'none', 'important'); 
           } else {
              // Khôi phục Giao diện 1 (QR và Nút chính)
              document.getElementById("main-controls").style.display="block";
-             document.getElementById("qr-list").style.display="flex"; 
+             document.getElementById("qr-list").style.setProperty('display', 'flex', 'important'); // HIỂN THỊ LẠI QR
           }
           isTreasureOverlayOpen = false;
       } else {
           // Mở Overlay (Tạm ẩn tất cả các giao diện khác)
           document.getElementById("game-wrapper").style.display="none";
           document.getElementById("main-controls").style.display="none"; 
-          document.getElementById("qr-list").style.display="none"; // DÒNG NÀY ĐỂ ẨN KHI MỞ OVERLAY
+          
+          // DÒNG NÀY ĐỂ ẨN KHI MỞ OVERLAY
+          document.getElementById("qr-list").style.setProperty('display', 'none', 'important'); 
 
           // Hiển thị giao diện Rương Báu
           renderTreasureOverlay(null, false); 
