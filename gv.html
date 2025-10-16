@@ -43,7 +43,7 @@ h1{color:#f1c40f;margin-bottom:10px;}
 </head>
 <body>
 <div id="timer">10:00</div>
-<h1>MẬT MÃ RƯƠNG BÁU: 5 ĐỘI TRANH TÀI</h1>
+<h1>MẬT MÃ RƯƠNG BÁU: 05 ĐỘI TRANH TÀI</h1>
 <button id="transitionButton">BẮT ĐẦU PHI VỤ!</button>
 
 <div id="game-wrapper" style="display:none;">
@@ -93,8 +93,28 @@ window.transitionToGame=function(){
 document.getElementById('transitionButton').onclick=transitionToGame;
 
 // ✅ Đã sửa QR trỏ về hs.html
-window.generateQRCodes=function(){
- const BASE_CLIENT_URL = window.location.origin + '/hs.html?v=2';
+window.generateQRCodes = function() {
+  // Link chính xác tới file hs.html trên GitHub Pages
+  const BASE_CLIENT_URL = "https://blackdesert2319-sudo.github.io/25-c-u/hs.html?v=2";
+
+  const qrList = document.getElementById('qr-list');
+  qrList.innerHTML = '';
+  teams.forEach(team => {
+    const link = `${BASE_CLIENT_URL}?teamId=${team.id}`;
+    const div = document.createElement('div');
+    div.className = 'qr-item';
+    div.innerHTML = `<p>${team.name}</p><div id="qr-${team.id}"></div><small>${link}</small>`;
+    qrList.appendChild(div);
+    new QRCode(document.getElementById(`qr-${team.id}`), {
+      text: link,
+      width: 150,
+      height: 150,
+      colorDark: "#000",
+      colorLight: "#fff",
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  });
+};
  const qrList=document.getElementById('qr-list');
  qrList.innerHTML='';
  teams.forEach(team=>{
@@ -175,5 +195,6 @@ function startTimer(){
 </script>
 </body>
 </html>
+
 
 
