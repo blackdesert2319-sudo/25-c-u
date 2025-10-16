@@ -11,33 +11,158 @@
 <script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore-compat.js"></script>
 
 <style>
-body { font-family:'Arial',sans-serif; display:flex; flex-direction:column; align-items:center; background:#282c34; color:#fff; padding:10px; min-height:100vh; }
-h1{color:#f1c40f;margin-bottom:10px;}
-#timer{position:fixed;top:10px;right:10px;font-size:2.5em;font-weight:bold;color:#e74c3c;background:#f1c40f;padding:5px 15px;border-radius:10px;display:none;}
-.qr-item{width:180px;margin:10px;padding:10px;border-radius:8px;background:white;color:#333;text-align:center;font-weight:bold;}
-.qr-item img{width:150px;height:150px;border:2px solid #333;margin-bottom:5px;}
-#qr-list{display:flex;justify-content:space-around;flex-wrap:wrap;margin-top:15px;}
-button{cursor:pointer;}
-.team-row{display:flex;align-items:stretch;margin-bottom:10px;padding:0;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,0.4);border:2px solid transparent;min-height:100px;}
-.team-red{background:#e74c3c;border-color:#c0392b;}
-.team-blue{background:#3498db;border-color:#2980b9;}
-.team-green{background:#2ecc71;border-color:#27ae60;}
-.team-yellow{background:#f1c40f;color:#333;border-color:#f39c12;}
-.team-purple{background:#9b59b6;border-color:#8e44ad;}
-.team-yellow .team-score-value,.team-yellow .q-text{color:#333;}
-.team-score-control{width:90px;text-align:center;display:flex;flex-direction:column;justify-content:center;border-right:1px solid rgba(255,255,255,0.3);}
-.team-score-value{font-size:2em;font-weight:900;margin-bottom:5px;}
-.team-status-area{width:250px;padding:10px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid rgba(255,255,255,0.3);}
-.q-status-item{width:18px;height:18px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:0.7em;font-weight:bold;color:white;background:#7f8c8d;margin-bottom:3px;}
-.status-ready{background:#3498db;}
-.status-correct{background:#2ecc71;}
-.team-question-area{flex-grow:1;padding:5px 15px;display:flex;flex-direction:column;justify-content:center;}
-.q-number{font-weight:bold;}
-.q-text{font-size:1.2em;font-weight:700;line-height:1.2;}
-.submission-item{padding:12px;margin-bottom:8px;background:#2c3e50;border-radius:5px;display:flex;justify-content:space-between;align-items:center;border-left:5px solid #f1c40f;}
-.submission-item button{padding:8px 15px;background:#e67e22;color:white;border:none;border-radius:5px;font-weight:bold;}
-#submission-queue-area{width:100%;max-width:1000px;background:#34495e;border-radius:10px;margin-top:20px;padding:15px;}
+body {
+  font-family:'Arial',sans-serif;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  background:#282c34;
+  color:#fff;
+  padding:10px;
+  min-height:100vh;
+}
+
+h1 {
+  color:#f1c40f;
+  margin-bottom:10px;
+}
+
+#timer {
+  position:fixed;
+  top:10px;
+  right:10px;
+  font-size:2.5em;
+  font-weight:bold;
+  color:#e74c3c;
+  background:#f1c40f;
+  padding:5px 15px;
+  border-radius:10px;
+  display:none;
+}
+
+.qr-item {
+  width:180px;
+  margin:10px;
+  padding:10px;
+  border-radius:8px;
+  background:white;
+  color:#333;
+  text-align:center;
+  font-weight:bold;
+}
+.qr-item img {
+  width:150px;
+  height:150px;
+  border:2px solid #333;
+  margin-bottom:5px;
+}
+#qr-list {
+  display:flex;
+  justify-content:space-around;
+  flex-wrap:wrap;
+  margin-top:15px;
+}
+
+button {
+  cursor:pointer;
+}
+
+/* === Giao diện mỗi đội === */
+.team-row {
+  display:flex;
+  flex-direction:column;
+  background:#3498db;
+  border-radius:8px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.4);
+  margin-bottom:10px;
+  padding:10px;
+  min-height:160px;
+  border:2px solid rgba(255,255,255,0.2);
+}
+
+/* Màu đội */
+.team-red{background:#e74c3c;}
+.team-blue{background:#3498db;}
+.team-green{background:#2ecc71;}
+.team-yellow{background:#f1c40f;color:#333;}
+.team-purple{background:#9b59b6;}
+
+.team-score-control {
+  text-align:left;
+  font-weight:bold;
+  font-size:1.2em;
+  margin-bottom:5px;
+}
+.team-score-value {
+  font-size:2.2em;
+  font-weight:900;
+  margin-right:8px;
+  display:inline-block;
+}
+.team-question-area {
+  padding:10px 0;
+}
+.q-number {
+  font-weight:bold;
+  font-size:1.1em;
+  margin-bottom:4px;
+}
+.q-text {
+  font-size:1.6em; /* Tăng kích cỡ câu hỏi */
+  font-weight:700;
+  line-height:1.4;
+}
+
+/* Thanh trạng thái 7 câu — NẰM NGANG DƯỚI CÂU HỎI */
+.team-status-area {
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  margin-top:10px;
+}
+.q-status-item {
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:0.9em;
+  font-weight:bold;
+  color:white;
+  background:#7f8c8d;
+}
+.status-ready { background:#2980b9; }
+.status-correct { background:#2ecc71; }
+
+.submission-item {
+  padding:12px;
+  margin-bottom:8px;
+  background:#2c3e50;
+  border-radius:5px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-left:5px solid #f1c40f;
+}
+.submission-item button {
+  padding:8px 15px;
+  background:#e67e22;
+  color:white;
+  border:none;
+  border-radius:5px;
+  font-weight:bold;
+}
+#submission-queue-area {
+  width:100%;
+  max-width:1000px;
+  background:#34495e;
+  border-radius:10px;
+  margin-top:20px;
+  padding:15px;
+}
 </style>
+
 </head>
 <body>
 
@@ -202,4 +327,5 @@ function renderTeams(){
 
 </body>
 </html>
+
 
