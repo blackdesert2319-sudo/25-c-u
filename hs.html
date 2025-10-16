@@ -210,10 +210,9 @@
         });
     }
 
-    // HÀM SỬA: Hiển thị cả 2 index
+    // HÀM SỬA: Chỉ hiển thị C index
     function updateQuestionDisplay() {
-        const actualQCode = generateActualQuestionCode(currentQuestionIndex);
-        document.getElementById('question-display').textContent = `Câu hiện tại: C${currentQuestionIndex} (${actualQCode})`;
+        document.getElementById('question-display').textContent = `Câu hiện tại: C${currentQuestionIndex}`; // Chỉ hiển thị C index
     }
 
     // HÀM SỬA: Gửi đáp án
@@ -241,7 +240,7 @@
           timestamp: serverTimestamp(),
           status: "pending"
         });
-        status.textContent = `Đã gửi đáp án '${answer}'. Chờ GV duyệt. (Câu C${currentQuestionIndex} - ${actualQCode})`;
+        status.textContent = `Đã gửi đáp án '${answer}'. Chờ GV duyệt. (Câu C${currentQuestionIndex})`;
         status.style.color = "#2ecc71";
         resetStatusMessage(); 
       } catch {
@@ -271,7 +270,7 @@
           status: "pending"
         });
         
-        status.textContent = `Đã gửi yêu cầu bỏ qua cho C${currentQuestionIndex} (${actualQCode}). Chờ GV duyệt.`;
+        status.textContent = `Đã gửi yêu cầu bỏ qua cho C${currentQuestionIndex}. Chờ GV duyệt.`;
         status.style.color = "#e67e22";
         resetStatusMessage(); 
       } catch {
