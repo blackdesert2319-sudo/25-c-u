@@ -471,7 +471,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     let bgColor = '#2c3e50'; 
     
     if (data.action === 'skip') {
-      label = `${teamName}: BỎ QUA`;
+      label = `${teamName}: BỎ`;
       bgColor = '#e67e22'; 
     } else {
       label = `${teamName}: ${data.answer.toUpperCase()}`;
@@ -484,13 +484,13 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     div.style.backgroundColor = bgColor;
     div.style.borderLeftColor = team ? teamColorMap[team.color] : '#f1c40f';
     div.style.alignItems = 'center';
-    div.style.padding = '10px 8px';
+    div.style.padding = '3px 2px';
     div.style.color = '#fff';
     div.style.textAlign = 'center';
 
     div.innerHTML = `
-      <div style="font-size:1.4em; font-weight:bold; margin-bottom: 5px;">${label}</div>
-      <button onclick="approveSubmission('${docId}', '${data.teamId}', '${data.action || 'answer'}')">DUYỆT</button>
+      <div style="font-size:1em; font-weight:bold; margin-bottom: 3px;">${label}</div>
+      <button onclick="approveSubmission('${docId}', '${data.teamId}', '${data.action || 'answer'}')">duyệt</button>
     `;
     
     return div;
@@ -541,3 +541,4 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 </script>
 </body>
 </html>
+
