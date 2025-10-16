@@ -1,230 +1,395 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>GV - Mật Mã Thám Tử</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mật Mã Rương Báu - GV (Ẩn QR + Xóa "Câu")</title>
+
+<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
 <style>
 body {
-  font-family: Arial, sans-serif;
-  background-color: #1a1a2e;
-  color: white;
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
+  font-family:'Arial',sans-serif;
+  background:#1e1e1e;
+  color:#fff;
+  margin:0;
+  padding:0;
+  overflow-x:hidden;
 }
-header {
-  background-color: #16213e;
-  text-align: center;
-  padding: 15px;
-  font-size: 1.5em;
-  color: #f1c40f;
-  font-weight: bold;
-}
-#controls {
-  text-align: center;
-  margin: 20px;
-}
-button {
-  font-size: 1.1em;
-  font-weight: bold;
-  padding: 10px 25px;
-  border: none;
-  border-radius: 10px;
-  margin: 5px;
-  cursor: pointer;
-}
-#startBtn { background-color: #2ecc71; }
-#startBtn:hover { background-color: #27ae60; }
-#startGameBtn { background-color: #3498db; display:none; }
-#startGameBtn:hover { background-color: #2980b9; }
-#endBtn { background-color: #e74c3c; display:none; }
-#endBtn:hover { background-color: #c0392b; }
+h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 #timer {
-  font-size: 2em;
-  color: #f1c40f;
+  position:fixed;
+  top:8px; left:12px;
+  font-size:2.2em; font-weight:bold;
+  color:#e74c3c; background:#f1c40f;
+  padding:4px 12px; border-radius:8px;
+  display:none;
+  z-index:10;
+}
+#endEarlyBtn {
+  position:fixed;
+  top:15px; left:130px;
+  font-size:1.1em;
+  background:#e67e22;
+  color:white;
+  border:none;
+  border-radius:8px;
+  padding:6px 14px;
+  font-weight:bold;
+  cursor:pointer;
+  display:none;
+  z-index:10;
+}
+
+/* === QR ở giao diện đầu === */
+#qr-list {
+  display:flex !important;
+  flex-wrap:wrap;
+  justify-content:center;
+  align-items:center;
+  gap:12px;
+  margin-top:20px;
+}
+.qr-item {
+  width:180px;
+  margin:10px;
+  padding:10px;
+  border-radius:8px;
+  background:white;
+  color:#333;
+  text-align:center;
+  font-weight:bold;
+  border: 2px solid transparent;
+}
+.qr-item img {
+  width:150px; height:150px;
+  border:2px solid transparent;
+  margin-bottom:5px;
+}
+
+/* THÊM KHỐI NÀY VÀO PHẦN <style> */
+.qr-item.team-red {
+    border-color: #e74c3c; /* Đỏ */
+}
+
+.qr-item.team-blue {
+    border-color: #3498db; /* Xanh Lam */
+}
+
+.qr-item.team-green {
+    border-color: #2ecc71; /* Xanh Lục */
+}
+
+.qr-item.team-yellow {
+    border-color: #f1c40f; /* Vàng */
+}
+
+.qr-item.team-purple {
+    border-color: #9b59b6; /* Tím */
+}
+
+/* === GIAO DIỆN 2 === */
+#game-wrapper { display:none; position:relative; }
+.game-layout {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  margin: 0;
+  padding: 0 10px;
+  box-sizing: border-box;
+}
+
+/* Cột trái: các đội */
+#team-rows-container {
+  flex: 1;
+  margin-right: 15px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+}
+
+/* Cột phải: hàng đợi */
+#submission-queue-area {
+  width: 120px;
+  background: #34495e;
+  border-radius: 10px;
+  padding: 8px;
+  height: calc(100vh - 40px);
+  overflow-y: auto;
+  position: fixed;
+  right: 0;
+  top: 0;
+}
+#submission-queue-area h2 {
+  font-size: 1em;
   text-align: center;
+  color: #f1c40f;
   margin-bottom: 10px;
 }
-#teams-wrapper {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 10px;
-  margin: 10px;
+
+/* === KHUNG MỖI ĐỘI === */
+.team-row {
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  width:100%;
+  padding:8px 18px;
+  border-radius:10px;
+  box-shadow:0 2px 5px rgba(0,0,0,0.4);
+  min-height:95px;
 }
-.team-card {
-  border-radius: 15px;
-  padding: 10px;
-  text-align: center;
-  font-size: 1.2em;
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+.team-red{background:#e74c3c;}
+.team-blue{background:#3498db;}
+.team-green{background:#2ecc71;}
+.team-yellow{background:#f1c40f;color:#333;}
+.team-purple{background:#9b59b6;}
+
+.team-score-control {
+  width:160px;
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
 }
-.team-red { background-color: #e74c3c; }
-.team-blue { background-color: #3498db; }
-.team-green { background-color: #27ae60; }
-.team-yellow { background-color: #f1c40f; color:#333; }
-.team-purple { background-color: #9b59b6; }
-#submission-queue {
-  background-color: #111;
-  padding: 15px;
-  margin: 10px;
-  border-radius: 10px;
+.team-score-value {
+  font-size:2.5em;
+  font-weight:900;
+  background:rgba(255,255,255,0.25);
+  padding:2px 12px;
+  border-radius:8px;
 }
-.overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.9);
-  color: white;
-  display: none;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  z-index: 999;
+.q-status-item {
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  font-size:1.1em;
+  font-weight:bold;
+  color:white;
+  background:#2980b9;
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
-.overlay h1 { font-size: 3em; color: #f1c40f; }
+
+.team-question-area {
+  flex:1;
+  padding-left:20px;
+  display:none; /* ẩn trước khi start */
+}
+.q-text {
+  font-size:2.3em;
+  font-weight:700;
+  line-height:1.3;
+}
+
+/* Hàng đợi duyệt đáp án */
+.submission-item {
+  padding:8px;
+  margin-bottom:8px;
+  background:#2c3e50;
+  border-radius:6px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  border-left:4px solid #f1c40f;
+}
+.submission-item b { color:#f1c40f; }
+.submission-item button {
+  padding:5px 10px;
+  background:#e67e22;
+  color:white;
+  border:none;
+  border-radius:5px;
+  font-weight:bold;
+  margin-top:5px;
+  font-size:0.9em;
+}
+
+/* START BUTTON */
+#startGameBtn {
+  position:absolute;
+  top:0px; /* Đặt cách đáy 10 pixel */
+  left:100px;
+  transform:translate(-50%, -50%);
+  font-size:2em;
+  padding:14px 30px;
+  border:none;
+  border-radius:10px;
+  background:#2ecc71;
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+  display:none;
+  z-index:10;
+}
+
+/* OVERLAY KẾT THÚC */
+#endOverlay {
+  display:none;
+  position:fixed;
+  top:0; left:0; right:0; bottom:0;
+  background:rgba(241,196,15,0.9);
+  color:#000;
+  z-index:20;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  text-align:center;
+}
+#endOverlay h1 {
+  font-size:3em;
+  margin-bottom:20px;
+}
+#endOverlay .scoreboard {
+  font-size:2em;
+  line-height:1.5;
+  font-weight:bold;
+}
 </style>
 </head>
+
 <body>
-<header>GIAO DIỆN GIÁO VIÊN</header>
-<div id="controls">
-  <button id="startBtn">BẮT ĐẦU PHI VỤ</button>
-  <button id="startGameBtn">START</button>
-  <button id="endBtn">KẾT THÚC SỚM</button>
-</div>
-<div id="timer">10:00</div>
-<div id="teams-wrapper"></div>
-<div id="submission-queue">
-  <h2>HÀNG ĐỢI DUYỆT ĐÁP ÁN</h2>
-  <div id="queue-content"></div>
-</div>
-<div class="overlay" id="overlay">
-  <h1>KẾT THÚC TRÒ CHƠI</h1>
-  <div id="final-scores"></div>
-</div>
+  <h1>CHIẾN THẮNG KHI HOÀN THÀNH 7 CÂU HỎI NHANH NHẤT</h1>
+  <div id="qr-list"></div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+  <button id="startBtn" onclick="showGame()" style="padding:12px 22px;font-size:1.2em;background:#f1c40f;color:#222;border:none;border-radius:8px;margin:20px;font-weight:bold;cursor:pointer;">
+    BẮT ĐẦU VÒNG 3!
+  </button>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDfcMrblRonAS9Q7BSfD9ZZYeOmSy4UjfQ",
-  authDomain: "nutnhap.firebaseapp.com",
-  projectId: "nutnhap",
-  storageBucket: "nutnhap.firebasestorage.app",
-  messagingSenderId: "359344838873",
-  appId: "1:359344838873:web:d1746d32920881091c86c8",
-  measurementId: "G-0VTTNLWDD9"
-};
+  <div id="game-wrapper">
+    <div id="timer">10:00</div>
+    <button id="endEarlyBtn" onclick="endGame()">KẾT THÚC SỚM</button>
+    <button id="startGameBtn" onclick="startCountdown()">START</button>
+    <div class="game-layout">
+      <div id="team-rows-container"></div>
+      <div id="submission-queue-area">
+        <h2>HÀNG ĐỢI DUYỆT ĐÁP ÁN</h2>
+      </div>
+    </div>
+  </div>
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+  <div id="endOverlay">
+    <h1>🏆 TRÒ CHƠI KẾT THÚC 🏆</h1>
+    <div class="scoreboard" id="finalScores"></div>
+  </div>
 
+<script>
 const teams = [
-  { id: 'red', name: 'Đội Đỏ', colorClass: 'team-red', score: 0, current: 0 },
-  { id: 'blue', name: 'Đội Xanh', colorClass: 'team-blue', score: 0, current: 0 },
-  { id: 'green', name: 'Đội Lá', colorClass: 'team-green', score: 0, current: 0 },
-  { id: 'yellow', name: 'Đội Vàng', colorClass: 'team-yellow', score: 0, current: 0 },
-  { id: 'purple', name: 'Đội Tím', colorClass: 'team-purple', score: 0, current: 0 }
+  { name: "Đội Đỏ", color: "team-red", id: "red", score: 0 },
+  { name: "Đội Xanh", color: "team-blue", id: "blue", score: 0 },
+  { name: "Đội Lục", color: "team-green", id: "green", score: 0 },
+  { name: "Đội Vàng", color: "team-yellow", id: "yellow", score: 0 },
+  { name: "Đội Tím", color: "team-purple", id: "purple", score: 0 }
 ];
 
-function renderTeams() {
-  const container = document.getElementById('teams-wrapper');
-  container.innerHTML = '';
-  teams.forEach(t => {
-    const div = document.createElement('div');
-    div.className = `team-card ${t.colorClass}`;
-    div.id = `team-${t.id}`;
-    div.innerHTML = `<h3>${t.name}</h3><p>Điểm: <span id="score-${t.id}">${t.score}</span></p><p>Câu hiện tại: <span id="q-${t.id}">${t.current+1}</span></p>`;
-    container.appendChild(div);
-  });
-}
-renderTeams();
+// Ánh xạ các class màu CSS sang mã màu Hex cho nền QR
+const teamColorMap = {
+    'team-red': '#f8d7da',        // Màu đỏ rất nhạt (light pastel red)
+    'team-blue': '#d0e0f0',       // Màu xanh lam rất nhạt (light pastel blue)
+    'team-yellow': '#fff3cd',      // Màu vàng rất nhạt (light pastel yellow)
+    'team-green': '#d4edda',       // Màu xanh lục rất nhạt (light pastel green)
+    'team-purple': '#e8d9ef'       // Màu tím rất nhạt (light pastel purple)
+};
 
 let timerInterval;
-let timeLeft = 600;
-document.getElementById('startBtn').onclick = () => {
-  document.getElementById('startBtn').style.display='none';
-  document.getElementById('startGameBtn').style.display='inline-block';
-}
-document.getElementById('startGameBtn').onclick = startGame;
-document.getElementById('endBtn').onclick = endGame;
+let totalSeconds = 600; // 10 phút
 
-function startGame(){
-  document.getElementById('startGameBtn').style.display='none';
-  document.getElementById('endBtn').style.display='inline-block';
-  startTimer();
-  listenForSubmissions();
-}
-function startTimer(){
-  const timerEl = document.getElementById('timer');
-  timerInterval = setInterval(()=>{
-    timeLeft--;
-    const m = Math.floor(timeLeft/60);
-    const s = timeLeft%60;
-    timerEl.textContent = `${m}:${s.toString().padStart(2,'0')}`;
-    if(timeLeft<=0) endGame();
-  },1000);
-}
-function endGame(){
-  clearInterval(timerInterval);
-  document.getElementById('overlay').style.display='flex';
-  const final = document.getElementById('final-scores');
-  final.innerHTML = teams.map(t=>`<p>${t.name}: ${t.score} điểm</p>`).join('');
-}
-
-function listenForSubmissions(){
-  const qDiv = document.getElementById('queue-content');
-  onSnapshot(collection(db, "submissions"), snapshot => {
-    qDiv.innerHTML='';
-    snapshot.docChanges().forEach(change=>{
-      if(change.type==='added'){
-        const data = change.doc.data();
-        const id = change.doc.id;
-        const team = teams.find(t=>t.id===data.teamId);
-        if(!team) return;
-        if(data.action==='skip'){
-          team.score -=10;
-          team.current++;
-          updateTeam(team);
-          deleteDoc(doc(db,'submissions',id));
-          addQueueMessage(`⚠️ ${team.name} bỏ qua câu ${data.questionIndex} (-10đ)`);
-        }else if(data.status==='pending'){
-          const div=document.createElement('div');
-          div.innerHTML=`<b>${team.name}</b> (Câu ${data.questionIndex}): ${data.answer}
-          <button onclick="window.approve('${id}','${team.id}',${data.questionIndex},true)">✅</button>
-          <button onclick="window.approve('${id}','${team.id}',${data.questionIndex},false)">❌</button>`;
-          qDiv.appendChild(div);
-        }
-      }
+window.onload = function() {
+  const qrList = document.getElementById("qr-list");
+  qrList.innerHTML = "";
+  const baseURL = location.href.replace(/[^/]*$/, "") + "hs.html";
+  teams.forEach(team => {
+    const div = document.createElement("div");
+    div.className = "qr-item " + team.color; // Thay thế dòng cũ bằng dòng này trong hàm window.onload
+    div.innerHTML = `<div>${team.name}</div><div id="qr-${team.id}"></div>`;
+    qrList.appendChild(div);
+    new QRCode(document.getElementById("qr-" + team.id), {
+      text: `${baseURL}?teamId=${team.id}`,
+      width: 150,
+      height: 150
     });
+  });
+};
+
+function showGame(){
+  // Xóa hoàn toàn phần mã QR để giải phóng không gian
+  const qrList = document.getElementById("qr-list");
+  if (qrList) qrList.remove();
+
+  document.getElementById("startBtn").style.display="none";
+  document.getElementById("game-wrapper").style.display="block";
+  renderTeams();
+  document.getElementById("startGameBtn").style.display="block";
+}
+
+
+function renderTeams(){
+  const container = document.getElementById("team-rows-container");
+  container.innerHTML = "";
+  teams.forEach(team=>{
+    const row=document.createElement("div");
+    row.className=`team-row ${team.color}`;
+    row.innerHTML=`
+      <div class="team-score-control">
+        <div class="team-score-value" id="score-${team.id}">0</div>
+        <div class="q-status-item" id="status-${team.id}">1</div>
+      </div>
+      <div class="team-question-area" id="qarea-${team.id}">
+        <div class="q-text">Cho CSC có $u_1=3$, $d=2$. Tìm $u_{10}$.</div>
+      </div>
+    `;
+    container.appendChild(row);
   });
 }
 
-window.approve = async function(id, teamId, qIndex, isCorrect){
-  const team = teams.find(t=>t.id===teamId);
-  if(!team) return;
-  if(isCorrect){
-    team.score +=10;
-    team.current++;
-    addQueueMessage(`✅ ${team.name} đúng câu ${qIndex} (+10đ)`);
-  }else{
-    addQueueMessage(`❌ ${team.name} sai câu ${qIndex}`);
+function startCountdown(){
+  document.getElementById("startGameBtn").style.display="none";
+  document.getElementById("timer").style.display="block";
+  document.getElementById("endEarlyBtn").style.display="block";
+  document.querySelectorAll('.team-question-area').forEach(el=>el.style.display='block');
+  MathJax.typeset();
+  timerInterval = setInterval(updateTimer,1000);
+}
+
+function updateTimer(){
+  const min = Math.floor(totalSeconds/60);
+  const sec = totalSeconds%60;
+  document.getElementById("timer").textContent = `${min}:${sec.toString().padStart(2,'0')}`;
+  if(totalSeconds <= 0){
+    clearInterval(timerInterval);
+    endGame();
   }
-  updateTeam(team);
-  await deleteDoc(doc(db,'submissions',id));
+  if(totalSeconds <= 10){
+    document.getElementById("timer").style.background="#e74c3c";
+  }
+  totalSeconds--;
 }
 
-function updateTeam(team){
-  document.getElementById(`score-${team.id}`).textContent = team.score;
-  document.getElementById(`q-${team.id}`).textContent = team.current+1;
-}
-
-function addQueueMessage(msg){
-  const qDiv = document.getElementById('queue-content');
-  const p=document.createElement('p');
-  p.textContent=msg;
-  qDiv.prepend(p);
+function endGame(){
+  clearInterval(timerInterval);
+  document.getElementById("timer").style.display="none";
+  document.getElementById("endEarlyBtn").style.display="none";
+  const overlay=document.getElementById("endOverlay");
+  overlay.style.display="flex";
+  let scoreHTML="";
+  teams.forEach(t=>{
+    const score = document.getElementById(`score-${t.id}`).textContent;
+    scoreHTML += `${t.name}: ${score} điểm<br>`;
+  });
+  document.getElementById("finalScores").innerHTML=scoreHTML;
 }
 </script>
 </body>
 </html>
+
