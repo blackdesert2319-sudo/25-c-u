@@ -15,6 +15,7 @@ window.MathJax = {
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 
 <style>
+/* ... (Phần CSS giữ nguyên) ... */
 body {
   font-family:'Arial',sans-serif;
   background:#1e1e1e;
@@ -272,7 +273,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   <div id="game-wrapper">
     <div id="timer">10:00</div>
     <button id="endEarlyBtn" onclick="endGame()">KẾT THÚC SỚM</button>
-    <button id="startGameBtn" onclick="startCountdown()">START</button>
+    <button id="startGameBtn">START</button> 
     <div class="game-layout">
       <div id="team-rows-container"></div>
       <div id="submission-queue-area">
@@ -388,6 +389,8 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     timerInterval = setInterval(updateTimer,1000);
   }
 
+  // Các hàm còn lại (updateTimer, endGame, updateTeam, approveSubmission, renderSubmissionItem, listenForSubmissions) giữ nguyên
+
   function updateTimer(){
     const min = Math.floor(totalSeconds/60);
     const sec = totalSeconds%60;
@@ -462,23 +465,19 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     const data = doc.data();
     const docId = doc.id;
     const team = teams.find(t => t.id === data.teamId);
-    const teamName = team ? team.name.split(' ')[1] : '???'; // Lấy tên rút gọn (Đỏ, Xanh, Tím...)
+    const teamName = team ? team.name.split(' ')[1] : '???'; 
     
     let label = '';
     let bgColor = '#2c3e50'; 
     
     if (data.action === 'skip') {
-      // Yêu cầu BỎ QUA
       label = `${teamName}: BỎ QUA`;
-      bgColor = '#e67e22'; // Màu cam
+      bgColor = '#e67e22'; 
     } else {
-      // Gửi ĐÁP ÁN
-      // Chỉ hiển thị: Tên đội rút gọn + Đáp án (ví dụ: Tím: 34)
       label = `${teamName}: ${data.answer.toUpperCase()}`;
-      bgColor = '#2ecc71'; // Màu xanh lá
+      bgColor = '#2ecc71'; 
     }
 
-    // Cấu trúc HTML rút gọn: chỉ hiển thị label và nút DUYỆT
     const div = document.createElement('div');
     div.className = 'submission-item';
     div.id = `sub-${docId}`;
@@ -514,23 +513,28 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
         const existingItem = document.getElementById(`sub-${docId}`);
 
         if (change.type === "added" && !existingItem) {
-          // Thêm yêu cầu mới vào đầu hàng đợi
           const itemElement = renderSubmissionItem(doc);
-          queueContainer.insertBefore(itemElement, queueContainer.children[1]); // Chèn sau h2
+          queueContainer.insertBefore(itemElement, queueContainer.children[1]); 
         } 
         else if (change.type === "removed" && existingItem) {
-          // Xóa yêu cầu đã được xử lý (Firebase tự xóa item khi deleteDoc)
           existingItem.remove();
         }
       });
     });
   }
   
-  // === LỖI ĐÃ ĐƯỢC SỬA: Gắn sự kiện click cho nút BẮT ĐẦU VÒNG 3! ===
+  // === SỬA LỖI GẮN SỰ KIỆN CHO CẢ 2 NÚT TRONG MODULE SCRIPT ===
   document.addEventListener('DOMContentLoaded', () => {
+    // 1. Nút BẮT ĐẦU VÒNG 3!
     const startBtn = document.getElementById("startBtn");
     if (startBtn) {
       startBtn.addEventListener('click', showGame);
+    }
+    
+    // 2. Nút START (ở giao diện 2)
+    const startGameBtn = document.getElementById("startGameBtn");
+    if (startGameBtn) {
+        startGameBtn.addEventListener('click', startCountdown);
     }
   });
 
