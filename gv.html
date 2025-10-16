@@ -184,7 +184,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
   font-size: 1.8em; 
   font-weight: 700;
   line-height: 1.3;
-  color: #f1c40f; 
+  color: #ffffff; 
 }
 
 /* Hàng đợi duyệt đáp án (CSS cho mục rút gọn) */
@@ -256,7 +256,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
 .treasure-image {
     width: 250px; 
     height: 250px;
-    /* CẬP NHẬT ĐƯỜNG DẪN TỪ GITHUB CỦA BẠN */
+    /* ĐƯỜNG DẪN RƯƠNG ĐÓNG */
     background-image: url('https://raw.githubusercontent.com/blackdesert2319-sudo/25-c-u/main/treasure-closed.png'); 
     background-size: contain;
     background-repeat: no-repeat;
@@ -264,7 +264,7 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     transition: transform 1s ease-in-out;
 }
 .opened .treasure-image {
-    /* CẬP NHẬT ĐƯỜNG DẪN TỪ GITHUB CỦA BẠN */
+    /* ĐƯỜNG DẪN RƯƠNG MỞ */
     background-image: url('https://raw.githubusercontent.com/blackdesert2319-sudo/25-c-u/main/treasure-opened.png'); 
     animation: shake 0.5s;
 }
@@ -544,8 +544,8 @@ h1 { color:#f1c40f; margin:12px 0; text-align:center; }
     showGameLayout();
   }
 
- // HÀM SỬA: Chỉ hiển thị giao diện chơi và ẩn main-controls
-function showGameLayout(){
+  // HÀM SỬA: Chỉ hiển thị giao diện chơi và ẩn main-controls (ĐÃ SỬA LỖI QR)
+  function showGameLayout(){
     // Ẩn khối QR và khối điều khiển chính
     document.getElementById("qr-list").style.display="none"; 
     document.getElementById("main-controls").style.display="none"; 
@@ -553,8 +553,7 @@ function showGameLayout(){
     document.getElementById("game-wrapper").style.display="block";
     renderTeams(); // VẼ LẠI GIAO DIỆN CÁC ĐỘI
     listenForSubmissions();
-    document.getElementById("startGameBtn").style.display="block";
-  
+    document.getElementById("startGameBtn").style.display="block"; 
     // CÂU HỎI VẪN ĐANG ẨN, CHỈ HIỂN THỊ KHI BẤM START
   }
   
@@ -1012,4 +1011,3 @@ function showGameLayout(){
 </script>
 </body>
 </html>
-
