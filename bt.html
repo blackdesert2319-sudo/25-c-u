@@ -18,7 +18,9 @@
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
         body { font-family: 'Arial', sans-serif; display: flex; align-items: flex-start; justify-content: center; min-height: 100vh; background-color: #282c34; padding: 20px; color: #fff; }
-        
+        h1 {
+    color: red; /* Tiêu đề phụ sẽ có màu xanh sáng */
+}
         /* KHUNG TRÒ CHƠI */
         .game-container { 
             background-color: white; 
@@ -26,7 +28,7 @@
             border-radius: 10px; 
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); 
             width: 90%; 
-            max-width: 650px; 
+            max-width: 1050px; 
             color: #333;
             margin-right: 30px; /* Khoảng cách với bảng điểm */
         }
@@ -85,17 +87,17 @@
         /* HEADER VÀ CÂU HỎI */
         .header { display: flex; justify-content: flex-start; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 15px; }
         .question-box { margin-bottom: 25px; }
-        .question-number { font-size: 1.1em; color: #2A52BE; margin-bottom: 5px; }
-        .question-text { font-size: 1.3em; margin-bottom: 20px; font-weight: 500; }
+        .question-number { font-size: 2em; color: #2A52BE; margin-bottom: 5px; }
+        .question-text { font-size: 2.3em; margin-bottom: 20px; font-weight: 500; }
         .options-container { display: flex; flex-direction: column; gap: 10px; }
-        .option { padding: 12px; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; transition: background-color 0.2s, border-color 0.2s; font-size: 1.1em; }
+        .option { padding: 12px; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; transition: background-color 0.2s, border-color 0.2s; font-size: 2em; }
         .option:hover:not(.disabled) { background-color: #e9e9e9; border-color: #aaa; }
         .option.correct { background-color: #d4edda; border-color: #c3e6cb; }
         .option.incorrect { background-color: #f8d7da; border-color: #f5c6fb; }
         .option.disabled { cursor: default; opacity: 0.6; }
-        .button-start { padding: 15px 30px; font-size: 1.2em; cursor: pointer; background-color: #5cb85c; color: white; border: none; border-radius: 8px; transition: background-color 0.2s; }
+        .button-start { padding: 15px 30px; font-size: 2.2em; cursor: pointer; background-color: #5cb85c; color: white; border: none; border-radius: 8px; transition: background-color 0.2s; }
         .button-start:hover { background-color: #4cae4c; }
-        .result-message { margin-top: 15px; font-size: 1.2em; font-weight: bold; }
+        .result-message { margin-top: 15px; font-size: 2.2em; font-weight: bold; }
         .math { font-style: italic; font-weight: 600; }
         #game-content { display: none; }
     </style>
@@ -103,8 +105,8 @@
 <body>
 
     <div class="game-container">
-        <h1>Trò Chơi: Cấp Số Cộng & Cấp Số Nhân</h1>
-        <button id="startButton" class="button-start">VÒNG TĂNG TỐC</button>
+        <h1>Chỉ được bấm khi nút BẤM xuất hiện, bấm trước sẽ bị loại</h1>
+	<button id="startButton" class="button-start">VÒNG 1</button>
         
         <div id="game-content">
             <div class="header">
