@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHẦN THI TĂNG TỐC (Chấm Điểm Đội + Bấm Chuông)</title>
+    
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            startup: { typeset: false }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body { font-family: 'Arial', sans-serif; display: flex; align-items: flex-start; justify-content: center; min-height: 100vh; background-color: #282c34; padding: 20px; color: #fff; }
+        h1 { color: red; }
+        .game-container { background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); width: 90%; max-width: 1050px; color: #333; margin-right: 30px; }
+        #score-board-container { width: 250px; padding: 20px; border-radius: 10px; background-color: #3c414d; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); }
+        .team-score-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding: 10px; border-radius: 8px; font-weight: bold; color: white; transition: transform 0.2s; }
+        .team-score-item:hover { transform: scale(1.03); }
+        .team-name { font-size: 1.1em; }
+        .team-score { font-size: 1.8em; }
+        .score-control button { background: rgba(255, 255, 255, 0.2); border: none; color: white; padding: 5px 10px; margin-left: 5px; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: 900; transition: background 0.2s; line-height: 1; }
+        .score-control button:hover { background: rgba(255, 255, 255, 0.4); }
+        .team-red { background-color: #e74c3c; }
+        .team-blue { background-color: #3498db; }
+        .team-green { background-color: #2ecc71; }
+        .team-yellow { background-color: #f1c40f; color: #333; }
+        .team-purple { background-color: #9b59b6; }
+        .header { display: flex; justify-content: flex-start; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 15px; }
+        .question-box { margin-bottom: 25px; }
+        .question-number { font-size: 2em; color: #2A52BE; margin-bottom: 5px; }
+        .question-text { font-size: 2.3em; margin-bottom: 20px; font-weight: 500; }
+        .options-container { display: flex; flex-direction: column; gap: 10px; }
+        .option { padding: 12px; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; transition: background-color 0.2s, border-color 0.2s; font-size: 2em; }
+        .option:hover:not(.disabled) { background-color: #e9e9e9; border-color: #aaa; }
+        .option.correct { background-color: #d4edda; border-color: #c3e6cb; }
+        .option.incorrect { background-color: #f8d7da; border-color: #f5c6fb; }
+        .option.disabled { cursor: default; opacity: 0.6; }
+        .button-start { padding: 15px 30px; font-size: 2.2em; cursor: pointer; background-color: #5cb85c; color: white; border: none; border-radius: 8px; transition: background-color 0.2s; }
+        .button-start:hover { background-color: #4cae4c; }
+        .result-message { margin-top: 15px; font-size: 2.2em; font-weight: bold; }
+        .math { font-style: italic; font-weight: 600; }
+        #game-content { display: none; }
+
+        /* 🔔 Phần điều khiển bấm chuông */
+        #chuong-area {
+            margin-top: 25px;
+            background: #222;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+        #chuong-status { font-size: 1.6em; color: #ffd700; margin: 15px 0; min-height: 2em; }
+        #chuong-start { background-color: #007bff; color: white; }
+        #chuong-stop { background-color: #dc3545; color: white; display:none; }
+        .foul { color: #ff4444; font-weight: bold; }
+    </style>
+</head>
+
+<body>
+
+    <div class="game-container">
+        <h1>Chỉ được bấm khi nút BẤM xuất hiện, bấm trước sẽ bị loại</h1>
+        <button id="startButton" class="button-start">VÒNG 1</button>
+
+        <div id="game-content">
+            <div class="header"></div>
+            <div class="question-box">
+                <div class="question-number">Câu hỏi <span id="current-q-number">1</span>/25</div>
+                <div class="question-text" id="question-text"></div>
+            </div>
+
+            <div class="options-container" id="options-container">
+                <div class="option" data-answer="A">A. <span id="option-a"></span></div>
+                <div class="option" data-answer="B">B. <span id="option-b"></span></div>
+                <div class="option" data-answer="C">C. <span id="option-c"></span></div>
+                <div class="option" data-answer="D">D. <span id="option-d"></span></div>
+            </div>
+
+            <div class="result-message" id="result-message"></div>
+            <button id="nextQuestionButton" class="button-start" style="display:none; margin-top:20px;">Câu hỏi tiếp theo >></button>
+        </div>
+
+        <div id="final-results" style="display:none; text-align:center; margin-top:30px; color:#333;">
+            <h2>KẾT THÚC TRÒ CHƠI!</h2>
+            <p style="font-size:1.5em;">Đã hoàn thành 25 câu hỏi. <br> Tổng kết điểm ở bảng bên cạnh.</p>
+            <button class="button-start" onclick="location.reload()">Chơi Lại</button>
+        </div>
+    </div>
+
+    <div id="score-board-container">
+        <h2 style="text-align:center; color:#f1c40f;">Bảng Điểm Đội</h2>
+        <div id="score-board"></div>
+
+        <!-- 🔔 Khu vực điều khiển bấm chuông -->
+        <div id="chuong-area">
+            <h2>🔔 ĐIỀU KHIỂN BẤM CHUÔNG</h2>
+            <div id="chuong-status">⏳ Đang chờ bắt đầu...</div>
+            <button id="chuong-start" class="button-start" style="background:#007bff;">Bắt đầu lượt bấm</button>
+            <button id="chuong-stop" class="button-start" style="background:#dc3545; display:none;">Kết thúc lượt</button>
+        </div>
+    </div>
+
+     <script>
+        const questions = [
+            // 15 CÂU CƠ BẢN (A)
+            { q: 'Cho CSC ($u_n$) có $u_1 = 5$, $d = -3$. Số hạng thứ tư $u_4$ là:', options: ['4', '-4', '-12', '2'], correct: 'B' },
+            { q: 'Cho CSC ($u_n$) có $u_5 = 18$, $u_{10} = 38$. Công sai $d$ là:', options: ['2', '3', '4', '5'], correct: 'C' },
+            { q: 'Cho CSC ($u_n$) có $u_1 = 2$, $d = 3$. Tổng $S_{10}$ là:', options: ['155', '310', '150', '95'], correct: 'A' },
+            { q: 'CSC ($u_n$) được định nghĩa bởi hệ thức truy hồi nào sau đây:', options: ['$u_n = u_{n-1} + n$', '$u_n = u_{n-1} \\cdot 2$', '$u_n = u_{n-1} + 5$', '$u_n = u_1 + (n-1)d$'], correct: 'C' },
+            { q: 'Cho CSC ($u_n$) có $u_1 = 5$, $d = 2$. Để tổng $S_n = 480$, số lượng số hạng $n$ là:', options: ['15', '18', '20', '24'], correct: 'C' },
+            { q: 'Cho CSN ($u_n$) có $u_1 = -4$, $q = 3$. Số hạng thứ năm $u_5$ là:', options: ['-108', '-324', '324', '-400'], correct: 'B' },
+            { q: 'Công thức tính tổng $n$ số hạng đầu tiên của CSC ($u_n$) là:', options: ['$S_n = \\frac{n(u_1 + u_n)}{2}$', '$S_n = u_1 \\frac{1 - q^n}{1 - q}$', '$S_n = u_1 + (n-1)d$', '$S_n = n(u_1 + u_n)$'], correct: 'A' },
+            { q: 'Cho CSN ($u_n$) có $u_4 = 54$, $q = 3$. Số hạng đầu tiên $u_1$ là:', options: ['2', '6', '18', '162'], correct: 'A' },
+            { q: 'Số hạng tổng quát $u_n$ của một CSN ($n \\ge 1$) được xác định bởi công thức nào:', options: ['$u_n = u_1 + (n-1)q$', '$u_n = u_1 \\cdot q^{n-1}$', '$u_n = u_1 \\cdot q^n$', '$u_n = u_1 \\cdot q + u_{n-1}$'], correct: 'B' },
+            { q: 'Cho CSN ($u_n$) có $u_1 = 2$, $q = -3$. Tính tổng $S_4$:', options: ['-40', '122', '40', '-160'], correct: 'A' },
+            { q: 'Công thức tính tổng $n$ số hạng đầu tiên của CSC theo $u_1$ và $d$ là:', options: ['$S_n = \\frac{n}{2}[2u_1 + (n-1)d]$', '$S_n = n \\cdot u_n$', '$S_n = \\frac{n}{2}[u_1 + d]$', '$S_n = u_1 \\cdot q^{n-1}$'], correct: 'A' },
+            { q: 'Công thức tính tổng $n$ số hạng đầu tiên của CSN ($q \\ne 1$) là:', options: ['$S_n = u_1 (1 - q^n)$', '$S_n = u_1 + u_n$', '$S_n = u_1 \\frac{1 - q^n}{1 - q}$', '$S_n = \\frac{n}{2}[2u_1 + (n-1)q]$'], correct: 'C' },
+            { q: 'Cho CSC ($u_n$) có $u_1 = 10$, $S_{10} = 205$. Hãy tìm $u_{10}$:', options: ['31', '21', '41', '35'], correct: 'A' },
+            { q: 'Cho CSC ($u_n$) có $u_1 = -5$, $d = 4$. Công thức tính tổng $S_n$ là:', options: ['$S_n = n(2n - 7)$', '$S_n = n(4n - 9)$', '$S_n = 2n^2 - 5n$', '$S_n = n(4n - 10)$'], correct: 'A' },
+            { q: 'CSN ($u_n$) được định nghĩa bởi hệ thức truy hồi nào sau đây:', options: ['$u_n = u_{n-1} + 3$', '$u_n = u_{n-1} + u_{n-2}$', '$u_n = 2u_{n-1}$', '$u_n = u_1 + 2^{n-1}$'], correct: 'C' },
+
+            // 10 CÂU NHẬN DIỆN VÀ VIẾT SỐ HẠNG (B)
+            { q: 'Dãy số nào sau đây là **cấp số cộng**?', options: ['1; 2; 4; 8', '1; 3; 5; 7', '1; -1; 1; -1', '1; 4; 9; 16'], correct: 'B' },
+            { q: 'Dãy số nào sau đây là **cấp số nhân**?', options: ['2; 5; 8; 11', '10; 5; 2.5; 1.25', '1; 1; 2; 3; 5', '1; 3; 5; 7'], correct: 'B' },
+            { q: 'Cho CSC ($u_n$) có $u_1 = 10$, $d = -2$. Ba số hạng đầu tiên là:', options: ['10; 12; 14', '10; 8; 6', '10; -20; 40', '10; 5; 0'], correct: 'B' },
+            { q: 'Cho CSN ($u_n$) có $u_1 = 16$, $q = 0.5$. Ba số hạng đầu tiên là:', options: ['16; 8; 4', '16; 16.5; 17', '16; 32; 64', '16; 4; 1'], correct: 'A' },
+            { q: 'Dãy số ($u_n$) với $u_n = 3n + 1$. Số hạng $u_3$ là:', options: ['7', '10', '4', '13'], correct: 'B' },
+            { q: 'Dãy số ($u_n$) với $u_n = 2^{n+1}$. Số hạng $u_3$ là:', options: ['8', '16', '32', '10'], correct: 'B' },
+            { q: 'Dãy số 5; 5; 5; 5 là:', options: ['Chỉ là cấp số cộng', 'Chỉ là cấp số nhân', 'Vừa là CSC, vừa là CSN', 'Không phải CSC, không phải CSN'], correct: 'C' },
+            { q: 'Cho CSC ($u_n$) có $u_1 = 5$. Biết $u_3 = 11$. Công sai $d$ là:', options: ['3', '6', '5.5', '1'], correct: 'A' },
+            { q: 'Cho CSN ($u_n$) có $u_1 = 2$. Biết $u_3 = 18$ ($q > 0$). Công bội $q$ là:', options: ['9', '4', '3', '6'], correct: 'C' },
+            { q: 'Dãy số nào **không phải** CSC cũng **không phải** CSN?', options: ['2; 4; 6; 8', '2; 6; 18; 54', '1; 4; 2; 5', '10; 10; 10; 10'], correct: 'C' }
+        ];
+
+        let currentQuestionIndex = 0;
+        
+        const startButton = document.getElementById('startButton');
+        const gameContent = document.getElementById('game-content');
+        const questionText = document.getElementById('question-text');
+        const qNumber = document.getElementById('current-q-number');
+        const optionsContainer = document.getElementById('options-container');
+        const resultMessage = document.getElementById('result-message');
+        const finalResults = document.getElementById('final-results');
+        const optionElements = optionsContainer.querySelectorAll('.option');
+        const scoreBoardContainer = document.getElementById('score-board-container');
+        const nextQuestionButton = document.getElementById('nextQuestionButton');
+
+        // Dữ liệu và cấu hình cho 5 đội
+        const teams = [
+            { id: 'red', name: 'Đội Đỏ', colorClass: 'team-red', score: 0 },
+            { id: 'blue', name: 'Đội Xanh', colorClass: 'team-blue', score: 0 },
+            { id: 'green', name: 'Đội Lá', colorClass: 'team-green', score: 0 },
+            { id: 'yellow', name: 'Đội Vàng', colorClass: 'team-yellow', score: 0 },
+            { id: 'purple', name: 'Đội Tím', colorClass: 'team-purple', score: 0 },
+        ];
+        
+        // Gắn sự kiện cho nút "Câu hỏi tiếp theo"
+        nextQuestionButton.addEventListener('click', () => {
+            currentQuestionIndex++;
+            loadQuestion();
+        });
+
+
+        // ---------------------------------------------------
+        // CHỨC NĂNG BẢNG ĐIỂM ĐỘI
+        // ---------------------------------------------------
+
+        function updateTeamScore(teamId, delta) {
+            const team = teams.find(t => t.id === teamId);
+            if (team) {
+                team.score += delta;
+                document.getElementById(`score-${teamId}`).textContent = team.score;
+            }
+        }
+
+        function renderScoreBoard() {
+            const board = document.getElementById('score-board');
+            board.innerHTML = ''; // Xóa nội dung cũ
+            
+            teams.forEach(team => {
+                const item = document.createElement('div');
+                item.className = 'team-score-item ' + team.colorClass;
+                item.innerHTML = `
+                    <div class="team-info">
+                        <div class="team-name">${team.name}</div>
+                        <div class="team-score" id="score-${team.id}">${team.score}</div>
+                    </div>
+                    <div class="score-control">
+                        <button onclick="updateTeamScore('${team.id}', 10)">+</button>
+                        <button onclick="updateTeamScore('${team.id}', -5)">-</button>
+                    </div>
+                `;
+                board.appendChild(item);
+            });
+            scoreBoardContainer.style.display = 'block';
+        }
+
+
+        // ---------------------------------------------------
+        // CHỨC NĂNG TRÒ CHƠI
+        // ---------------------------------------------------
+        
+        function renderMath() {
+            const currentQ = questions[currentQuestionIndex];
+            
+            questionText.innerHTML = currentQ.q;
+            optionElements.forEach((el, index) => {
+                el.querySelector('span').innerHTML = currentQ.options[index];
+            });
+
+            if (window.MathJax) {
+                // Xử lý các phần tử liên quan đến câu hỏi hiện tại
+                MathJax.typesetPromise([questionText, optionsContainer]);
+            }
+        }
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                endGame();
+                return;
+            }
+
+            const currentQ = questions[currentQuestionIndex];
+            
+            // Ẩn nút "Câu hỏi tiếp theo"
+            nextQuestionButton.style.display = 'none';
+
+            // Reset trạng thái
+            resultMessage.textContent = '';
+
+            // Hiển thị số câu hỏi
+            qNumber.textContent = currentQuestionIndex + 1;
+            
+            // Cấu hình các nút đáp án
+            optionElements.forEach((el) => {
+                el.classList.remove('correct', 'incorrect', 'disabled');
+                el.onclick = () => checkAnswer(el, currentQ.correct);
+            });
+            
+            // Yêu cầu xử lý và hiển thị công thức toán
+            renderMath();
+        }
+
+        function highlightAndDisableAll(correctAnswer) {
+             optionElements.forEach(el => {
+                el.classList.add('disabled'); 
+                el.onclick = null;
+                if (el.getAttribute('data-answer') === correctAnswer) {
+                    el.classList.add('correct'); 
+                }
+            });
+            nextQuestionButton.style.display = 'block'; // Hiển thị nút chuyển câu
+        }
+
+        function checkAnswer(selectedElement, correctAnswer) {
+            
+            const selectedAnswer = selectedElement.getAttribute('data-answer');
+            
+            if (selectedAnswer === correctAnswer) {
+                // TRẢ LỜI ĐÚNG: Đánh dấu đúng, hiển thị thông báo, vô hiệu hóa tất cả
+                selectedElement.classList.add('correct');
+                resultMessage.innerHTML = 'Chính xác! **Mời giáo viên cộng điểm cho đội.**';
+
+                highlightAndDisableAll(correctAnswer);
+                
+            } else {
+                // TRẢ LỜI SAI: Đánh dấu sai, vô hiệu hóa đáp án sai, cho phép chọn tiếp
+                selectedElement.classList.add('incorrect');
+                selectedElement.classList.add('disabled'); 
+                selectedElement.onclick = null; 
+
+                resultMessage.textContent = 'Chưa chính xác. Thử lại!';
+            }
+        }
+        
+        // Hàm bắt đầu game
+        startButton.addEventListener('click', () => {
+            startButton.style.display = 'none';
+            gameContent.style.display = 'block';
+            renderScoreBoard(); // Hiện bảng điểm đội
+            loadQuestion();
+        });
+
+        function endGame() {
+            gameContent.style.display = 'none';
+            finalResults.style.display = 'block';
+            scoreBoardContainer.style.display = 'block';
+        }
+
+        // Đưa hàm updateTeamScore ra global scope để các nút HTML có thể gọi
+        window.updateTeamScore = updateTeamScore;
+    </script>
+
+    <!-- 🔔 Firebase cho phần bấm chuông -->
+    <script src="https://www.gstatic.com/firebasejs/7.19.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.19.1/firebase-database.js"></script>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyDkVTo1R5-d-m0r2mvNU2Z52r_hSVD9yMM",
+        authDomain: "buzzerneonpro.firebaseapp.com",
+        databaseURL: "https://buzzerneonpro-default-rtdb.firebaseio.com",
+        projectId: "buzzerneonpro",
+        storageBucket: "buzzerneonpro.appspot.com",
+        messagingSenderId: "1005462275274",
+        appId: "1:1005462275274:web:2d509079fb19d519c7c402"
+      };
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
+
+      const statusEl = document.getElementById("chuong-status");
+      const btnStart = document.getElementById("chuong-start");
+      const btnStop = document.getElementById("chuong-stop");
+
+      btnStart.onclick = () => {
+        db.ref("chuong/state").set({ status: "ready", winner: null, foul: null });
+        statusEl.textContent = "✅ Đang mở, học sinh có thể bấm!";
+        btnStart.style.display = "none";
+        btnStop.style.display = "inline-block";
+      };
+
+      btnStop.onclick = () => {
+        db.ref("chuong/state/status").set("locked");
+        statusEl.textContent = "🔒 Đã kết thúc lượt bấm.";
+        btnStart.style.display = "inline-block";
+        btnStop.style.display = "none";
+      };
+
+      db.ref("chuong/state").on("value", (snap) => {
+        const val = snap.val();
+        if (!val) return;
+        if (val.winner) {
+          statusEl.innerHTML = `🏁 <b>${val.winner.team}</b> bấm trước lúc ${val.winner.time}`;
+        }
+        if (val.foul) {
+          statusEl.innerHTML += `<div class="foul">⚠️ ${val.foul.team} phạm quy (bấm sớm)</div>`;
+        }
+      });
+    </script>
+
+</body>
+</html>

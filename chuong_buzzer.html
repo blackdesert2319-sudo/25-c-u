@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>Buzzer Neon Pro (Bản học sinh)</title>
+
+  <script src="https://www.gstatic.com/firebasejs/7.19.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.19.1/firebase-database.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <div class="card">
+      <h1>Buzzer Neon Pro</h1>
+      <div id="role-selection">
+        <div class="roles">
+          <button class="btn-role btn-role-team" data-color="red" style="background:#ff6b6b;">Đội Đỏ</button>
+          <button class="btn-role btn-role-team" data-color="blue" style="background:#00d4ff;">Đội Xanh</button>
+          <button class="btn-role btn-role-team" data-color="green" style="background:#7ef0a6;">Đội Lá</button>
+          <button class="btn-role btn-role-team" data-color="yellow" style="background:#ffd86b;color:#333;">Đội Vàng</button>
+          <button class="btn-role btn-role-team" data-color="purple" style="background:#9b6bff;">Đội Tím</button>
+        </div>
+      </div>
+
+      <div id="student-screen" style="display:none;">
+        <div class="student-area">
+          <div id="team-name-display"></div>
+          <button id="buzzer-button" class="disabled no-pointer">CHỜ GIÁO VIÊN</button>
+          <div id="buzzer-status">TRẠNG THÁI: CHỜ</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    // === Firebase config (y như file gốc) ===
+    const firebaseConfig = {
+      apiKey: "AIzaSyDkVTo1R5-d-m0r2mvNU2Z52r_hSVD9yMM",
+      authDomain: "buzzerneonpro.firebaseapp.com",
+      databaseURL: "https://buzzerneonpro-default-rtdb.firebaseio.com",
+      projectId: "buzzerneonpro",
+      storageBucket: "buzzerneonpro.appspot.com",
+      messagingSenderId: "1005462275274",
+      appId: "1:1005462275274:web:2d509079fb19d519c7c402"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const teamButtons = document.querySelectorAll('.btn-role-team');
+    const buzzerButton = document.getElementById('buzzer-button');
+    const teamNameDisplay = document.getElementById('team-name-display');
+    const buzzerStatus = document.getElementById('buzzer-status');
+    const roleSel = document.getElementById('role-selection');
+    const studentScreen = document.getElementById('student-screen');
+
+    let teamColor = null;
+    let canBuzz = false;
+
+    teamButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        teamColor = btn.dataset.color.toUpperCase();
+        teamNameDisplay.textContent = "Đội " + teamColor;
+        roleSel.style.display = 'none';
+        studentScreen.style.display = 'block';
+      });
+    });
+
+    db.ref('chuong/state').on('value', snap => {
+      const state = snap.val() || {};
+      if (state.status === 'ready') {
+        canBuzz = true;
+        buzzerButton.textContent = "BẤM!";
+        buzzerButton.classList.remove('no-pointer', 'disabled');
+        buzzerStatus.textContent = "TRẠNG THÁI: SẴN SÀNG";
+      } else {
+        canBuzz = false;
+        buzzerButton.textContent = "CHỜ GIÁO VIÊN";
+        buzzerButton.classList.add('no-pointer', 'disabled');
+        buzzerStatus.textContent = "TRẠNG THÁI: KHÓA";
+      }
+    });
+
+    buzzerButton.addEventListener('click', () => {
+      if (!teamColor) return;
+      const now = new Date().toLocaleTimeString();
+      if (!canBuzz) {
+        db.ref('chuong/state/foul').set({ team: "Đội " + teamColor, time: now });
+        buzzerStatus.textContent = "⚠️ PHẠM QUY!";
+        return;
+      }
+      db.ref('chuong/state').update({
+        winner: { team: "Đội " + teamColor, time: now },
+        status: "locked"
+      });
+      buzzerStatus.textContent = "✅ ĐÃ GỬI!";
+      buzzerButton.classList.add('disabled');
+    });
+  </script>
+</body>
+</html>
